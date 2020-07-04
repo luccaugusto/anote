@@ -12,7 +12,7 @@ OPTIND=1
 [ "${NOTES_PATH: -1}" == '/' ] || NOTES_PATH="$NOTES_PATH/"
 #create NOTES_PATH directory if it doesn't exists
 [ -d "$NOTES_PATH" ] ||  mkdir $NOTES_PATH
-GENERAL='.notesgeneral'
+
 WHICH_NOTES=''
 OPERATION='a'
 TAG=''
@@ -21,8 +21,6 @@ NOTE=''
 add_note()
 {
 	if ! [ "$NOTE" = '' ]; then
-		# no tag means general
-		[ ! "$TAG" ] && TAG='general'
 		[ ! -f $NOTES_PATH.notes$TAG ] && touch $NOTES_PATH.notes$TAG
 		#gets the last note number from file
 		read NOTE_NUMBER<<<$(awk 'END{print $1}' $NOTES_PATH.notes$TAG | sed s/~//g)
@@ -39,13 +37,14 @@ list_notes()
 	if [ "$TAG" ]; then
 		WHICH_NOTES=".notes$TAG"
 	else
-		WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
+		# dmenu prompt to select tag if there are any .notes files
+		[ "$(ls -a $NOTES_PATH | grep ^.notes)" ] && WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
 	fi
 
 	if test -f $NOTES_PATH$WHICH_NOTES; then
 		awk -F "\t" '{print $1". " $3}' $NOTES_PATH$WHICH_NOTES
 	else
-		echo "No notes tagged $TAG"
+		[ "$TAG" ] && echo "No notes tagged $TAG" || echo "No notes"
 	fi
 }
 
@@ -74,7 +73,7 @@ filter_notes()
 
 show_help()
 {
-	echo 'aNote [SOME NOTE] [-t] [SOME TAG]: Adds a note to a specific Tag. If no tag is informed adds to general notes'
+	echo 'aNote [-t] [SOME TAG] [SOME NOTE]: Adds a note to a specific Tag. If no tag is informed adds to general notes'
 	echo 'aNote -l [SOME TAG]:Prompts with a dmenu to select notes file to list notes from
 					-d flag to list general notes'
 	echo 'aNote -f [WORD/DATE]: Search for notes with that word, tag or date'
@@ -84,12 +83,8 @@ show_help()
 
 remove_note()
 {
-	if [ $1 ]; then
-		if [ $1 == -d ]; then
-			WHICH_NOTES=".notesgeral";shift
-		else
-			WHICH_NOTES=".notes$1"; shift
-		fi
+	if [ "$TAG" ]; then
+		WHICH_NOTES=".notes$TAG"; shift
 	else
 		WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
 	fi
@@ -135,7 +130,9 @@ shift $((OPTIND -1))
 NOTE=$@
 
 case $OPERATION in
-	'a') add_note $NOTE $TAG
+		# no tag in add means general
+	'a') [ ! "$TAG" ] && TAG='general'
+		 add_note $NOTE $TAG
 		;;
 	'l') list_notes
 		;;

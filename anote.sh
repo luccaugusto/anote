@@ -7,40 +7,37 @@
 #reset for getopts
 OPTIND=1
 
-[ $NOTES_PATH ] ||  NOTES_PATH="$HOME/.notes/"
+[ "$NOTES_PATH" ] ||  NOTES_PATH="$HOME/.notes/"
 # if missing trailing /, add it
 [ "${NOTES_PATH: -1}" == '/' ] || NOTES_PATH="$NOTES_PATH/"
+#create NOTES_PATH directory if it doesn't exists
+[ -d "$NOTES_PATH" ] ||  mkdir $NOTES_PATH
 GENERAL='.notesgeneral'
 WHICH_NOTES=''
-DEFAULT=false
 OPERATION='a'
-TAG='general'
+TAG=''
 NOTE=''
 
 add_note()
 {
 	if ! [ "$NOTE" = '' ]; then
-		if [ ! -f $NOTES_PATH.notes$TAG ]; then
-			touch $NOTES_PATH.notes$TAG
-		fi
+		# no tag means general
+		[ ! "$TAG" ] && TAG='general'
+		[ ! -f $NOTES_PATH.notes$TAG ] && touch $NOTES_PATH.notes$TAG
 		#gets the last note number from file
 		read NOTE_NUMBER<<<$(awk 'END{print $1}' $NOTES_PATH.notes$TAG | sed s/~//g)
 		NOTE_NUMBER=$((NOTE_NUMBER+1))
 		DATE=$(date +%Y-%m-%d)
 		echo "~$NOTE_NUMBER	$DATE	'$NOTE'">>$NOTES_PATH.notes$TAG
 	else
-		echo "No empty notes"
+		echo "error: empty note"
 	fi
 }
 
 list_notes()
 {
-	if [ $1 ]; then
-		if [ $1 == -d ]; then
-			WHICH_NOTES=".notesgeral";shift
-		else
-			WHICH_NOTES=".notes$1"; shift
-		fi
+	if [ "$TAG" ]; then
+		WHICH_NOTES=".notes$TAG"
 	else
 		WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
 	fi
@@ -48,7 +45,7 @@ list_notes()
 	if test -f $NOTES_PATH$WHICH_NOTES; then
 		awk -F "\t" '{print $1". " $3}' $NOTES_PATH$WHICH_NOTES
 	else
-		echo 'No Notes'
+		echo "No notes tagged $TAG"
 	fi
 }
 
@@ -81,7 +78,8 @@ show_help()
 	echo 'aNote -l [SOME TAG]:Prompts with a dmenu to select notes file to list notes from
 					-d flag to list general notes'
 	echo 'aNote -f [WORD/DATE]: Search for notes with that word, tag or date'
-	echo 'aNote -r [TAG]: prompts with a dmenu to select note to delete. if no tag is informed dmenu prompts with tag and then 			notes'
+	echo 'aNote -r [TAG]: prompts with a dmenu to select note to delete. if no tag is informed, prompt user for tags via dmenu'
+	echo 'aNote -d: short for -t general'
 }
 
 remove_note()
@@ -114,18 +112,17 @@ remove_note()
 while getopts ":df:hlrt:" opt; do
 	#parse arguments before calling any function
 	case $opt in
-		-d) DEFAULT=true
+		d) TAG='general'
 			;;
-		-f) shift; filter_notes "$1" "$2"
+		f) shift; filter_notes "$1" "$2"
 			;;
-		-h) show_help
-			exit 0
+		h) OPERATION='h'
 			;;
-		-l) OPERATION='l'
+		l) OPERATION='l'
 			;;
-		-r) OPERATION='r'
+		r) OPERATION='r'
 			;;
-		-t) TAG=$OPTARG
+		t) TAG=$OPTARG
 			;;
 		\?) echo "invalid option: -$OPTARG" >&2
 			show_help
@@ -134,8 +131,8 @@ while getopts ":df:hlrt:" opt; do
 done
 
 shift $((OPTIND -1))
-# leftover arg is note istself
-NOTE=${@[0]}
+# leftover arg is note itself
+NOTE=$@
 
 case $OPERATION in
 	'a') add_note $NOTE $TAG
@@ -145,6 +142,8 @@ case $OPERATION in
 	'f') filter_notes
 		;;
 	'r') remove_note
+		;;
+	'h') show_help
 		;;
 esac
 

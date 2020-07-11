@@ -7,7 +7,7 @@
 #reset for getopts
 OPTIND=1
 
-[ "$NOTES_PATH" ] ||  NOTES_PATH="$HOME/.notes/"
+[ "$NOTES_PATH" ] || NOTES_PATH="$HOME/.notes/"
 # if missing trailing /, add it
 [ "${NOTES_PATH: -1}" == '/' ] || NOTES_PATH="$NOTES_PATH/"
 #create NOTES_PATH directory if it doesn't exists
@@ -50,6 +50,7 @@ list_notes()
 
 filter_notes()
 {
+	#NOT WORKING YET
 	if [ $2 ]; then
 		if [ $2 == -d ]; then
 			WHICH_NOTES=".notesgeral";shift
@@ -84,7 +85,7 @@ show_help()
 remove_note()
 {
 	if [ "$TAG" ]; then
-		WHICH_NOTES=".notes$TAG"; shift
+		WHICH_NOTES=".notes$TAG";
 	else
 		WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
 	fi
@@ -92,7 +93,8 @@ remove_note()
 	if test -f "$NOTES_PATH$WHICH_NOTES"; then
 		NOTE=$(cat $NOTES_PATH$WHICH_NOTES | sed "s/	/ /g" | dmenu -l 10 | awk -F " " '{print $1}')
 		if [ "$NOTE" ];then
-			sed '/'"$NOTE"'/d' $NOTES_PATH$WHICH_NOTES > $NOTES_PATH$WHICH_NOTES
+			sed '/'"$NOTE"'/d' $NOTES_PATH$WHICH_NOTES > $NOTES_PATH$WHICH_NOTES-aux
+			mv $NOTES_PATH$WHICH_NOTES-aux $NOTES_PATH$WHICH_NOTES
 			ALL_NOTES=$(cat $NOTES_PATH$WHICH_NOTES)
 			if [ ! "$ALL_NOTES" ]; then
 				rm $NOTES_PATH$WHICH_NOTES
@@ -109,7 +111,7 @@ while getopts ":df:hlrt:" opt; do
 	case $opt in
 		d) TAG='general'
 			;;
-		f) shift; filter_notes "$1" "$2"
+		f) filter_notes "$1" "$2"
 			;;
 		h) OPERATION='h'
 			;;

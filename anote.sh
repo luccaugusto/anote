@@ -17,6 +17,8 @@ WHICH_NOTES=''
 OPERATION='a'
 TAG=''
 NOTE=''
+PATTERN=''
+INVALID=false
 
 add_note()
 {
@@ -48,25 +50,22 @@ list_notes()
 	fi
 }
 
-filter_notes()
+search_notes()
 {
-	#NOT WORKING YET
-	if [ $2 ]; then
-		if [ $2 == -d ]; then
-			WHICH_NOTES=".notesgeral";shift
+	[ "$PATTERN" ] || (echo "Nothing to search for. Exiting" && return)
+	if [ $TAG ]; then
+		WHICH_NOTES=".notes$TAG"; shift
+		if test -f $NOTES_PATH$WHICH_NOTES; then
+			 grep "$PATTERN" $NOTES_PATH$WHICH_NOTES | awk -F "\t" '{print $1. "\033[34m "$3"\033[0m"}'
 		else
-			WHICH_NOTES=".notes$2"; shift
-			if test -f $NOTES_PATH$WHICH_NOTES; then
-				cat $NOTES_PATH$WHICH_NOTES | grep "$1" | awk -F "\t" '{print $1. "\033[34m "$3"\033[0m"}'
-				shift
-			else
-				echo 'No Notes'
-			fi
+			echo 'No Notes'
 		fi
 	else
 		for list in $(ls -a $NOTES_PATH | grep .notes); do
-			cat $NOTES_PATH$WHICH_NOTES | grep "$1" | awk -F "\t" '{print $1. "\033[34m "$3"\033[0m"}'
-			shift
+			FOUND=$(grep "$PATTERN" $NOTES_PATH$list | awk -F "\t" '{print $1. "\033[34m "$3"\033[0m"}')
+			[ "$FOUND" ] && 
+				echo "Found in $list" && 
+				echo $FOUND
 		done
 	fi
 
@@ -77,7 +76,7 @@ show_help()
 	echo 'aNote [-t] [SOME TAG] [SOME NOTE]: Adds a note to a specific Tag. If no tag is informed adds to general notes'
 	echo 'aNote -l [SOME TAG]:Prompts with a dmenu to select notes file to list notes from
 					-d flag to list general notes'
-	echo 'aNote -f [WORD/DATE]: Search for notes with that word, tag or date'
+	echo 'aNote -s [SOMETHING]: Search for notes with SOMETHING. Date and numbers are valid'
 	echo 'aNote -r [TAG]: prompts with a dmenu to select note to delete. if no tag is informed, prompt user for tags via dmenu'
 	echo 'aNote -d: short for -t general'
 }
@@ -106,12 +105,13 @@ remove_note()
 }
 
 
-while getopts ":df:hlrt:" opt; do
+while getopts ":ds:hlrt:" opt; do
 	#parse arguments before calling any function
 	case $opt in
 		d) TAG='general'
 			;;
-		f) filter_notes "$1" "$2"
+		s) OPERATION='s'
+			PATTERN="$OPTARG"
 			;;
 		h) OPERATION='h'
 			;;
@@ -126,24 +126,27 @@ while getopts ":df:hlrt:" opt; do
 			show_help
 			;;
 	esac
+	[ "$opt" == ":" ] && echo "Missing argument for $OPTARG" && INVALID=true
 done
 
 shift $((OPTIND -1))
 # leftover arg is note itself
 NOTE=$@
 
-case $OPERATION in
-		# no tag in add means general
-	'a') [ "$TAG" ] || TAG='general'
-		 add_note $NOTE $TAG
-		;;
-	'l') list_notes
-		;;
-	'f') filter_notes
-		;;
-	'r') remove_note
-		;;
-	'h') show_help
-		;;
-esac
-
+if [ ! "$INVALID" == "true" ]
+then
+	case $OPERATION in
+			# no tag in add means general
+		'a') [ "$TAG" ] || TAG='general'
+			 add_note $NOTE $TAG
+			;;
+		'l') list_notes
+			;;
+		's') search_notes
+			;;
+		'r') remove_note
+			;;
+		'h') show_help
+			;;
+	esac
+fi

@@ -116,10 +116,11 @@ while getopts ":df:hlrt:" opt; do
 		h) OPERATION='h'
 			;;
 		l) OPERATION='l'
+			TAG="$2"
 			;;
 		r) OPERATION='r'
 			;;
-		t) TAG=$OPTARG
+		t) TAG="$OPTARG"
 			;;
 		\?) echo "invalid option: -$OPTARG" >&2
 			show_help
@@ -133,7 +134,7 @@ NOTE=$@
 
 case $OPERATION in
 		# no tag in add means general
-	'a') [ ! "$TAG" ] && TAG='general'
+	'a') [ "$TAG" ] || TAG='general'
 		 add_note $NOTE $TAG
 		;;
 	'l') list_notes

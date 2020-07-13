@@ -7,9 +7,12 @@
 #reset for getopts
 OPTIND=1
 
-[ "$NOTES_PATH" ] || NOTES_PATH="$HOME/.notes/"
-# if missing trailing /, add it
-[ "${NOTES_PATH: -1}" == '/' ] || NOTES_PATH="$NOTES_PATH/"
+[ "$NOTES_PATH" ] || NOTES_PATH="$HOME/.notes"
+# Assume there is a trailing /, remove it and add it again.
+# if there is no trailing / it's simply going to add it
+# not so good idea, i know it, but it's the way i could write
+# it in POSIX shell.
+NOTES_PATH="${NOTES_PATH%/}/"
 #create NOTES_PATH directory if it doesn't exists
 [ -d "$NOTES_PATH" ] ||  mkdir $NOTES_PATH
 

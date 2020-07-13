@@ -28,7 +28,7 @@ add_note()
 	if ! [ "$NOTE" = '' ]; then
 		[ ! -f $NOTES_PATH.notes$TAG ] && touch $NOTES_PATH.notes$TAG
 		#gets the last note number from file
-		read NOTE_NUMBER<<<$(awk 'END{print $1}' $NOTES_PATH.notes$TAG | sed s/~//g)
+		NOTE_NUMBER="$(awk 'END{print $1}' $NOTES_PATH.notes$TAG | sed s/~//g)"
 		NOTE_NUMBER=$((NOTE_NUMBER+1))
 		DATE=$(date +%Y-%m-%d)
 		echo "~$NOTE_NUMBER	$DATE	'$NOTE'">>$NOTES_PATH.notes$TAG

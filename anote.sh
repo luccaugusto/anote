@@ -129,14 +129,14 @@ while getopts ":ds:hlrt:" opt; do
 			show_help
 			;;
 	esac
-	[ "$opt" == ":" ] && echo "Missing argument for $OPTARG" && INVALID=true
+	[ "$opt" = ":" ] && echo "Missing argument for $OPTARG" && INVALID=true
 done
 
 shift $((OPTIND -1))
 # leftover arg is note itself
 NOTE=$@
 
-if [ ! "$INVALID" == "true" ]
+if [ ! "$INVALID" = "true" ]
 then
 	case $OPERATION in
 			# no tag in add means general

@@ -7,9 +7,12 @@
 #reset for getopts
 OPTIND=1
 
-[ "$NOTES_PATH" ] || NOTES_PATH="$HOME/.notes/"
-# if missing trailing /, add it
-[ "${NOTES_PATH: -1}" == '/' ] || NOTES_PATH="$NOTES_PATH/"
+[ "$NOTES_PATH" ] || NOTES_PATH="$HOME/.notes"
+# Assume there is a trailing /, remove it and add it again.
+# if there is no trailing / it's simply going to add it
+# not so good idea, i know it, but it's the way i could write
+# it in POSIX shell.
+NOTES_PATH="${NOTES_PATH%/}/"
 #create NOTES_PATH directory if it doesn't exists
 [ -d "$NOTES_PATH" ] ||  mkdir $NOTES_PATH
 
@@ -58,7 +61,7 @@ add_note()
 		[ ! -f $NOTES_PATH.notes$TAG ] && touch $NOTES_PATH.notes$TAG
 
 		#gets the last note number from file
-		read NOTE_NUMBER<<<$(awk 'END{print $1}' $NOTES_PATH.notes$TAG | sed s/~//g)
+		NOTE_NUMBER="$(awk 'END{print $1}' $NOTES_PATH.notes$TAG | sed s/~//g)"
 		NOTE_NUMBER=$((NOTE_NUMBER+1))
 		DATE=$(date +%Y-%m-%d)
 		echo "~$NOTE_NUMBER	$DATE	'$NOTE'">>$NOTES_PATH.notes$TAG
@@ -169,14 +172,14 @@ while getopts ":ds:hlrct:" opt; do
 			show_help
 			;;
 	esac
-	[ "$opt" == ":" ] && echo "Missing argument for $OPTARG" && INVALID=true
+	[ "$opt" = ":" ] && echo "Missing argument for $OPTARG" && INVALID=true
 done
 
 shift $((OPTIND -1))
 # leftover arg is note itself
 NOTE=$@
 
-if [ ! "$INVALID" == "true" ]
+if [ ! "$INVALID" = "true" ]
 then
 	case $OPERATION in
 			# no tag in add means general

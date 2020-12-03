@@ -24,6 +24,7 @@ PATTERN=''
 INVALID=false
 CALCURSE=false
 NOTES_CALCURSE="calcurse"
+DMENU=$(command -v dmenu &> /dev/null)
 
 add_todo_calcurse()
 {
@@ -77,7 +78,12 @@ list_notes()
 		WHICH_NOTES=".notes$TAG"
 	else
 		# dmenu prompt to select tag if there are any .notes files
-		[ "$(ls -a $NOTES_PATH | grep ^.notes)" ] && WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
+		if [ "$DMENU" ]
+		then
+			[ "$(ls -a $NOTES_PATH | grep ^.notes)" ] && WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
+		else
+			[ "$(ls -a $NOTES_PATH | grep ^.notes)" ] && echo $(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}')
+		fi
 	fi
 
 	if test -f $NOTES_PATH$WHICH_NOTES
@@ -120,6 +126,8 @@ show_help()
 	echo 'aNote -s [SOMETHING]: Search for notes with SOMETHING. Date and numbers are valid'
 	echo 'aNote -r [TAG]: prompts with a dmenu to select note to delete. if no tag is informed, prompt user for tags via dmenu'
 	echo 'aNote -d: short for -t general'
+	echo ' NOTE: if dmenu is not installed, the options relying on dmenu will only print the options shown'
+	echo '       in dmenu to stdout. These options must be used with the -t option to take effect'
 }
 
 remove_note()
@@ -128,7 +136,12 @@ remove_note()
 	then
 		WHICH_NOTES=".notes$TAG";
 	else
-		WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
+		if [ "$DMENU" ]
+		then
+			WHICH_NOTES=.notes$(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}'| dmenu -l 10)
+		else
+			echo $(ls -a $NOTES_PATH | grep ^.notes | awk -F " " '{print substr($1,7)}')
+		fi
 	fi
 
 	if test -f "$NOTES_PATH$WHICH_NOTES"

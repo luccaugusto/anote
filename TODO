@@ -1,0 +1,9 @@
+Data----
+Implement tag_del and tag_edit
+Implement tests for tag functions
+
+CLI-----
+Implement master slave layout with tag passed on the command line being the inital master and other tags shown on the right side, with a preview of the notes it contains.
+Tab to change the selected tag window
+enter to make selected window master
+vim bindings

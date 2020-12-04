@@ -3,6 +3,7 @@ struct note {
 	int priority; /* 0:max priority */
 	char *text;
 	char *tag;
+	int id;
 };
 
 /* FUNCTION PROTOTYPES */

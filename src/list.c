@@ -1,4 +1,5 @@
 /* HEADERS */
+#include <assert.h>
 #include <stdlib.h>
 
 #include "notes.h"
@@ -9,67 +10,111 @@ struct d_list *
 init_list(void)
 {
 	struct d_list *list = (struct d_list *) malloc(sizeof(struct d_list));
-	list->size = 0;
+	list->next = NULL;
 	return list;
 }
 
 void
-add(struct note *note, struct d_list *list)
+d_list_add(struct note *note, struct d_list *list)
 {
-	int index = -1;
-
+	struct d_list *i;
 	if (list != NULL) {
 
-		/* adds a position to the array */
-		list->notes = (struct note *) realloc(list->notes,
-				(list->size+1) * sizeof(struct note));
+		for (i=list; i->next != NULL; i=i->next);
 
-		list->notes[list->size++] = *note;
-
+		i->next = (struct d_list *) malloc(sizeof(struct d_list));
+		i->next->note = note;
+		i->next->next = NULL;
 	}
 }
 
 void
-del_pos(struct d_list *list, int pos)
+del_pos(int pos, struct d_list *list)
 {
-	if (list != NULL && list->size > 0) {
+	int i;
+	struct d_list *j;
+	struct d_list *aux;
 
-		free(&list->notes[pos]);
+	/* never delete the head */
+	if (list != NULL && list->next != NULL && pos > 0) {
 
-		/* shift items */
-		for (int i=pos; i < list->size-1; ++i)
-			list->notes[i] = list->notes[i+1];
+		/* finds the position */
+		for (i=0, j=list; i<pos-1 && j->next->next != NULL; ++i, j=j->next);
 
-		/* removes a position from the array */
-		list->notes = (struct note *) realloc(list->notes,
-				(list->size-1) * sizeof(struct note));
-
-		list->size--;
-
+		aux = j->next;
+		j->next = aux->next;
+		free(aux);
 	}
 }
 
-int
-del_note(struct d_list *list, struct note *note)
+void
+del_note(struct note *note, struct d_list *list)
 {
-	int i=-1;
+	struct d_list *i;
+	struct d_list *aux;
 
-	if (list != NULL && list->size > 0) {
+	/* never delete the head */
+	if (list != NULL && list->next != NULL && note != list->note) {
 
 		/* finds the position */
-		for (i=0;i < list->size && &list->notes[i] != note; ++i);
+		for (i=list; i->next != note; i=i->next);
 
-		if (&list->notes[i] == note)
-			del_pos(list, i);
-		/* else note not found */
+		aux = i->next;
+		i->next = aux->next;
+		free(aux);
 	}
-
-	return i;
 }
 
 void
 delete_list(struct d_list *list)
 {
-	free(list->notes);
+	/* delete all notes */
+	while (list->next != NULL)
+		del_note(list->next,list);
+
+	free(list->next);
 	free(list);
+}
+
+void
+test_d_list_add(void)
+{
+	struct d_list *n_list = init_list();
+	struct d_list *i = n_list;
+
+	for (int j=0; j < 10; ++j) {
+		d_list_add(new_note("test"), n_list);
+		i = i->next;
+		assert(i != NULL);
+		assert(i->note != NULL);
+	}
+
+	delete_list(n_list);
+}
+
+void
+test_d_list_del_note(void)
+{
+	struct d_list *n_list = init_list();
+	struct d_list *i = n_list;
+	struct d_list *aux;
+	int real_size;
+	int expected_size;
+
+	for (int j=0; j<10; ++j, i=i->next, ++expected_size) {
+		d_list_add(new_note("test"), n_list);
+		assert(i->next != NULL);
+	}
+
+	while (n_list->next != NULL) {
+		real_size = 0;
+		del_note(n_list->next, n_list);
+
+		/* count number of notes */
+		for (aux=n_list; aux->next != NULL; aux=aux->next, ++real_size);
+
+		assert(real_size == --expected_size);
+	}
+
+	delete_list(n_list);
 }

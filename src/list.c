@@ -57,11 +57,13 @@ del_obj(void *obj, struct d_list *list)
 	if (list != NULL && list->next != NULL && obj != list->obj) {
 
 		/* finds the position */
-		for (i=list; i->next != obj; i=i->next);
+		for (i=list; i->next != NULL && i->next != obj; i=i->next);
 
-		aux = i->next;
-		i->next = aux->next;
-		free(aux);
+		if (i->next == obj) {
+			aux = i->next;
+			i->next = aux->next;
+			free(aux);
+		}
 	}
 }
 
@@ -104,6 +106,7 @@ test_d_list_del(void)
 	for (int j=0; j<10; ++j, i=i->next, ++expected_size) {
 		d_list_add(new_note("test"), n_list);
 		assert(i->next != NULL);
+		assert(i->next->obj != NULL);
 	}
 
 

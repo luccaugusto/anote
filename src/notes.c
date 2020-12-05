@@ -7,7 +7,6 @@ new_note(char *text)
 	struct note *n_note = (struct note *) malloc(sizeof(struct note));
 	n_note->text = text;
 	n_note->priority = 0;
-	n_note->tag = "general";
 
 	return n_note;
 }

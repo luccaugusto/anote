@@ -3,13 +3,13 @@
  */
 
 /* HEADERS */
-#include <ncurses.h>
 #include <stdio.h>
 #include <unistd.h>
 
+#include "cli.h"
 #include "list.h"
 #include "notes.h"
-#include "tag.h"
+#include "tags.h"
 
 #define ENOTSUP 1
 
@@ -18,34 +18,9 @@ FILE *notes_file;
 char *notes_file_name;
 
 void
-start_anote(void)
-{
-	int c;
-	int row,col;
-
-	initscr();            /* start ncurses                   */
-	raw();                /* Line buffering disabled	     */
-	keypad(stdscr, TRUE); /* Enables function and arrow keys */
-	noecho();             /* Don't echo() while we do getch  */
-
-	getmaxyx(stdscr,row,col);
-
-	mvprintw(row/2,(col-strlen("Welcome to aNote.\n"))/2,"Welcome to aNote.\n");
-	printw("press q to quit.\n");
-	refresh();
-	while ((c = getch()) != 'q') {
-		c = getch();
-	}
-	printw("Bye\n");
-	refresh();
-	getch();
-
-	endwin(); /* end curses */
-}
-
-void
 help(void)
 {
+	/* TODO: write the full help thingy */
 	printf("anote [-i <notes file>]\n");
 }
 
@@ -60,11 +35,11 @@ main(int argc, char *argv[])
 
 	tags_list = init_list();
 
-	while ((c = getopt(argc,argv,"f:a:t:")) != -1) {
+	while ((c = getopt(argc,argv,"i:a:t:")) != -1) {
 		switch (c) {
-			case 'f': /* import file */
+			case 'i': /* import file */
+				command = 'i';
 				notes_file_name = optarg;
-				notes_file= fopen(notes_file_name, "r");
 				interactive = 0;
 				break;
 			case 'a': /* add note */
@@ -76,11 +51,12 @@ main(int argc, char *argv[])
 				tag = optarg;
 				break;
 			case '?':
-				if (optopt == 'f')
-					printf("No file specified");
-				/* TODO
-				 * other error messages
-				 */
+				if (optopt == 'i')
+					printf("No file specified\n");
+				else if (optopt == 't')
+					printf("No tag specified\n");
+				else if (optopt == 'a')
+					printf("No note was passed as argument\n");
 				else
 					help();
 			default:
@@ -93,16 +69,19 @@ main(int argc, char *argv[])
 		case 'a':
 			tag_add(note, tags_list, tag);
 			break;
-		case 'f':/* import file */
+		case 'i':/* import file */
 			return -ENOTSUP;
 	}
 
 
 	if (interactive)
-		start_anote();
+		start_anote_cli();
 
 	test_d_list_add();
 	test_d_list_del();
+	test_tag_note_list_add();
+	test_tag_note_list_del();
+	test_tag_note_list_edit();
 
 	return 0;
 }

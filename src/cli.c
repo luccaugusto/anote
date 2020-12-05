@@ -1,8 +1,13 @@
 /* HEADERS */
-#include <stdio.h>
 #include <ncurses.h>
+#include <math.h>
+#include <stdio.h>
 
 #include "cli.h"
+
+/* FUNCTION PROTOTYPES */
+WINDOW *create_new_win(int height, int width, int start_y, int start_x);
+void delete_win(WINDOW *local_win);
 
 /* GLOBAL VARIABLES */
 extern struct d_list *tags_list;
@@ -11,10 +16,10 @@ extern char *notes_file_name;
 
 WINDOW *main_win;
 WINDOW *side_win;
-int main_h;
-int main_w;
-int side_h;
-int side_w;
+int main_win_h;
+int main_win_w;
+int side_win_h;
+int side_win_w;
 
 void
 start_anote_cli(void)
@@ -29,16 +34,18 @@ start_anote_cli(void)
 
 	getmaxyx(stdscr,row,col);
 
-	main_h = row;
-	side_h = row;
+	main_win_h = row;
+	side_win_h = row;
 
-	main_w = col/10 * 7; /* 70% for main */
-	side_w = col/10 * 3; /* 30% for side */
+	main_win_w = ceil(col/10.0) * 7-1; /* 70% for main. round up to fit nicely */
+	side_win_w = ceil(col/10.0) * 3; /* 30% for side. round up to fit nicely */
 
 	mvprintw(row/2,(col-strlen("q to quit.\n"))/2,"q to quit.\n");
 	refresh();
 
-	main_win = 
+	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
+	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
+
 
 	while ((c = getch()) != 'q') {
 		c = getch();
@@ -55,34 +62,20 @@ WINDOW
 {
 	WINDOW *local_win;
 
-	local_win = newwin(height, width, starty, startx);
-	box(local_win, 0 , 0);		/* 0, 0 gives default characters 
-					 * for the vertical and horizontal
-					 * lines			*/
-	wrefresh(local_win);		/* Show that box 		*/
+	local_win = newwin(height, width, start_y, start_x);
 
+	/* use default caracters for borders */
+	box(local_win, 0 , 0);
+	wrefresh(local_win);
+	
 	return local_win;
 }
 
 void
 delete_win(WINDOW *local_win)
 {	
-	/* box(local_win, ' ', ' '); : This won't produce the desired
-	 * result of erasing the window. It will leave it's four corners 
-	 * and so an ugly remnant of window. 
-	 */
+	/* draws a blank border to erase the old one */
 	wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-	/* The parameters taken are 
-	 * 1. win: the window on which to operate
-	 * 2. ls: character to be used for the left side of the window 
-	 * 3. rs: character to be used for the right side of the window 
-	 * 4. ts: character to be used for the top side of the window 
-	 * 5. bs: character to be used for the bottom side of the window 
-	 * 6. tl: character to be used for the top left corner of the window 
-	 * 7. tr: character to be used for the top right corner of the window 
-	 * 8. bl: character to be used for the bottom left corner of the window 
-	 * 9. br: character to be used for the bottom right corner of the window
-	 */
 	wrefresh(local_win);
 	delwin(local_win);
 }

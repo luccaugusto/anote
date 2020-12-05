@@ -7,3 +7,4 @@ Implement master slave layout with tag passed on the command line being the init
 Tab to change the selected tag window
 enter to make selected window master
 vim bindings
+Implement colors: show more prioritary notes in red, mid priority notes in orange, other notes in white

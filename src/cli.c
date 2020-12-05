@@ -4,6 +4,9 @@
 #include <stdio.h>
 
 #include "cli.h"
+#include "list.h"
+#include "note.h"
+#include "tag.h"
 
 /* FUNCTION PROTOTYPES */
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
@@ -40,19 +43,16 @@ start_anote_cli(void)
 	main_win_w = ceil(col/10.0) * 7-1; /* 70% for main. round up to fit nicely */
 	side_win_w = ceil(col/10.0) * 3; /* 30% for side. round up to fit nicely */
 
-	mvprintw(row/2,(col-strlen("q to quit.\n"))/2,"q to quit.\n");
-	refresh();
-
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 
+	mvwprintw(main_win, row-1, 2,"q to quit.\n");
+	mvwprintw(side_win, row-1, 2,"q to quit.\n");
 
+	print_all_notes(main_win);
 	while ((c = getch()) != 'q') {
 		c = getch();
 	}
-	printw("Bye\n");
-	refresh();
-	getch();
 
 	endwin(); /* end curses */
 }
@@ -78,4 +78,28 @@ delete_win(WINDOW *local_win)
 	wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
 	wrefresh(local_win);
 	delwin(local_win);
+}
+
+void
+show_win(WINDOW *window)
+{
+	box(window, 0, 0);
+	wrefresh(window);
+}
+
+void
+print_all_notes(WINDOW *window)
+{
+	struct d_list *i;
+	struct d_list *j;
+	struct note *n;
+	struct tag *t;
+
+	for (i = tags_list; i->next != NULL; i = i->next) {
+		t = i->obj;
+		for (j = t->notes; j->next != NULL; j = j->next) {
+			n = j->obj;
+			wprintw(window, "%s\n", n->text);
+		}
+	}
 }

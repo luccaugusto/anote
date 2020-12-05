@@ -14,7 +14,7 @@ init_list(void)
 }
 
 void
-d_list_add(void *obj, struct d_list *list)
+d_list_add(void *obj, struct d_list *list, size_t obj_size)
 {
 	struct d_list *i;
 	if (list != NULL) {
@@ -22,8 +22,11 @@ d_list_add(void *obj, struct d_list *list)
 		for (i=list; i->next != NULL; i=i->next);
 
 		i->next = (struct d_list *) malloc(sizeof(struct d_list));
-		i->next->obj = obj;
 		i->next->next = NULL;
+
+		/* copy obj byte per byte */
+		for (int j=0; j < obj_size; ++j)
+			*(char *)(i->next->obj + j) = *(char *) (obj +j);
 	}
 }
 
@@ -84,7 +87,7 @@ test_d_list_add(void)
 	struct d_list *i = n_list;
 
 	for (int j=0; j < 10; ++j) {
-		d_list_add(new_note("test"), n_list);
+		d_list_add(new_note("test"), n_list, sizeof(new_note("test")));
 		i = i->next;
 		assert(i != NULL);
 		assert(i->obj != NULL);
@@ -103,7 +106,7 @@ test_d_list_del(void)
 	int expected_size = 0;
 
 	for (int j=0; j<10; ++j, i=i->next, ++expected_size) {
-		d_list_add(new_note("test"), n_list);
+		d_list_add(new_note("test"), n_list, sizeof(new_note("test")));
 		assert(i->next != NULL);
 		assert(i->next->obj != NULL);
 	}

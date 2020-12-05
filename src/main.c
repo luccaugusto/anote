@@ -10,7 +10,6 @@
 #include "list.h"
 #include "note.h"
 #include "tag.h"
-
 #define ENOTSUP 1
 
 struct d_list *tags_list;
@@ -67,12 +66,16 @@ main(int argc, char *argv[])
 
 	switch (command) {
 		case 'a':
-			tag_add(note, tags_list, tag);
+			tag_add_note(note, tags_list, tag);
 			break;
 		case 'i':/* import file */
 			return -ENOTSUP;
 	}
 
+	d_list_add(new_tag("general"), tags_list, sizeof(struct tag));
+
+	for (int i=0; i < 10; ++i)
+		tag_add_note(new_note("teste"), tags_list , "general");
 
 	if (interactive)
 		start_anote_cli();

@@ -18,7 +18,7 @@ new_tag(char *name)
 }
 
 void
-tag_add(struct note *note, struct d_list *tags_list, char *tag_name)
+tag_add_note(struct note *note, struct d_list *tags_list, char *tag_name)
 {
 	struct d_list *i;
 	struct tag *t;
@@ -30,15 +30,16 @@ tag_add(struct note *note, struct d_list *tags_list, char *tag_name)
 			break;
 	}
 
+
 	/* tag not found, create a new one */
 	if (strcmp(tag_name, t->name) != 0) {
 
 		t = new_tag(tag_name);
-		d_list_add(t, tags_list);
+		d_list_add(t, tags_list, sizeof(*t));
 
 	}
 
-	d_list_add(note, t->notes);
+	d_list_add(note, t->notes, sizeof(*note));
 	t->notes_number++;
 }
 
@@ -73,7 +74,7 @@ tag_edit(struct note *n, struct tag *n_tag, struct tag *cur_tag)
 	i->next = aux->next;
 
 	/* add n to n_tag */
-	d_list_add(n, n_tag->notes);
+	d_list_add(n, n_tag->notes, sizeof(*n));
 }
 
 void
@@ -83,7 +84,7 @@ test_tag_note_list_add(void)
 	struct d_list *i = t->notes;
 
 	for (int j=0; j < 10; ++j) {
-		d_list_add(new_note("test note"), t->notes);
+		d_list_add(new_note("test note"), t->notes, sizeof(struct note));
 		i = i->next;
 		assert(i != NULL);
 		assert(i->obj != NULL);
@@ -103,7 +104,7 @@ test_tag_note_list_del(void)
 	int expected_size = 0;
 
 	for (int j=0; j<10; ++j, i=i->next, ++expected_size) {
-		d_list_add(new_note("test"), t->notes);
+		d_list_add(new_note("test"), t->notes, sizeof(struct note));
 		assert(i->next != NULL);
 		assert(i->next->obj != NULL);
 	}
@@ -137,7 +138,7 @@ test_tag_note_list_edit()
 	int expected_size = 10;
 
 	for (int j=0; j < expected_size; ++j) {
-		d_list_add(new_note("test note"), t->notes);
+		d_list_add(new_note("test note"), t->notes, sizeof(struct note));
 		i = i->next;
 		assert(i != NULL);
 		assert(i->obj != NULL);

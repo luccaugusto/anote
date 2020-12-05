@@ -8,8 +8,8 @@
 
 #include "cli.h"
 #include "list.h"
-#include "notes.h"
-#include "tags.h"
+#include "note.h"
+#include "tag.h"
 
 #define ENOTSUP 1
 

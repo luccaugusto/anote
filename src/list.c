@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "notes.h"
 #include "list.h"
 
 /* FUNCTION DEFINITIONS */

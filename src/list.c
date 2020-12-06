@@ -1,34 +1,29 @@
 /* HEADERS */
-#include <assert.h>
 #include <stdlib.h>
 
 #include "list.h"
 
 /* FUNCTION DEFINITIONS */
 struct d_list *
-init_list(void)
+new_list_node(void)
 {
 	struct d_list *list = (struct d_list *) malloc(sizeof(struct d_list));
+	list->obj = NULL;
 	list->next = NULL;
-	return list;
 }
 
 void
-d_list_add(void *obj, struct d_list *list, size_t obj_size)
+d_list_add(void *obj, struct d_list **list, size_t obj_size)
 {
 	struct d_list *i;
-	if (list != NULL) {
+	for (i=*list; i->obj; i = i->next);
 
-		for (i=list; i->next != NULL; i=i->next);
+	i->next = new_list_node();
+	i->obj = malloc(obj_size);
 
-		i->next = (struct d_list *) malloc(sizeof(struct d_list));
-		i->next->next = NULL;
-
-		/* copy obj byte per byte */
-		for (int j=0; j < obj_size; ++j)
-			*(char *)(i->next->obj + j) = *(char *) (obj +j);
-	}
+	memcpy(i->obj, obj, obj_size);
 }
+
 
 void
 del_pos(int pos, struct d_list *list)
@@ -78,49 +73,4 @@ delete_list(struct d_list *list)
 
 	free(list->next);
 	free(list);
-}
-
-void
-test_d_list_add(void)
-{
-	struct d_list *n_list = init_list();
-	struct d_list *i = n_list;
-
-	for (int j=0; j < 10; ++j) {
-		d_list_add(new_note("test"), n_list, sizeof(new_note("test")));
-		i = i->next;
-		assert(i != NULL);
-		assert(i->obj != NULL);
-	}
-
-	delete_list(n_list);
-}
-
-void
-test_d_list_del(void)
-{
-	struct d_list *n_list = init_list();
-	struct d_list *i = n_list;
-	struct d_list *aux;
-	int real_size;
-	int expected_size = 0;
-
-	for (int j=0; j<10; ++j, i=i->next, ++expected_size) {
-		d_list_add(new_note("test"), n_list, sizeof(new_note("test")));
-		assert(i->next != NULL);
-		assert(i->next->obj != NULL);
-	}
-
-
-	while (n_list->next != NULL) {
-		real_size = 0;
-		del_obj(n_list->next, n_list);
-
-		/* count number of objects */
-		for (aux=n_list; aux->next != NULL; aux=aux->next, ++real_size);
-
-		assert(real_size == --expected_size);
-	}
-
-	delete_list(n_list);
 }

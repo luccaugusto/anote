@@ -52,6 +52,8 @@ start_anote_cli(void)
 	print_all_notes(main_win);
 	while ((c = getch()) != 'q') {
 		c = getch();
+		wrefresh(main_win);
+		wrefresh(side_win);
 	}
 
 	endwin(); /* end curses */
@@ -67,13 +69,13 @@ WINDOW
 	/* use default caracters for borders */
 	box(local_win, 0 , 0);
 	wrefresh(local_win);
-	
+
 	return local_win;
 }
 
 void
 delete_win(WINDOW *local_win)
-{	
+{
 	/* draws a blank border to erase the old one */
 	wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
 	wrefresh(local_win);
@@ -95,11 +97,12 @@ print_all_notes(WINDOW *window)
 	struct note *n;
 	struct tag *t;
 
-	for (i = tags_list; i->next != NULL; i = i->next) {
+	for (i = global_tag_list; i->next != NULL; i = i->next) {
 		t = i->obj;
 		for (j = t->notes; j->next != NULL; j = j->next) {
 			n = j->obj;
 			wprintw(window, "%s\n", n->text);
+			wrefresh(window);
 		}
 	}
 }

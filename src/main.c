@@ -12,7 +12,7 @@
 #include "tag.h"
 #define ENOTSUP 1
 
-struct d_list *tags_list;
+struct d_list *global_tag_list;
 FILE *notes_file;
 char *notes_file_name;
 
@@ -32,7 +32,7 @@ main(int argc, char *argv[])
 	char *tag = "general"; /* default tag */
 	int interactive = 1;
 
-	tags_list = init_list();
+	global_tag_list = new_list_node();
 
 	while ((c = getopt(argc,argv,"i:a:t:")) != -1) {
 		switch (c) {
@@ -66,25 +66,34 @@ main(int argc, char *argv[])
 
 	switch (command) {
 		case 'a':
-			tag_add_note(note, tags_list, tag);
+			tag_add_note(note, &global_tag_list, tag);
 			break;
 		case 'i':/* import file */
 			return -ENOTSUP;
 	}
 
-	d_list_add(new_tag("general"), tags_list, sizeof(struct tag));
 
-	for (int i=0; i < 10; ++i)
-		tag_add_note(new_note("teste"), tags_list , "general");
+	struct tag *t = new_tag("general");
+	struct tag *t1 = new_tag("music");
+
+	d_list_add(t, &global_tag_list, sizeof(struct tag));
+	d_list_add(t1, &global_tag_list, sizeof(struct tag));
+
+	struct note *n;
+	for (int i=0; i < 10; ++i) {
+		tag_add_note(new_note("teste"), &global_tag_list, "t");
+	}
 
 	if (interactive)
 		start_anote_cli();
 
+	/*
 	test_d_list_add();
 	test_d_list_del();
 	test_tag_note_list_add();
 	test_tag_note_list_del();
 	test_tag_note_list_edit();
+	*/
 
 	return 0;
 }

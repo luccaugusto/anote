@@ -79,21 +79,13 @@ main(int argc, char *argv[])
 	d_list_add(t, &global_tag_list, sizeof(struct tag));
 	d_list_add(t1, &global_tag_list, sizeof(struct tag));
 
-	struct note *n;
+	Note n;
 	for (int i=0; i < 10; ++i) {
 		tag_add_note(new_note("teste"), &global_tag_list, "general");
 	}
 
 	if (interactive)
 		start_anote_cli();
-
-	/*
-	test_d_list_add();
-	test_d_list_del();
-	test_tag_note_list_add();
-	test_tag_note_list_del();
-	test_tag_note_list_edit();
-	*/
 
 	return 0;
 }

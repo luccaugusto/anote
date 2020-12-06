@@ -18,5 +18,5 @@ struct d_list *tag_get_notes(struct tag *t);
 /* ENDTODO */
 
 void tag_del(struct tag *t, struct d_list **list);
-void ch_note_tag(struct note *n, struct tag *n_tag, struct tag *cur_tag);
-void tag_add_note(struct note *note, struct d_list **tags_list, char *tag);
+void ch_note_tag(Note n, struct tag *n_tag, struct tag *cur_tag);
+void tag_add_note(Note note, struct d_list **tags_list, char *tag);

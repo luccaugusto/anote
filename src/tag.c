@@ -45,7 +45,7 @@ tag_get(char *name)
 }
 
 void
-tag_add_note(struct note *note, struct d_list **list, char *tag_name)
+tag_add_note(Note note, struct d_list **list, char *tag_name)
 {
 	struct d_list *i;
 	struct tag *t;
@@ -70,7 +70,7 @@ tag_add_note(struct note *note, struct d_list **list, char *tag_name)
 		//d_list_add(&t, &list);
 	}
 
-	d_list_add(note, &t->notes, sizeof(struct note));
+	d_list_add(note, &t->notes, note_get_size());
 	//d_list_add(&note, &t.notes);
 	t->notes_number++;
 }
@@ -99,7 +99,7 @@ tag_del(struct tag *t, struct d_list **list)
 
 /* changes note n from tag cur_tag to tag n_tag */
 void
-ch_note_tag(struct note *n, struct tag *n_tag, struct tag *cur_tag)
+ch_note_tag(Note n, struct tag *n_tag, struct tag *cur_tag)
 {
 	struct d_list *i;
 	struct d_list *aux;
@@ -111,5 +111,5 @@ ch_note_tag(struct note *n, struct tag *n_tag, struct tag *cur_tag)
 	i->next = (aux) ? aux->next : NULL;
 
 	/* add n to n_tag */
-	d_list_add(&n, &n_tag->notes, sizeof(*n));
+	d_list_add(&n, &n_tag->notes, note_get_size());
 }

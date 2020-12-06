@@ -55,12 +55,11 @@ start_anote_cli(void)
 	print_tag_list(side_win);
 	show_cmd(footer);
 
-	while ((c = getch()) != 'q') {
-		c = getch();
+	do {
 		show_win(main_win);
 		show_win(side_win);
 		show_win(footer);
-	}
+	} while ((c = getch()) != 'q');
 
 	endwin(); /* end curses */
 }
@@ -100,13 +99,13 @@ print_tag_notes(WINDOW *window, struct tag *t)
 {
 	struct d_list *i;
 	struct d_list *j;
-	struct note *n;
+	Note n;
 	int x_offset = 1;
 	int y_offset = 1;
 
 	for (j = t->notes; j->next != NULL; j = j->next) {
 		n = j->obj;
-		mvwprintw(window, y_offset++, x_offset, "%s\n", n->text);
+		mvwprintw(window, y_offset++, x_offset, "%s\n", note_get_text(n));
 	}
 }
 

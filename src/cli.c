@@ -49,9 +49,9 @@ start_anote_cli(void)
 	mvwprintw(main_win, row-1, 2,"q to quit.\n");
 	mvwprintw(side_win, row-1, 2,"q to quit.\n");
 
-	print_all_notes(main_win);
 	while ((c = getch()) != 'q') {
 		c = getch();
+		print_all_notes(main_win);
 		wrefresh(main_win);
 		wrefresh(side_win);
 	}
@@ -96,6 +96,7 @@ print_all_notes(WINDOW *window)
 	struct d_list *j;
 	struct note *n;
 	struct tag *t;
+	mvwprintw(window, 2, 2, "");
 
 	for (i = global_tag_list; i->next != NULL; i = i->next) {
 		t = i->obj;

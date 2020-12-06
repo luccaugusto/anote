@@ -81,7 +81,7 @@ main(int argc, char *argv[])
 
 	struct note *n;
 	for (int i=0; i < 10; ++i) {
-		tag_add_note(new_note("teste"), &global_tag_list, "t");
+		tag_add_note(new_note("teste"), &global_tag_list, "general");
 	}
 
 	if (interactive)

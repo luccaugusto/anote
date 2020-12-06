@@ -19,10 +19,13 @@ extern char *notes_file_name;
 
 WINDOW *main_win;
 WINDOW *side_win;
+WINDOW *footer;
 int main_win_h;
 int main_win_w;
 int side_win_h;
 int side_win_w;
+int footer_h;
+int footer_w;
 
 void
 start_anote_cli(void)
@@ -37,23 +40,26 @@ start_anote_cli(void)
 
 	getmaxyx(stdscr,row,col);
 
-	main_win_h = row;
-	side_win_h = row;
+	footer_h = 4;
+	main_win_h = row - footer_h;
+	side_win_h = row - footer_h;
 
 	main_win_w = ceil(col/10.0) * 7-1; /* 70% for main. round up to fit nicely */
 	side_win_w = ceil(col/10.0) * 3; /* 30% for side. round up to fit nicely */
 
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
+	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
 
-	mvwprintw(main_win, row-1, 2,"q to quit.\n");
-	mvwprintw(side_win, row-1, 2,"q to quit.\n");
+	print_tag_notes(main_win, tag_get("general"));
+	print_tag_list(side_win);
+	show_cmd(footer);
 
 	while ((c = getch()) != 'q') {
 		c = getch();
-		print_all_notes(main_win);
-		wrefresh(main_win);
-		wrefresh(side_win);
+		show_win(main_win);
+		show_win(side_win);
+		show_win(footer);
 	}
 
 	endwin(); /* end curses */
@@ -90,20 +96,36 @@ show_win(WINDOW *window)
 }
 
 void
-print_all_notes(WINDOW *window)
+print_tag_notes(WINDOW *window, struct tag *t)
 {
 	struct d_list *i;
 	struct d_list *j;
 	struct note *n;
-	struct tag *t;
-	mvwprintw(window, 2, 2, "");
+	int x_offset = 1;
+	int y_offset = 1;
 
-	for (i = global_tag_list; i->next != NULL; i = i->next) {
-		t = i->obj;
-		for (j = t->notes; j->next != NULL; j = j->next) {
-			n = j->obj;
-			wprintw(window, "%s\n", n->text);
-			wrefresh(window);
-		}
+	for (j = t->notes; j->next != NULL; j = j->next) {
+		n = j->obj;
+		mvwprintw(window, y_offset++, x_offset, "%s\n", n->text);
 	}
+}
+
+void
+print_tag_list(WINDOW *window)
+{
+	struct tag *t;
+	struct d_list *i;
+	int x_offset = 1;
+	int y_offset = 1;
+
+	for(i = global_tag_list; i->next; i=i->next) {
+		t = i->obj;
+		mvwprintw(window, y_offset++, x_offset, "%s\n", t->name);
+	}
+}
+
+void
+show_cmd(WINDOW *window)
+{
+	mvwprintw(window, 1, 1, "q: save & quit");
 }

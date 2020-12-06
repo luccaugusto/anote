@@ -29,7 +29,7 @@ Currently under development.
 
 ### Data
 + Implement read/write notes files.
-Change shell script output format to suit the CLI application as well.
++ Change shell script output format to suit the CLI application as well.
 
 ### CLI
 + Implement master slave layout with tag passed on the command line being the inital master and other tags shown on the right side, with a preview of the notes it contains.

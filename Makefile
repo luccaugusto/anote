@@ -9,7 +9,10 @@ LIBS=-lpanel -lncurses -lm
 RM=rm -rf
 #flags
 CFLAGS= -c -w -Wall
-
+#GDB DEBUG ENABLED
+DEBUG=-g
+#GDB DEBUG DISABLED
+#DEBUG=
 
 C_SRC=${wildcard ./src/*.c}
 H_SRC=${wildcard ./src/*.h}
@@ -26,13 +29,13 @@ options:
 
 ${PROJ_NAME}: ${OBJ}
 	@ echo "building binary using ${CC} linker: $@"
-	${CC} $^ -o $@ ${LIBS}
+	${CC} $^ -o $@ ${LIBS} ${DEBUG}
 	@ echo 'finished building binary'
 	@ echo ' '
 
 ./build/%.o: ./src/%.c ./src/%.h
 	@ echo "Building target using ${CC} compiler: $<"
-	${CC} $< ${CFLAGS} -o $@ 
+	${CC} $< ${CFLAGS} ${DEBUG} -o $@
 	@ echo ' '
 
 ./build/main.o: ./src/main.c ${H_SRC}

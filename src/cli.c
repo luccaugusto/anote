@@ -3,19 +3,33 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "cli.h"
 #include "list.h"
 #include "note.h"
 #include "tag.h"
+#include "cli.h"
 
 /* FUNCTION PROTOTYPES */
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
+void init_cli(void);
+void organize_window_space(void);
+void load_displayed_tag(char *tag_name);
+
 void delete_win(WINDOW *local_win);
+void show_win(WINDOW *window);
+void print_tag_notes(WINDOW *window, Tag t);
+void build_tag_panels(WINDOW *window);
+void show_cmd(WINDOW *window);
+void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string/*, chtype color*/);
 
 /* GLOBAL VARIABLES */
-extern struct d_list *tags_list;
+extern struct d_list *global_tag_list;
 extern FILE *notes_file;
 extern char *notes_file_name;
+
+Tag displayed_tag;
+struct d_list *d_tag_notes;
+int d_tag_n_number;
+char *d_tag_name;
 
 WINDOW *main_win;
 WINDOW *side_win;
@@ -26,33 +40,67 @@ int side_win_h;
 int side_win_w;
 int footer_h;
 int footer_w;
+int max_row;
+int max_col;
+
+void
+init_cli(void)
+{
+	initscr();            /* start ncurses                   */
+	/*start_color();*/    /* colors not yet supported        */
+	raw();                /* Line buffering disabled	     */
+	keypad(stdscr, TRUE); /* Enables function and arrow keys */
+	noecho();             /* Don't echo() while we do getch  */
+}
+
+/* creates main, side and footer windows
+ * and calculate their sizes
+ */
+void
+organize_window_space(void)
+{
+	getmaxyx(stdscr,max_row,max_col);
+
+	footer_h = 4;
+	main_win_h = max_row - footer_h;
+	side_win_h = max_row - footer_h;
+
+	footer_w = max_col;
+	main_win_w = ceil(max_col/10.0) * 7-1; /* 70% for main. round up to fit nicely */
+	side_win_w = ceil(max_col/10.0) * 3; /* 30% for side. round up to fit nicely */
+}
+
+void
+load_displayed_tag(char *tag_name)
+{
+	displayed_tag = tag_get(tag_name);
+	d_tag_n_number = tag_get_n_number(displayed_tag);
+	d_tag_name = tag_get_name(displayed_tag);
+	d_tag_notes = tag_get_notes(displayed_tag);
+}
 
 void
 start_anote_cli(void)
 {
 	int c;
-	int row,col;
+	char *label;
 
-	initscr();            /* start ncurses                   */
-	raw();                /* Line buffering disabled	     */
-	keypad(stdscr, TRUE); /* Enables function and arrow keys */
-	noecho();             /* Don't echo() while we do getch  */
+	init_cli();
+	organize_window_space();
 
-	getmaxyx(stdscr,row,col);
-
-	footer_h = 4;
-	main_win_h = row - footer_h;
-	side_win_h = row - footer_h;
-
-	main_win_w = ceil(col/10.0) * 7-1; /* 70% for main. round up to fit nicely */
-	side_win_w = ceil(col/10.0) * 3; /* 30% for side. round up to fit nicely */
+	/* show general notes on main window as default */
+	load_displayed_tag("general");
 
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
 
-	print_tag_notes(main_win, tag_get("general"));
-	print_tag_list(side_win);
+	sprintf(label,"%s Notes", tag_get_name(displayed_tag));
+	draw_headers(main_win, main_win_h, main_win_w, label);
+	draw_headers(side_win, side_win_h, side_win_w, "Other Notes");
+
+	display_tag_notes(main_win);
+	build_tag_panels(side_win);
 	show_cmd(footer);
 
 	do {
@@ -87,39 +135,48 @@ delete_win(WINDOW *local_win)
 	delwin(local_win);
 }
 
-void
-show_win(WINDOW *window)
+void /* colors not yet supported */
+show_win(WINDOW *window/*, chtype color */)
 {
 	box(window, 0, 0);
 	wrefresh(window);
 }
 
+void /* colors not yet supported */
+draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */)
+{
+	mvwaddch(window, 2, 0, ACS_LTEE);
+	mvwhline(window, 2, 1, ACS_HLINE, width - 2);
+	mvwaddch(window, 2, width - 1, ACS_RTEE);
+	print_align_center(window, 1, 0, width, label/*, COLOR_PAIR(label_color)*/);
+}
+
 void
-print_tag_notes(WINDOW *window, struct tag *t)
+display_tag_notes(WINDOW *window)
 {
 	struct d_list *i;
-	struct d_list *j;
 	Note n;
 	int x_offset = 1;
-	int y_offset = 1;
+	int y_offset = 4;
 
-	for (j = t->notes; j->next != NULL; j = j->next) {
-		n = j->obj;
+	i = d_tag_notes;
+	for (; i->next; i = i->next) {
+		n = i->obj;
 		mvwprintw(window, y_offset++, x_offset, "%s\n", note_get_text(n));
 	}
 }
 
 void
-print_tag_list(WINDOW *window)
+build_tag_panels(WINDOW *window)
 {
-	struct tag *t;
+	Tag t;
 	struct d_list *i;
 	int x_offset = 1;
 	int y_offset = 1;
 
 	for(i = global_tag_list; i->next; i=i->next) {
 		t = i->obj;
-		mvwprintw(window, y_offset++, x_offset, "%s\n", t->name);
+		box(window, 0, 0);
 	}
 }
 
@@ -128,3 +185,26 @@ show_cmd(WINDOW *window)
 {
 	mvwprintw(window, 1, 1, "q: save & quit");
 }
+
+void /* colors not yet supported */
+print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string/*, chtype color*/)
+{
+	int length, x, y;
+
+	win = (win == NULL) ? stdscr : win;
+
+	getyx(win, y, x);
+
+	x = (start_x == 0) ? x : start_x;
+	y = (start_y == 0) ? y : start_y;
+
+	width = (width == 0) ? DEFAULT_WIDTH : width;
+
+	length = strlen(string);
+	x = start_x + (width - length) / 2;
+	/*wattron(win, color);*/ /* colors not yet supported */
+	mvwprintw(win, y, x, "%s", string);
+	/*wattroff(win, color);*/ /* colors not yet supported */
+	refresh();
+}
+

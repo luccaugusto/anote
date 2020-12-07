@@ -73,11 +73,11 @@ main(int argc, char *argv[])
 	}
 
 
-	struct tag *t = new_tag("general");
-	struct tag *t1 = new_tag("music");
+	Tag t = new_tag("general");
+	Tag t1 = new_tag("music");
 
-	d_list_add(t, &global_tag_list, sizeof(struct tag));
-	d_list_add(t1, &global_tag_list, sizeof(struct tag));
+	d_list_add(t, &global_tag_list, tag_get_size());
+	d_list_add(t1, &global_tag_list, tag_get_size());
 
 	Note n;
 	for (int i=0; i < 10; ++i) {

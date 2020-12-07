@@ -3,6 +3,7 @@
 /* TYPES */
 struct note {
 	int priority; /* 0:max priority */
+	int completed;
 	char *text;
 };
 
@@ -13,20 +14,28 @@ new_note(char *text)
 	Note n_note = malloc(sizeof(Note));
 	n_note->text = text;
 	n_note->priority = 0;
+	n_note->completed = 0;
 
 	return n_note;
 }
 
+
 void
-edit_note_text(char *n_text, Note n)
+note_set_priority(int n_pri, Note n)
 {
-	strcpy(n->text, n_text);
+	n->priority = n_pri;
 }
 
 void
-edit_note_pri(int n_pri, Note n)
+note_set_completed(int c, Note n)
 {
-	n->priority = n_pri;
+	n->completed = c;
+}
+
+void
+note_set_text(char *n_text, Note n)
+{
+	strcpy(n->text, n_text);
 }
 
 char *
@@ -45,4 +54,10 @@ int
 note_get_size(void)
 {
 	return sizeof(struct note);
+}
+
+int
+note_get_completed(Note n)
+{
+	return n->completed;
 }

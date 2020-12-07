@@ -156,13 +156,16 @@ display_tag_notes(WINDOW *window)
 {
 	struct d_list *i;
 	Note n;
+	char *display_text;
 	int x_offset = 1;
-	int y_offset = 4;
+	int y_offset = HEADER_HEIGHT;
 
 	i = d_tag_notes;
 	for (; i->next; i = i->next) {
 		n = i->obj;
-		mvwprintw(window, y_offset++, x_offset, "%s\n", note_get_text(n));
+		display_text = malloc(strlen(note_get_text(n)) + 10);
+		sprintf(display_text, "%d. %s [%c]\n", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? 'V' : '-');
+		mvwprintw(window, y_offset++, x_offset, display_text);
 	}
 }
 
@@ -172,11 +175,12 @@ build_tag_panels(WINDOW *window)
 	Tag t;
 	struct d_list *i;
 	int x_offset = 1;
-	int y_offset = 1;
+	int y_offset = HEADER_HEIGHT;
 
 	for(i = global_tag_list; i->next; i=i->next) {
 		t = i->obj;
-		box(window, 0, 0);
+		if (tag_get_name(t) != d_tag_name)
+			mvwprintw(window, y_offset++, x_offset, "%s\n", tag_get_name(t));
 	}
 }
 

@@ -82,6 +82,7 @@ main(int argc, char *argv[])
 	Note n;
 	for (int i=0; i < 10; ++i) {
 		tag_add_note(new_note("teste"), &global_tag_list, "general");
+		tag_add_note(new_note("teste music"), &global_tag_list, "music");
 	}
 
 	if (interactive)

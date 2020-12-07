@@ -4,6 +4,16 @@
 #include "list.h"
 
 /* FUNCTION DEFINITIONS */
+int
+d_list_length(struct d_list *list)
+{
+	int l;
+	struct d_list *i;
+	for (i=list; i->next; i = i->next)
+		++l;
+	return l;
+}
+
 struct d_list *
 new_list_node(void)
 {
@@ -23,7 +33,6 @@ d_list_add(void *obj, struct d_list **list, size_t obj_size)
 
 	memcpy(i->obj, obj, obj_size);
 }
-
 
 void
 del_pos(int pos, struct d_list *list)

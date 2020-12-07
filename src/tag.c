@@ -119,14 +119,16 @@ ch_note_tag(Note n, struct tag *n_tag, struct tag *cur_tag)
 	d_list_add(&n, &n_tag->notes, note_get_size());
 }
 
-void
-tag_add_note(Note note, struct d_list **list, char *tag_name)
+void /* adds a note to the tag ordered by priority */
+tag_add_note(Note note, char *tag_name)
 {
+	struct d_list *ref;
 	struct d_list *i;
 	struct tag *t;
+	int n_pri;
 
 	/* find tag on the list */
-	i = *list;
+	i = global_tag_list;
 	while (i->next) {
 
 		if (i->obj) {
@@ -141,9 +143,20 @@ tag_add_note(Note note, struct d_list **list, char *tag_name)
 	/* tag not found, create a new one */
 	if (i->obj == NULL || strcmp(tag_name, t->name) != 0) {
 		t = new_tag(tag_name);
-		d_list_add(t, list, sizeof(struct tag));
+		d_list_add(t, &global_tag_list, sizeof(struct tag));
 	}
 
-	d_list_add(note, &t->notes, note_get_size());
+	/* keep notes ordered by priotiry */
+	n_pri = note_get_priority(note);
+	ref = t->notes;
+
+	/* ref is the first note with lower priority */
+	while (ref->next) {
+		if (!(ref->obj && n_pri >= note_get_priority(ref->obj)))
+				break;
+		ref = ref->next;
+	}
+
+	d_list_add_before(note, ref, &t->notes, note_get_size());
 	t->notes_number++;
 }

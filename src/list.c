@@ -34,8 +34,56 @@ d_list_add(void *obj, struct d_list **list, size_t obj_size)
 	memcpy(i->obj, obj, obj_size);
 }
 
+void /* adds obj before ref, if ref not found, adds to end of the list*/
+d_list_add_before(void *obj, struct d_list *ref, struct d_list **list, size_t obj_size)
+{
+	struct d_list *i;
+	struct d_list *aux;
+
+
+	/* has to add new head */
+	if (ref == *list) {
+
+		(*list) = new_list_node();
+		(*list)->next = ref;
+		(*list)->obj = malloc(obj_size);
+		memcpy((*list)->obj, obj, obj_size);
+
+	} else {
+
+		/* finds the reference */
+		i = *list;
+		while (i->next && i->next != ref)
+			i = i->next;
+
+		aux = i->next;
+		i->next = new_list_node();
+		i->next->next = aux;
+		i->next->obj = malloc(obj_size);
+		memcpy(i->next->obj, obj, obj_size);
+	}
+}
+
+void /* adds last object and points it to the head to make a circular list */
+d_list_add_circular(void *obj, struct d_list **list, size_t obj_size)
+{
+	struct d_list *i;
+	struct d_list *head;
+	struct d_list *aux;
+
+	i = *list;
+	head = i;
+	for (; i->next != head; i = i->next);
+
+	i->next = new_list_node();
+	i->obj = malloc(obj_size);
+	i->next->next = head;
+
+	memcpy(i->obj, obj, obj_size);
+}
+
 void
-del_pos(int pos, struct d_list *list)
+d_list_del_pos(int pos, struct d_list *list)
 {
 	int i;
 	struct d_list *j;
@@ -54,7 +102,7 @@ del_pos(int pos, struct d_list *list)
 }
 
 void
-del_obj(void *obj, struct d_list *list)
+d_list_del_obj(void *obj, struct d_list *list)
 {
 	struct d_list *i;
 	struct d_list *aux;
@@ -78,7 +126,7 @@ delete_list(struct d_list *list)
 {
 	/* delete all objects */
 	while (list->next != NULL)
-		del_obj(list->next,list);
+		d_list_del_obj(list->next,list);
 
 	free(list->next);
 	free(list);

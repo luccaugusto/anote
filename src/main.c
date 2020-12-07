@@ -29,7 +29,7 @@ main(int argc, char *argv[])
 	char c;
 	char command;
 	char *note;
-	char *tag = "general"; /* default tag */
+	char *tag_name = "general"; /* default tag */
 	int interactive = 1;
 
 	global_tag_list = new_list_node();
@@ -47,7 +47,7 @@ main(int argc, char *argv[])
 				interactive = 0;
 				break;
 			case 't': /* specify tag */
-				tag = optarg;
+				tag_name = optarg;
 				break;
 			case '?':
 				if (optopt == 'i')
@@ -66,7 +66,7 @@ main(int argc, char *argv[])
 
 	switch (command) {
 		case 'a':
-			tag_add_note(note, &global_tag_list, tag);
+			tag_add_note(note, tag_name);
 			break;
 		case 'i':/* import file */
 			return -ENOTSUP;
@@ -81,8 +81,10 @@ main(int argc, char *argv[])
 
 	Note n;
 	for (int i=0; i < 10; ++i) {
-		tag_add_note(new_note("teste"), &global_tag_list, "general");
-		tag_add_note(new_note("teste music"), &global_tag_list, "music");
+		n = new_note("teste");
+		note_set_priority(i, n);
+		tag_add_note(n, "general");
+		tag_add_note(new_note("teste music"), "music");
 	}
 
 	if (interactive)

@@ -32,6 +32,7 @@ Currently under development.
 + Change shell script output format to suit the CLI application as well.
 
 ### CLI
++ Different modes to show displayed notes: only text, priority + text, completed + text, priority + completed + text
 + Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about)
 + Implement master slave layout with tag passed on the command line being the inital master and other tags shown on the right side, with a preview of the notes it contains.
 + Tab to change the selected tag window

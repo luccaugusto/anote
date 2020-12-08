@@ -20,6 +20,16 @@ new_list_node(void)
 	struct d_list *list = (struct d_list *) malloc(sizeof(struct d_list));
 	list->obj = NULL;
 	list->next = NULL;
+	return list;
+}
+
+struct d_list *
+new_list_node_circ(void)
+{
+	struct d_list *list = (struct d_list *) malloc(sizeof(struct d_list));
+	list->obj = NULL;
+	list->next = list;
+	return list;
 }
 
 void
@@ -65,19 +75,17 @@ d_list_add_before(void *obj, struct d_list *ref, struct d_list **list, size_t ob
 }
 
 void /* adds last object and points it to the head to make a circular list */
-d_list_add_circular(void *obj, struct d_list **list, size_t obj_size)
+d_list_add_circ(void *obj, struct d_list **list, size_t obj_size)
 {
 	struct d_list *i;
-	struct d_list *head;
 	struct d_list *aux;
 
 	i = *list;
-	head = i;
-	for (; i->next != head; i = i->next);
+	for (; i->next != *list; i = i->next);
 
 	i->next = new_list_node();
 	i->obj = malloc(obj_size);
-	i->next->next = head;
+	i->next->next = *list;
 
 	memcpy(i->obj, obj, obj_size);
 }

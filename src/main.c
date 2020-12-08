@@ -75,9 +75,11 @@ main(int argc, char *argv[])
 
 	Tag t = new_tag("general");
 	Tag t1 = new_tag("music");
+	Tag t2 = new_tag("movies");
 
 	d_list_add(t, &global_tag_list, tag_get_size());
 	d_list_add(t1, &global_tag_list, tag_get_size());
+	d_list_add(t2, &global_tag_list, tag_get_size());
 
 	Note n;
 	for (int i=0; i < 10; ++i) {
@@ -85,6 +87,7 @@ main(int argc, char *argv[])
 		note_set_priority(i, n);
 		tag_add_note(n, "general");
 		tag_add_note(new_note("teste music"), "music");
+		tag_add_note(new_note("teste movies"), "movies");
 	}
 
 	if (interactive)

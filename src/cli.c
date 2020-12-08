@@ -1,9 +1,12 @@
 /* HEADERS */
 #include <ncurses.h>
 #include <math.h>
+#include <menu.h>
+#include <panel.h>
 #include <stdio.h>
 
 #include "list.h"
+#include "keys.h"
 #include "note.h"
 #include "tag.h"
 #include "cli.h"
@@ -13,6 +16,7 @@ WINDOW *create_new_win(int height, int width, int start_y, int start_x);
 void init_cli(void);
 void organize_window_space(void);
 void load_displayed_tag(char *tag_name);
+void housekeeping(void);
 
 void delete_win(WINDOW *local_win);
 void show_win(WINDOW *window);
@@ -28,9 +32,15 @@ extern char *notes_file_name;
 
 Tag displayed_tag;
 struct d_list *d_tag_notes;
+struct d_list *panel_list;
 int d_tag_n_number;
+int display_mode = 4;
+Selection selected_menu = MAIN_MENU;
 char *d_tag_name;
 
+ITEM **main_items;
+MENU *main_menu;
+PANEL *t_panel;
 WINDOW *main_win;
 WINDOW *side_win;
 WINDOW *footer;
@@ -43,6 +53,7 @@ int footer_w;
 int max_row;
 int max_col;
 
+/* FUNCTION DEFINITIONS */
 void
 init_cli(void)
 {
@@ -66,8 +77,8 @@ organize_window_space(void)
 	side_win_h = max_row - footer_h;
 
 	footer_w = max_col;
-	main_win_w = ceil(max_col/10.0) * 7-1; /* 70% for main. round up to fit nicely */
-	side_win_w = ceil(max_col/10.0) * 3; /* 30% for side. round up to fit nicely */
+	main_win_w = ceil(max_col/10.0) * 7; /* 70% for main. round up to fit nicely */
+	side_win_w = max_col - main_win_w;
 }
 
 void
@@ -84,6 +95,7 @@ start_anote_cli(void)
 {
 	int c;
 	char *label;
+	panel_list = new_list_node_circ();
 
 	init_cli();
 	organize_window_space();
@@ -103,13 +115,60 @@ start_anote_cli(void)
 	build_tag_panels(side_win);
 	show_cmd(footer);
 
+	doupdate();
+	t_panel = panel_list->obj;
+
 	do {
 		show_win(main_win);
 		show_win(side_win);
 		show_win(footer);
-	} while ((c = getch()) != 'q');
+		/*
+		switch (c) {
+			case TAB:
+				t_panel = (PANEL *)panel_userptr(t_panel);
+				top_panel(t_panel);
+				break;
+			default:
+				break;
+		}
+		*/
+		update_panels();
+		doupdate();
+		switch(c)
+		{
+			case KEY_DOWN:
+			menu_driver(main_menu, REQ_DOWN_ITEM);
+			break;
+			case KEY_UP:
+			menu_driver(main_menu, REQ_UP_ITEM);
+			break;
+			case KEY_NPAGE:
+			menu_driver(main_menu, REQ_SCR_DPAGE);
+			break;
+			case KEY_PPAGE:
+			menu_driver(main_menu, REQ_SCR_UPAGE);
+			break;
+		}
+		wrefresh(main_win);
 
+		if (selected_menu == MAIN_MENU)
+			c = wgetch(main_win);
+		else
+			c = wgetch(side_win);
+
+	} while (c != 'q');
+
+	housekeeping();
 	endwin(); /* end curses */
+}
+
+void
+housekeeping(void)
+{
+	unpost_menu(main_menu);
+	free_menu(main_menu);
+	for(int i = 0; i < d_list_length(d_tag_notes); ++i)
+		free_item(main_items[i]);
 }
 
 WINDOW
@@ -160,13 +219,44 @@ display_tag_notes(WINDOW *window)
 	int x_offset = 1;
 	int y_offset = HEADER_HEIGHT;
 
+	/* Create items */
 	i = d_tag_notes;
-	for (; i->next; i = i->next) {
+	main_items = (ITEM **)calloc(d_list_length(d_tag_notes), sizeof(ITEM *));
+	for(int j=0; i->next; ++j, i = i->next) {
 		n = i->obj;
+		/*
 		display_text = malloc(strlen(note_get_text(n)) + 10);
-		sprintf(display_text, "%d. %s [%c]\n", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? 'V' : '-');
-		mvwprintw(window, y_offset++, x_offset, display_text);
+		switch (display_mode) {
+			case 1:
+				sprintf(display_text, "%s\n", note_get_text(n));
+				break;
+			case 2:
+				sprintf(display_text, "%s [%c]\n", note_get_text(n), (note_get_completed(n)) ? 'V' : '-');
+				break;
+			case 3:
+				sprintf(display_text, "%d. %s\n", note_get_priority(n), note_get_text(n));
+				break;
+			case 4:
+				sprintf(display_text, "%d. %s [%c]\n", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? 'V' : '-');
+				break;
+		}
+		*/
+		main_items[j] = new_item("teste", "display_text");
 	}
+
+	main_menu = new_menu((ITEM **)main_items);
+	keypad(main_win, TRUE);
+
+	/* Set main window and sub window */
+	set_menu_win(main_menu, main_win);
+	set_menu_sub(main_menu, derwin(main_win, main_win_h, main_win_w, HEADER_HEIGHT, 1));
+	set_menu_format(main_menu, 5, 1);
+
+	/* * to mark */
+	set_menu_mark(main_menu, " * ");
+
+	post_menu(main_menu);
+	wrefresh(main_win);
 }
 
 void
@@ -176,18 +266,34 @@ build_tag_panels(WINDOW *window)
 	struct d_list *i;
 	int x_offset = 1;
 	int y_offset = HEADER_HEIGHT;
+	PANEL *p;
+
+
 
 	for(i = global_tag_list; i->next; i=i->next) {
 		t = i->obj;
-		if (tag_get_name(t) != d_tag_name)
+		if (tag_get_name(t) != d_tag_name) {
+
+			p = new_panel(window);
+			d_list_add_circ(p, &panel_list, sizeof(*p));
 			mvwprintw(window, y_offset++, x_offset, "%s\n", tag_get_name(t));
+
+		}
 	}
+
+	/* point each panel to the next one */
+	for(i = panel_list; i->next != panel_list; i = i->next) {
+		set_panel_userptr(i->obj, i->next->obj);
+	}
+	set_panel_userptr(i->obj, i->next->obj);
+	update_panels();
 }
 
 void
 show_cmd(WINDOW *window)
 {
 	mvwprintw(window, 1, 1, "q: save & quit");
+	mvwprintw(window, 2, 1, "t: toogle show mode");
 }
 
 void /* colors not yet supported */

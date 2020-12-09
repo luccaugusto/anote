@@ -2,7 +2,7 @@
 
 Anote is a very simple program for taking notes. This repository provides two implementations, the first one is
 a POSIX shell script for taking notes and viewing them in the terminal.
-Notes are saved in plain text files in $NOTES_PATH directory or $HOME/.notes if $NOTES_PATH is not set.
+Notes are saved in plain text files in $NOTES_PATH directory or $XDG_CONFIG_HOME/anote/.notes if $NOTES_PATH is not set.
 The second implementation is a more robust, ncurses based CLI application, still in early development stages.
 Probably the CLI application will engulf the shell script in the future.
 
@@ -30,7 +30,9 @@ Currently under development.
 
 ### Data
 + Implement read/write notes files.
++ Implement append to file function.
 + Change shell script output format to suit the CLI application as well.
++ save the date a note was added and increase its priority automattically as time passes
 
 ### CLI
 + Different modes to show displayed notes: only text, priority + text, completed + text, priority + completed + text

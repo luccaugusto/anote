@@ -5,7 +5,7 @@ SHELL = /bin/sh
 VERSION = 1.0.0
 
 CC=gcc
-LIBS=-lpanel -lncurses -lm -lmenu
+LIBS=-lpanel -lncurses -lmenu
 RM=rm -rf
 #flags
 CFLAGS= -c -w -Wall

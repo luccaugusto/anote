@@ -1,3 +1,4 @@
+/* HEADERS */
 #include "note.h"
 
 /* TYPES */
@@ -41,13 +42,19 @@ note_set_text(char *n_text, Note n)
 char *
 note_get_text(Note n)
 {
-	return n->text;
+	char *r = "";
+	if (n && n->text)
+		r = n->text;
+	return r;
 }
 
 int
 note_get_priority(Note n)
 {
-	return n->priority;
+	int p = 0;
+	if (n)
+		p = n->priority;
+	return p;
 }
 
 int
@@ -59,5 +66,8 @@ note_get_size(void)
 int
 note_get_completed(Note n)
 {
-	return n->completed;
+	int c = 0;
+	if (n)
+		c = n->completed;
+	return c;
 }

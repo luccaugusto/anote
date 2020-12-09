@@ -55,21 +55,28 @@ tag_get(char *name)
 struct d_list *
 tag_get_notes(struct tag *t)
 {
-	struct d_list *i;
-	i = t->notes;
+	struct d_list *i = NULL;
+	if (t)
+		i = t->notes;
 	return i;
 }
 
 char *
 tag_get_name(struct tag *t)
 {
-	return (t->name);
+	char *r = "";
+	if (t->name)
+		r = (t->name);
+	return r;
 }
 
 int
 tag_get_n_number(struct tag *t)
 {
-	return (t->notes_number);
+	int r = 0;
+	if (t->notes_number)
+		r = (t->notes_number);
+	return r;
 }
 
 

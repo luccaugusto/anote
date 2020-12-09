@@ -96,10 +96,10 @@ void
 start_anote_cli(void)
 {
 	int c = -1;
-	char *label;
+	char *label = "Notes";
 	panel_list = new_list_node_circ();
 
-	init_cli();
+	//init_cli();
 	organize_window_space();
 
 	/* show general notes on main window as default */
@@ -109,7 +109,8 @@ start_anote_cli(void)
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
 
-	sprintf(label,"%s Notes", tag_get_name(displayed_tag));
+	if (d_tag_name != "")
+		sprintf(label, "%s Notes", d_tag_name);
 	draw_headers(main_win, main_win_h, main_win_w, label);
 	draw_headers(side_win, side_win_h, side_win_w, "Other Notes");
 

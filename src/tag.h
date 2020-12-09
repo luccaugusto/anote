@@ -1,5 +1,5 @@
 /* TYPES */
-typedef struct tag * Tag;
+typedef struct tag *Tag;
 
 /* FUNCTION PROTOTYPES */
 Tag new_tag(char *name);

@@ -1,5 +1,5 @@
 /* TYPES */
-typedef struct note * Note;
+typedef struct note *Note;
 
 /* FUNCTION PROTOTYPES */
 Note new_note(char *text);

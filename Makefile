@@ -4,6 +4,8 @@ SHELL = /bin/sh
 # anote version
 VERSION = 1.0.0
 
+CONFIG_DIR=${XDG_CONFIG_HOME/.anote}
+
 CC=gcc
 LIBS=-lpanel -lncurses -lmenu
 RM=rm -rf
@@ -40,7 +42,7 @@ ${PROJ_NAME}: ${OBJ}
 
 ./build/main.o: ./src/main.c ${H_SRC}
 	@ echo "Building target using ${CC} compiler: $<"
-	${CC} $< ${CFLAGS} -o $@
+	${CC} $< ${CFLAGS} ${DEBUG} -o $@
 	@ echo ' '
 
 BD_DIR:

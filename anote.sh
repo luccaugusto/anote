@@ -7,7 +7,7 @@
 #reset for getopts
 OPTIND=1
 
-[ "$NOTES_PATH" ] || NOTES_PATH="$HOME/.notes"
+[ "$NOTES_PATH" ] || NOTES_PATH="$XDG_CONFIG_HOME/anote/.notes"
 # Assume there is a trailing /, remove it and add it again.
 # if there is no trailing / it's simply going to add it
 # not so good idea, i know it, but it's the way i could write
@@ -109,8 +109,8 @@ search_notes()
 	else
 		for list in $(ls -a $NOTES_PATH | grep .notes); do
 			FOUND=$(grep "$PATTERN" $NOTES_PATH$list | awk -F "\t" '{print $1. "\033[34m "$3"\033[0m"}')
-			[ "$FOUND" ] && 
-				echo "Found in $list" && 
+			[ "$FOUND" ] &&
+				echo "Found in $list" &&
 				echo $FOUND
 		done
 	fi

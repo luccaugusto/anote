@@ -4,6 +4,7 @@
 
 /* HEADERS */
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "anote.h"
@@ -24,24 +25,22 @@ FILE *notes_file;
 char *notes_file_name;
 ANOTE_ERROR ERR;
 
-void
+void /* TODO this function should setup the global tag list on the while loop or at least set up the global_tag_list with the general tag*/
 load_notes_from_file(void)
 {
-	char *notes_path;
+	char *notes_path = getenv("NOTES_PATH");
 	char *cur_note;
 	char *cur_tag;
 	int cur_pri;
 	Note n;
 
-	strcpy(notes_path, getenv("NOTES_PATH"));
-
 	if (!notes_path) {
 		notes_path = notes_path == NULL ? getenv("XDG_CONFIG_HOME") : notes_path;
 		notes_path = realloc(notes_path, strlen(notes_path) + 6);
-		sprintf(notes_path, "%sanote/", notes_path);
+		sprintf(notes_path, "%sanote", notes_path);
 	}
 	notes_file_name = malloc(strlen(notes_path) + 9);
-	sprintf(notes_file_name, "%snotes.txt", notes_path);
+	sprintf(notes_file_name, "%s/notes.txt", notes_path);
 	notes_file = fopen(notes_file_name, "r");
 
 	/* no notes yet */

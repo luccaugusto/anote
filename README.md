@@ -26,6 +26,7 @@ Currently under development.
 ## TODO
 ### Shell
 + implement remove function alternative without dmenu
++ add function to import every todo from a project
 
 ### Data
 + Implement read/write notes files.

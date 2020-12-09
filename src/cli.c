@@ -144,16 +144,19 @@ start_anote_cli(void)
 				break;
 
 			case TAB:
+				/*
 				t_panel = (PANEL *)panel_userptr(t_panel);
 				top_panel(t_panel);
+				*/
+				load_displayed_tag("music");
+				populate_main_menu();
+				bind_menu(main_win, main_menu, main_win_h, main_win_w);
 				break;
 			default:
 				break;
 		}
 
 		show_win(main_win);
-		post_menu(main_menu);
-		refresh();
 		show_win(side_win);
 		show_win(footer);
 		update_panels();
@@ -283,10 +286,11 @@ populate_main_menu(void)
 	main_menu = new_menu((ITEM **)main_items);
 }
 
-void
-bind_menu(WINDOW *window, MENU *menu, int height, int width)
+void /* colors not yet supported */
+bind_menu(WINDOW *window, MENU *menu, int height, int width/* chtype colors */)
 {
 	keypad(window, TRUE);
+	unpost_menu(menu);
 
 	/* Set main window and sub window */
 	set_menu_win(menu, window);
@@ -295,6 +299,7 @@ bind_menu(WINDOW *window, MENU *menu, int height, int width)
 	/* * to mark */
 	set_menu_mark(menu, "-> ");
 
+	menu_opts_off(menu,O_NONCYCLIC);
 	post_menu(menu);
 	wrefresh(window);
 }

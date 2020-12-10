@@ -11,6 +11,7 @@ typedef enum {
 
 /* GLOBAL VARIABLES */
 extern struct d_list *global_tag_list;
+extern char *arg_tag_name;
 
 /* FUNCTION PROTOTYPES */
 void start_anote_cli(void);

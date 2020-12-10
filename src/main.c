@@ -5,6 +5,7 @@
 /* HEADERS */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "anote.h"
@@ -12,10 +13,12 @@
 #include "list.h"
 #include "note.h"
 #include "tag.h"
+#include "utils.h"
 
 /* FUNCTION PROTOTYPES */
 void load_notes_from_file(void);
 int write_notes_to_file(void);
+void list_notes(void);
 void help(void);
 
 /* GLOBAL VARIABLES */
@@ -23,38 +26,49 @@ struct d_list *global_tag_list;
 char *errmsg;
 FILE *notes_file;
 char *notes_file_name;
+char *arg_tag_name = "general"; /* general is default tag */
 ANOTE_ERROR ERR;
 
-void /* TODO this function should setup the global tag list on the while loop or at least set up the global_tag_list with the general tag*/
+void
 load_notes_from_file(void)
 {
 	char *notes_path = getenv("NOTES_PATH");
+	char *cur_tag = "";
 	char *cur_note;
-	char *cur_tag;
 	int cur_pri;
+	int c;
 	Note n;
+	Tag t;
 
+	/* defaults to XDG_CONFIG_HOME/anote */
 	if (!notes_path) {
 		notes_path = notes_path == NULL ? getenv("XDG_CONFIG_HOME") : notes_path;
 		notes_path = realloc(notes_path, strlen(notes_path) + 6);
 		sprintf(notes_path, "%sanote", notes_path);
 	}
+
 	notes_file_name = malloc(strlen(notes_path) + 9);
 	sprintf(notes_file_name, "%s/notes.txt", notes_path);
 	notes_file = fopen(notes_file_name, "r");
 
-	/* no notes yet */
-	if (!notes_file)
-		return;
+	/* reads file and creates notes */
+	if (notes_file) {
+		/* each line of the file is of the format
+		 * tag priority note_text \n */
 
-	/* else reads file and creates notes */
-	while (fscanf(notes_file, "%s %d %s", cur_tag, cur_pri, cur_note) > 0) {
-		n = new_note(cur_note);
-		note_set_priority(cur_pri, n);
-		tag_add_note(n, cur_tag);
+		while (!feof(notes_file)) {
+			cur_tag = read_until_separator(' ', notes_file);
+			cur_pri = str2int(read_until_separator(' ', notes_file));
+			cur_note = read_until_separator('\n', notes_file);
+
+			n = new_note(cur_note);
+			note_set_priority(cur_pri, n);
+			tag_add_note(n, cur_tag);
+		}
+
+		fclose(notes_file);
 	}
 
-	fclose(notes_file);
 }
 
 int /* allways overwrites file so deletes and edits are saved correctly*/
@@ -65,9 +79,8 @@ write_notes_to_file(void)
 	struct d_list *i;
 	struct d_list *j;
 	int notes_written = 0;
+	int n_pri;
 
-	errmsg = malloc(sizeof(notes_file_name) + strlen("File .. could not be opened\n"));
-	sprintf(errmsg, "File %s could not be opened\n", notes_file_name);
 	notes_file = fopen(notes_file_name, "w");
 
 	RETURN_IF(!notes_file, EFINOOP);
@@ -83,6 +96,25 @@ write_notes_to_file(void)
 
 	fclose(notes_file);
 	return notes_written;
+}
+
+void
+list_notes(void)
+{
+	struct d_list *i;
+	struct d_list *j;
+	Note n;
+	Tag t;
+
+	for (i = global_tag_list; i->next; i = i->next) {
+		t = i->obj;
+		if (tag_get_n_number(t) > 0)
+			printf("Notes Tagged %s\n", tag_get_name(t));
+		for (j = tag_get_notes(t); j->next; j = j->next) {
+			n = j->obj;
+			printf("\t- %d %s\n", note_get_priority(n), note_get_text(n));
+		}
+	}
 }
 
 void
@@ -107,29 +139,37 @@ main(int argc, char *argv[])
 	char c;
 	char command;
 	char *note;
-	char *tag_name = "general"; /* default tag */
 	int interactive = 1;
 	int priority = 0; /* default priority */
+	Tag default_tag;
 
 	global_tag_list = new_list_node();
 
-	while ((c = getopt(argc,argv,"a:i:hp:t:")) != -1) {
+	while ((c = getopt(argc,argv,"a:i:hlp:t:")) != -1) {
 		switch (c) {
 			case 'a': /* add note */
+				interactive = 0;
 				command = 'a';
 				note = optarg;
-				interactive = 0;
 				break;
 			case 'i': /* import file */
+				interactive = 0;
 				command = 'i';
 				notes_file_name = optarg;
+				break;
+			case 'h':
 				interactive = 0;
+				help();
+				break;
+			case 'l':
+				interactive = 0;
+				command = 'l';
 				break;
 			case 'p':
 				priority = optarg;
 				break;
 			case 't': /* specify tag */
-				tag_name = optarg;
+				arg_tag_name = optarg;
 				break;
 			case '?':
 				interactive = 0;
@@ -149,19 +189,30 @@ main(int argc, char *argv[])
 		}
 	}
 
+	/* load informed tag */
+	default_tag = new_tag(arg_tag_name);
+	d_list_add(default_tag, &global_tag_list, tag_get_size());
+
 	switch (command) {
 		case 'a':
 			load_notes_from_file();
 
 			Note n = new_note(note);
 			note_set_priority(priority, n);
-			tag_add_note(n, tag_name);
+			tag_add_note(n, arg_tag_name);
 
 			write_notes_to_file();
 			break;
+
 		case 'i':/* import file */
 			printf("Operation not yet supported");
 			exit(-ENOTSUP);
+			break;
+
+		case 'l':
+			load_notes_from_file();
+			list_notes();
+			break;
 	}
 
 	if (interactive) {

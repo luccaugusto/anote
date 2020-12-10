@@ -102,15 +102,15 @@ start_anote_cli(void)
 	//init_cli();
 	organize_window_space();
 
-	/* show general notes on main window as default */
-	load_displayed_tag("general");
+	/* show informed tag notes on main window as default */
+	load_displayed_tag(arg_tag_name);
 
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
 
-	if (d_tag_name != "")
-		sprintf(label, "%s Notes", d_tag_name);
+	label = malloc(strlen(label) + strlen(arg_tag_name));
+	sprintf(label, "%s Notes", arg_tag_name);
 	draw_headers(main_win, main_win_h, main_win_w, label);
 	draw_headers(side_win, side_win_h, side_win_w, "Other Notes");
 
@@ -251,40 +251,46 @@ populate_main_menu(void)
 		free(main_items);
 	}
 
-	main_items = (ITEM **)calloc(d_tag_n_number + 1, sizeof(ITEM *));
-	display_text_list = (char **) malloc(sizeof(char *) * (d_tag_n_number + 1));
+	if (d_tag_n_number > 0) {
 
-	i = d_tag_notes;
-	for(int j=0; i->next; ++j, i = i->next) {
-		n = i->obj;
-		text = note_get_text(n);
-		/* TODO support different display modes
-		switch (display_mode) {
-			case NOTE_ONLY:
-				display_text_list[j] = malloc(strlen(text));
-				sprintf(display_text_list[j], "%s", text);
-				break;
-			case NOTE_COMP:
-				display_text_list[j] = malloc(strlen(text) + 5);
-				sprintf(display_text_list[j], "%s [%c]", text, (note_get_completed(n)) ? 'V' : '-');
-				break;
-			case NOTE_PRIO:
-				display_text_list[j] = malloc(strlen(text) + 7);
-				sprintf(display_text_list[j], "%d. %s", note_get_priority(n), text);
-				break;
-			case NOTE_COMP_PRIO:
-				display_text_list[j] = malloc(strlen(text) + 12);
-				sprintf(display_text_list[j], "%d. %s [%c]", note_get_priority(n), text, (note_get_completed(n)) ? 'V' : '-');
-				break;
+		main_items = (ITEM **) calloc(d_tag_n_number + 1, sizeof(ITEM *));
+		display_text_list = (char **) malloc(sizeof(char *) * (d_tag_n_number + 1));
+
+		i = d_tag_notes;
+		for(int j=0; i->next; ++j, i = i->next) {
+			n = i->obj;
+			text = note_get_text(n);
+			/* TODO support different display modes
+			   switch (display_mode) {
+			   case NOTE_ONLY:
+			   display_text_list[j] = malloc(strlen(text));
+			   sprintf(display_text_list[j], "%s", text);
+			   break;
+			   case NOTE_COMP:
+			   display_text_list[j] = malloc(strlen(text) + 5);
+			   sprintf(display_text_list[j], "%s [%c]", text, (note_get_completed(n)) ? 'V' : '-');
+			   break;
+			   case NOTE_PRIO:
+			   display_text_list[j] = malloc(strlen(text) + 7);
+			   sprintf(display_text_list[j], "%d. %s", note_get_priority(n), text);
+			   break;
+			   case NOTE_COMP_PRIO:
+			   display_text_list[j] = malloc(strlen(text) + 12);
+			   sprintf(display_text_list[j], "%d. %s [%c]", note_get_priority(n), text, (note_get_completed(n)) ? 'V' : '-');
+			   break;
+			   }
+			   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
+			   */
+			main_items[j] = new_item(text, "");
 		}
-		main_items[j] = new_item(display_text_list[j], display_text_list[j]);
-		*/
-		main_items[j] = new_item(text, "");
+
+		display_text_list[d_tag_n_number] = (char *) NULL;
+		main_items[d_tag_n_number] = (ITEM *) NULL;
+		main_menu = new_menu((ITEM **) main_items);
+	} else {
+		mvwprintw(main_win, HEADER_HEIGHT, 1, "No notes in this tag");
 	}
 
-	display_text_list[d_tag_n_number] = (char *) NULL;
-	main_items[d_tag_n_number] = (ITEM *) NULL;
-	main_menu = new_menu((ITEM **)main_items);
 }
 
 void /* colors not yet supported */

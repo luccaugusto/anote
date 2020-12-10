@@ -99,7 +99,7 @@ start_anote_cli(void)
 	char *label = "Notes";
 	panel_list = new_list_node_circ();
 
-	//init_cli();
+	init_cli();
 	organize_window_space();
 
 	/* show informed tag notes on main window as default */

@@ -3,6 +3,7 @@
  */
 
 /* HEADERS */
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +18,8 @@
 
 /* FUNCTION PROTOTYPES */
 void load_notes_from_file(void);
-int write_notes_to_file(void);
+int write_notes_to_file(char *mode);
+void build_file_name(void);
 void list_notes(void);
 void help(void);
 
@@ -27,12 +29,11 @@ char *errmsg;
 FILE *notes_file;
 char *notes_file_name;
 char *arg_tag_name = "general"; /* general is default tag */
-ANOTE_ERROR ERR;
+ANOTE_ERROR aerr;
 
 void
 load_notes_from_file(void)
 {
-	char *notes_path = getenv("NOTES_PATH");
 	char *cur_tag = "";
 	char *cur_note;
 	int cur_pri;
@@ -40,15 +41,8 @@ load_notes_from_file(void)
 	Note n;
 	Tag t;
 
-	/* defaults to XDG_CONFIG_HOME/anote */
-	if (!notes_path) {
-		notes_path = notes_path == NULL ? getenv("XDG_CONFIG_HOME") : notes_path;
-		notes_path = realloc(notes_path, strlen(notes_path) + 6);
-		sprintf(notes_path, "%sanote", notes_path);
-	}
+	build_file_name();
 
-	notes_file_name = malloc(strlen(notes_path) + 9);
-	sprintf(notes_file_name, "%s/notes.txt", notes_path);
 	notes_file = fopen(notes_file_name, "r");
 
 	/* reads file and creates notes */
@@ -61,9 +55,12 @@ load_notes_from_file(void)
 			cur_pri = str2int(read_until_separator(' ', notes_file));
 			cur_note = read_until_separator('\n', notes_file);
 
-			n = new_note(cur_note);
-			note_set_priority(cur_pri, n);
-			tag_add_note(n, cur_tag);
+			/* if read something */
+			if (strcmp(cur_tag, "") != 0) {
+				n = new_note(cur_note);
+				note_set_priority(cur_pri, n);
+				tag_add_note(n, cur_tag);
+			}
 		}
 
 		fclose(notes_file);
@@ -71,8 +68,8 @@ load_notes_from_file(void)
 
 }
 
-int /* allways overwrites file so deletes and edits are saved correctly*/
-write_notes_to_file(void)
+int
+write_notes_to_file(char *mode)
 {
 	Tag t;
 	Note n;
@@ -81,13 +78,13 @@ write_notes_to_file(void)
 	int notes_written = 0;
 	int n_pri;
 
-	notes_file = fopen(notes_file_name, "w");
+	notes_file = fopen(notes_file_name, mode);
 
-	RETURN_IF(!notes_file, EFINOOP);
+	RETURN_IF(!notes_file, errno);
 
-	for (i = global_tag_list; i->next; i = i->next) {
+	for (i = global_tag_list; i->obj; i = i->next) {
 		t = i->obj;
-		for (j = tag_get_notes(t); j->next; j = j->next) {
+		for (j = tag_get_notes(t); j->obj; j = j->next) {
 			n = j->obj;
 			fprintf(notes_file, "%s %d %s\n", tag_get_name(t), note_get_priority(n), note_get_text(n));
 			notes_written++;
@@ -99,6 +96,22 @@ write_notes_to_file(void)
 }
 
 void
+build_file_name(void)
+{
+	char *notes_path = getenv("NOTES_PATH");
+
+	/* defaults to XDG_CONFIG_HOME/anote */
+	if (!notes_path) {
+		notes_path = notes_path == NULL ? getenv("XDG_CONFIG_HOME") : notes_path;
+		notes_path = realloc(notes_path, strlen(notes_path) + 6);
+		sprintf(notes_path, "%sanote", notes_path);
+	}
+
+	notes_file_name = malloc(strlen(notes_path) + 9);
+	sprintf(notes_file_name, "%s/notes.txt", notes_path);
+}
+
+void
 list_notes(void)
 {
 	struct d_list *i;
@@ -106,11 +119,10 @@ list_notes(void)
 	Note n;
 	Tag t;
 
-	for (i = global_tag_list; i->next; i = i->next) {
+	for (i = global_tag_list; i->obj; i = i->next) {
 		t = i->obj;
-		if (tag_get_n_number(t) > 0)
-			printf("Notes Tagged %s\n", tag_get_name(t));
-		for (j = tag_get_notes(t); j->next; j = j->next) {
+		printf("Notes Tagged %s\n", tag_get_name(t));
+		for (j = tag_get_notes(t); j->obj; j = j->next) {
 			n = j->obj;
 			printf("\t- %d %s\n", note_get_priority(n), note_get_text(n));
 		}
@@ -136,6 +148,7 @@ help(void)
 int
 main(int argc, char *argv[])
 {
+	Note n;
 	char c;
 	char command;
 	char *note;
@@ -195,13 +208,13 @@ main(int argc, char *argv[])
 
 	switch (command) {
 		case 'a':
-			load_notes_from_file();
-
-			Note n = new_note(note);
+			build_file_name();
+			n = new_note(note);
 			note_set_priority(priority, n);
 			tag_add_note(n, arg_tag_name);
-
-			write_notes_to_file();
+			if(write_notes_to_file("a") <= 0){
+				fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));
+			}
 			break;
 
 		case 'i':/* import file */
@@ -218,6 +231,9 @@ main(int argc, char *argv[])
 	if (interactive) {
 		load_notes_from_file();
 		start_anote_cli();
+		if(write_notes_to_file("w") <= 0){
+			fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));
+		}
 	}
 
 	return 0;

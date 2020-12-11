@@ -9,6 +9,7 @@ struct d_list *tag_get_notes(Tag t);
 char *tag_get_name(Tag t);
 int tag_get_n_number(Tag t);
 size_t tag_get_size();
+Note tag_search_note(char *needle_text, struct tag *haystack);
 
 void tag_del(Tag t, struct d_list **list);
 void ch_note_tag(Note n, Tag n_tag, Tag cur_tag);

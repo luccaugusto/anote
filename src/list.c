@@ -91,40 +91,25 @@ d_list_add_circ(void *obj, struct d_list **list, size_t obj_size)
 }
 
 void
-d_list_del_pos(int pos, struct d_list *list)
-{
-	int i;
-	struct d_list *j;
-	struct d_list *aux;
-
-	/* never delete the head */
-	if (list != NULL && list->next != NULL && pos > 0) {
-
-		/* finds the position */
-		for (i=0, j=list; i<pos-1 && j->next->next != NULL; ++i, j=j->next);
-
-		aux = j->next;
-		j->next = aux->next;
-		free(aux);
-	}
-}
-
-void
 d_list_del_obj(void *obj, struct d_list *list)
 {
 	struct d_list *i;
 	struct d_list *aux;
 
 	/* never delete the head */
-	if (list != NULL && list->next != NULL && obj != list->obj) {
+	if (list != NULL) {
 
-		/* finds the position */
-		for (i=list; i->next != NULL && i->next != obj; i=i->next);
+		/* move head forward */
+		if (list->obj == obj) {
+			list = list->next;
+		} else {
+			/* finds the position */
+			for (i=list; i->next && i->next->obj != obj; i=i->next);
 
-		if (i->next == obj) {
-			aux = i->next;
-			i->next = aux->next;
-			free(aux);
+			if (i->next->obj == obj) {
+				aux = i->next;
+				i->next = aux->next;
+			}
 		}
 	}
 }
@@ -133,9 +118,9 @@ void
 delete_list(struct d_list *list)
 {
 	/* delete all objects */
-	while (list->next != NULL)
-		d_list_del_obj(list->next,list);
+	while (list != NULL)
+		d_list_del_obj(list->obj, list);
 
-	free(list->next);
+	free(list->obj);
 	free(list);
 }

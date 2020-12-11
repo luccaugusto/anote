@@ -20,6 +20,12 @@ new_note(char *text)
 	return n_note;
 }
 
+void
+note_del(Note n)
+{
+	free(n->text);
+	free(n);
+}
 
 void
 note_set_priority(int n_pri, Note n)

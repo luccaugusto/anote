@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #include "list.h"
-#include "keys.h"
 #include "note.h"
 #include "tag.h"
 #include "cli.h"
@@ -26,12 +25,16 @@ void build_tag_panels(WINDOW *window);
 void show_cmd(WINDOW *window);
 void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string/*, chtype color*/);
 
+void main_win_actions(int c);
+void side_win_actions(int c);
+
 /* GLOBAL VARIABLES */
 extern struct d_list *global_tag_list;
 extern FILE *notes_file;
 extern char *notes_file_name;
 
 Tag displayed_tag;
+Note n_aux;
 struct d_list *d_tag_notes;
 struct d_list *panel_list;
 int display_mode = NOTE_ONLY;
@@ -41,8 +44,10 @@ char **display_text_list;
 
 WINDOW *main_win;
 WINDOW *side_win;
+WINDOW *cur_win;
 WINDOW *footer;
 MENU *main_menu;
+MENU *side_menu;
 ITEM **main_items;
 ITEM *cur_item;
 PANEL *t_panel;
@@ -108,6 +113,7 @@ start_anote_cli(void)
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
+	cur_win = main_win;
 
 	label = malloc(strlen(label) + strlen(arg_tag_name));
 	sprintf(label, "%s Notes", arg_tag_name);
@@ -124,52 +130,25 @@ start_anote_cli(void)
 	t_panel = panel_list->obj;
 
 	do {
-		switch(c)
-		{
-			case 'j':      /* FALLTHROUGH */
-			case KEY_DOWN:
-				menu_driver(main_menu, REQ_DOWN_ITEM);
+		switch (c) {
+			case 'a':
+				/* QUICK ADD, default priority */
 				break;
-
-			case 'k':      /* FALLTHROUGH */
-			case KEY_UP:
-				menu_driver(main_menu, REQ_UP_ITEM);
+			case 'i':
+				/* ADD A NOTE set priority */
 				break;
-
-			case KEY_NPAGE:
-				menu_driver(main_menu, REQ_SCR_DPAGE);
-				break;
-
-			case KEY_PPAGE:
-				menu_driver(main_menu, REQ_SCR_UPAGE);
-				break;
-
-			case TAB:
-				/*
-				t_panel = (PANEL *)panel_userptr(t_panel);
-				top_panel(t_panel);
-				*/
-				load_displayed_tag("music");
-				populate_main_menu();
-				bind_menu(main_win, main_menu, main_win_h, main_win_w);
+			case 'I':
+				/* ADD A NOTE set priority and tag */
 				break;
 			default:
+				if (cur_win == main_win) main_win_actions(c);
+				else                     side_win_actions(c);
 				break;
 		}
-
 		show_win(main_win);
 		show_win(side_win);
 		show_win(footer);
-		update_panels();
-		doupdate();
-		/*
-		if (selected_menu == MAIN_MENU)
-			c = wgetch(main_win);
-		else
-			c = wgetch(side_win);
-			*/
-		c = getch();
-	} while (c != 'q');
+	} while ((c = wgetch(cur_win)) != 'q');
 
 
 	housekeeping();
@@ -281,7 +260,7 @@ populate_main_menu(void)
 			   }
 			   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
 			   */
-			main_items[j] = new_item(text, "");
+			main_items[j] = new_item(text, text);
 		}
 
 		display_text_list[d_tag_n_number] = (char *) NULL;
@@ -368,3 +347,78 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 	refresh();
 }
 
+void /* notes manipulation */
+main_win_actions(int c)
+{
+	switch(c)
+	{
+		/* MOVE KEYS */
+		case 'j':      /* FALLTHROUGH */
+		case KEY_DOWN:
+			menu_driver(main_menu, REQ_DOWN_ITEM);
+			break;
+
+		case 'k':      /* FALLTHROUGH */
+		case KEY_UP:
+			menu_driver(main_menu, REQ_UP_ITEM);
+			break;
+
+		case KEY_NPAGE:
+			menu_driver(main_menu, REQ_SCR_DPAGE);
+			break;
+
+		case KEY_PPAGE:
+			menu_driver(main_menu, REQ_SCR_UPAGE);
+			break;
+
+		/* MANIPULATION KEYS */
+		case 'd': /* delete */
+			n_aux = tag_search_note(item_name(current_item(main_menu)), displayed_tag);
+			/* PROMPT FOR CONFIRMATION */
+			d_list_del_obj(n_aux, d_tag_notes);
+			note_del(n_aux);
+			werase(menu_sub(main_menu));
+			populate_main_menu();
+			bind_menu(main_win, main_menu, main_win_h, main_win_w);
+			break;
+		case KEY_CTAB:
+			cur_win = side_win;
+			break;
+		default:
+			break;
+	}
+}
+
+void /* tag manipulations */
+side_win_actions(int c)
+{
+	switch(c)
+	{
+		/* TODO DO NOT MOVE ON THE MENU, MOVE ON PANElS */
+		case KEY_ENTER:
+			/* DISPLAY SELECTED TAG */
+			break;
+		case 'j':      /* FALLTHROUGH */
+		case KEY_DOWN:
+			menu_driver(side_menu, REQ_DOWN_ITEM);
+			break;
+		case 'k':      /* FALLTHROUGH */
+		case KEY_UP:
+			menu_driver(side_menu, REQ_UP_ITEM);
+			break;
+
+		case KEY_NPAGE:
+			menu_driver(side_menu, REQ_SCR_DPAGE);
+			break;
+
+		case KEY_PPAGE:
+			menu_driver(side_menu, REQ_SCR_UPAGE);
+			break;
+		case KEY_CTAB:
+			cur_win = main_win;
+			break;
+		default:
+			break;
+	}
+
+}

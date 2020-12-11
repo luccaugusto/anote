@@ -86,6 +86,24 @@ tag_get_size(void)
 	return sizeof(struct tag);
 }
 
+Note
+tag_search_note(char *needle_text, struct tag *haystack)
+{
+	struct d_list *i;
+	Note needle;
+
+	for (i = tag_get_notes(haystack); i->next; i = i->next) {
+		needle = i->obj;
+		if (strcmp(needle_text, note_get_text(needle)) == 0)
+			break;
+	}
+
+	if (strcmp(needle_text, note_get_text(needle)) != 0)
+		needle = NULL;
+
+	return needle;
+}
+
 /* deletes a tag and all its notes */
 void
 tag_del(struct tag *t, struct d_list **list)
@@ -97,11 +115,14 @@ tag_del(struct tag *t, struct d_list **list)
 	for (i = *list; i->next && i->next->obj != t; i = i->next);
 	aux = i->next;
 
-	/* note found */
+	/* tag found */
 	if (aux->obj == t) {
 		i->next = aux->next;
-
 		t_aux = aux->obj;
+
+		for (i = t_aux->notes; i->next; i = i->next)
+			note_del(i->obj);
+
 		delete_list(t_aux->notes);
 		free(aux);
 	}

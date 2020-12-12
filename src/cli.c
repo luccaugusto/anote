@@ -9,6 +9,9 @@
 #include "tag.h"
 #include "cli.h"
 
+#define DEFAULT_PRIORITY 0
+#define ARRAY_SIZE(x) sizeof(x[0]) / sizeof(x)
+
 /* FUNCTION PROTOTYPES */
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
 void init_cli(void);
@@ -111,6 +114,7 @@ start_anote_cli(void)
 {
 	int c = -1;
 	char *label = "Notes";
+	char *input;
 	panel_list = new_list_node_circ();
 
 	init_cli();
@@ -143,8 +147,16 @@ start_anote_cli(void)
 
 	do {
 		switch (c) {
-			case 'a':
-				/* QUICK ADD, default priority */
+			case 'a': /* QUICK ADD, default priority */
+				input = prompt_user("Note text: ", 0);
+				if (input) {
+					n_aux = new_note(input);
+					note_set_priority(DEFAULT_PRIORITY, n_aux);
+					d_list_add(n_aux, &d_tag_notes, note_get_size());
+					/* reload window with new note */
+					load_displayed_tag(d_tag_name);
+					populate_main_menu();
+				}
 				break;
 			case 'i':
 				/* ADD A NOTE set priority */
@@ -236,17 +248,18 @@ populate_main_menu(void)
 	struct d_list *i;
 	char *text;
 
-	if (display_text_list != NULL)
+	if (display_text_list)
 		free(display_text_list);
 
 	/* free the old items */
-	if (main_items != NULL) {
-		for (int j=0; j < d_tag_n_number; ++j) {
+	if (main_items) {
+		for (int j=0; j < ARRAY_SIZE(main_items); ++j) {
 			if (main_items[j] != NULL)
 				free(main_items[j]);
 		}
 		free(main_items);
 	}
+
 
 	if (d_tag_n_number > 0) {
 
@@ -285,6 +298,9 @@ populate_main_menu(void)
 		main_items[d_tag_n_number] = (ITEM *) NULL;
 		main_menu = new_menu((ITEM **) main_items);
 	} else {
+		main_items = calloc(1, sizeof(ITEM *));
+		main_items[0] = (ITEM *) NULL;
+		main_menu = new_menu((ITEM **) main_items);
 		mvwprintw(main_win, HEADER_HEIGHT, 1, "No notes in this tag");
 	}
 
@@ -369,6 +385,7 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 void /* notes manipulation */
 main_win_actions(int c)
 {
+	struct d_list *aux;
 	char *answer;
 
 	switch(c)
@@ -398,11 +415,18 @@ main_win_actions(int c)
 				answer = prompt_user("Delete selected note? [y/N]: ", 0);
 				if (answer[0] == 'y' || answer[0] == 'Y') {
 					n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
-					d_list_del_obj(n_aux, d_tag_notes);
+
+					aux = d_list_del_obj(n_aux, &d_tag_notes);
+					if (!aux) aux = new_list_node();
+
+					tag_set_note_list(aux, displayed_tag);
+
 					note_del(n_aux);
+					load_displayed_tag(d_tag_name);
+
+					/* erase list from the menu */
 					werase(menu_sub(main_menu));
 					populate_main_menu();
-					bind_menu(main_win, main_menu, main_win_h, main_win_w);
 				}
 			} else {
 				prompt_user("Nothing to delete here", 1);
@@ -453,21 +477,21 @@ side_win_actions(int c)
 char *
 prompt_user(char *question, int align_center)
 {
-	char *answer = malloc(256);
+	char *answer = malloc(sizeof(char));
 	WINDOW *p_win = panel_window(prompt_panel);;
+
+	box(p_win, 0, 0);
 
 	if (align_center)
 		print_align_center(p_win, 1, 1, prompt_win_w, question);
 	else
 		mvwprintw(p_win, 1, 1, question);
 
-	box(p_win, 0, 0);
 	show_panel(prompt_panel);
 
 	wgetstr(p_win, answer);
 
 	werase(p_win);
-	hide_win(p_win);
 	hide_panel(prompt_panel);
 
 	return answer;

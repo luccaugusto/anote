@@ -188,3 +188,10 @@ tag_add_note(Note note, char *tag_name)
 	d_list_add_before(note, ref, &t->notes, note_get_size());
 	t->notes_number++;
 }
+
+void
+tag_set_note_list(struct d_list **list, struct tag *t)
+{
+	t->notes = *list;
+	t->notes_number = d_list_length(list);
+}

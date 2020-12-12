@@ -84,7 +84,12 @@ write_notes_to_file(char *mode)
 
 	for (i = global_tag_list; i->obj; i = i->next) {
 		t = i->obj;
-		for (j = tag_get_notes(t); j->obj; j = j->next) {
+		j = tag_get_notes(t);
+
+		if (!j)
+			continue;
+
+		for (; j->obj; j = j->next) {
 			n = j->obj;
 			fprintf(notes_file, "%s %d %s\n", tag_get_name(t), note_get_priority(n), note_get_text(n));
 			notes_written++;
@@ -212,7 +217,7 @@ main(int argc, char *argv[])
 			n = new_note(note);
 			note_set_priority(priority, n);
 			tag_add_note(n, arg_tag_name);
-			if(write_notes_to_file("a") <= 0){
+			if(write_notes_to_file("a") < 0){
 				fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));
 			}
 			break;
@@ -231,7 +236,7 @@ main(int argc, char *argv[])
 	if (interactive) {
 		load_notes_from_file();
 		start_anote_cli();
-		if(write_notes_to_file("w") <= 0){
+		if(write_notes_to_file("w") < 0){
 			fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));
 		}
 	}

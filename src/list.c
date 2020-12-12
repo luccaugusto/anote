@@ -5,12 +5,13 @@
 
 /* FUNCTION DEFINITIONS */
 int
-d_list_length(struct d_list *list)
+d_list_length(struct d_list **list)
 {
-	int l;
+	int l = 0;
 	struct d_list *i;
-	for (i=list; i->next; i = i->next)
-		++l;
+	if ((*list))
+		for (i=*list; i->next; i = i->next)
+			++l;
 	return l;
 }
 
@@ -90,37 +91,42 @@ d_list_add_circ(void *obj, struct d_list **list, size_t obj_size)
 	memcpy(i->obj, obj, obj_size);
 }
 
-void
-d_list_del_obj(void *obj, struct d_list *list)
+struct d_list *
+d_list_del_obj(void *obj, struct d_list **list)
 {
 	struct d_list *i;
 	struct d_list *aux;
 
 	/* never delete the head */
-	if (list != NULL) {
+	if (*list != NULL) {
 
 		/* move head forward */
-		if (list->obj == obj) {
-			list = list->next;
+		if ((*list)->obj == obj) {
+			aux = *list;
+			*list = (*list)->next;
+			free(aux);
 		} else {
 			/* finds the position */
-			for (i=list; i->next && i->next->obj != obj; i=i->next);
+			for (i=*list; i->next && i->next->obj != obj; i = i->next);
 
 			if (i->next->obj == obj) {
 				aux = i->next;
 				i->next = aux->next;
+				free(aux);
 			}
 		}
 	}
+
+	return *list;
 }
 
-void
-delete_list(struct d_list *list)
+void *
+delete_list(struct d_list **list)
 {
 	/* delete all objects */
-	while (list != NULL)
-		d_list_del_obj(list->obj, list);
+	while (*list)
+		d_list_del_obj((*list)->obj, list);
 
-	free(list->obj);
-	free(list);
+	free(*list);
+	return NULL;
 }

@@ -43,3 +43,4 @@ Currently under development.
 + tick note as complete
 + vim bindings
 + Implement colors: show more prioritary notes in red, mid priority notes in orange, other notes in white
++ Make a window to hold a shell instance so user can run simple commands inside anote

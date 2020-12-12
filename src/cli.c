@@ -44,6 +44,7 @@ struct d_list *d_tag_notes;
 struct d_list *panel_list;
 int display_mode = NOTE_ONLY;
 int d_tag_n_number;
+int main_items_size;
 char *d_tag_name;
 char **display_text_list;
 
@@ -156,6 +157,7 @@ start_anote_cli(void)
 					/* reload window with new note */
 					load_displayed_tag(d_tag_name);
 					populate_main_menu();
+					wrefresh(menu_win(main_menu));
 				}
 				break;
 			case 'i':
@@ -243,17 +245,17 @@ draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color 
 void
 populate_main_menu(void)
 {
-	/* Create items */
-	Note n;
 	struct d_list *i;
+	Note n = NULL;
 	char *text;
+	int j=0;
 
 	if (display_text_list)
 		free(display_text_list);
 
 	/* free the old items */
 	if (main_items) {
-		for (int j=0; j < ARRAY_SIZE(main_items); ++j) {
+		for (int j=0; j < main_items_size; ++j) {
 			if (main_items[j] != NULL)
 				free(main_items[j]);
 		}
@@ -261,14 +263,15 @@ populate_main_menu(void)
 	}
 
 
+	/* Create items */
 	if (d_tag_n_number > 0) {
 
 		main_items = (ITEM **) calloc(d_tag_n_number + 1, sizeof(ITEM *));
+		main_items_size = d_tag_n_number + 1;
 		display_text_list = (char **) malloc(sizeof(char *) * (d_tag_n_number + 1));
 
-		i = d_tag_notes;
-		for(int j=0; i->next; ++j, i = i->next) {
-			n = i->obj;
+		n = d_tag_notes->obj;
+		for(i = d_tag_notes; i->next;i = i->next) {
 			text = note_get_text(n);
 			/* TODO support different display modes
 			   switch (display_mode) {
@@ -291,7 +294,8 @@ populate_main_menu(void)
 			   }
 			   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
 			   */
-			main_items[j] = new_item(text, text);
+			main_items[j++] = new_item(text, text);
+			n = i->next->obj;
 		}
 
 		display_text_list[d_tag_n_number] = (char *) NULL;
@@ -416,17 +420,15 @@ main_win_actions(int c)
 				if (answer[0] == 'y' || answer[0] == 'Y') {
 					n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
 
-					aux = d_list_del_obj(n_aux, &d_tag_notes);
-					if (!aux) aux = new_list_node();
-
-					tag_set_note_list(aux, displayed_tag);
-
+					tag_del_note(n_aux, displayed_tag);
 					note_del(n_aux);
+
 					load_displayed_tag(d_tag_name);
 
 					/* erase list from the menu */
 					werase(menu_sub(main_menu));
 					populate_main_menu();
+					wrefresh(menu_win(main_menu));
 				}
 			} else {
 				prompt_user("Nothing to delete here", 1);

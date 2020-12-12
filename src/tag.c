@@ -190,6 +190,19 @@ tag_add_note(Note note, char *tag_name)
 }
 
 void
+tag_del_note(Note n, struct tag *t)
+{
+	struct d_list *l = tag_get_notes(t);
+	d_list_del_obj(n, &l);
+	t->notes_number--;
+
+	/* clears list */
+	if (t->notes_number == 0) {
+		t->notes = new_list_node();
+	}
+}
+
+void
 tag_set_note_list(struct d_list **list, struct tag *t)
 {
 	t->notes = *list;

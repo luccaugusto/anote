@@ -51,7 +51,6 @@ d_list_add_before(void *obj, struct d_list *ref, struct d_list **list, size_t ob
 	struct d_list *i;
 	struct d_list *aux;
 
-
 	/* has to add new head */
 	if (ref == *list) {
 
@@ -91,36 +90,33 @@ d_list_add_circ(void *obj, struct d_list **list, size_t obj_size)
 	memcpy(i->obj, obj, obj_size);
 }
 
-struct d_list *
+void /* removes obj node from list, does not free obj */
 d_list_del_obj(void *obj, struct d_list **list)
 {
 	struct d_list *i;
 	struct d_list *aux;
 
-	/* never delete the head */
-	if (*list != NULL) {
+	i=*list;
+	if (i->obj == obj) {
 
-		/* move head forward */
-		if ((*list)->obj == obj) {
-			aux = *list;
-			*list = (*list)->next;
+		aux = *list;
+		*list = aux->next;
+		free(aux);
+
+	} else {
+
+		/* finds the position */
+		for (; i->next && i->next->obj != obj; i = i->next);
+
+		if (i->next->obj == obj) {
+			aux = i->next;
+			i->next = aux->next;
 			free(aux);
-		} else {
-			/* finds the position */
-			for (i=*list; i->next && i->next->obj != obj; i = i->next);
-
-			if (i->next->obj == obj) {
-				aux = i->next;
-				i->next = aux->next;
-				free(aux);
-			}
 		}
 	}
-
-	return *list;
 }
 
-void *
+void
 delete_list(struct d_list **list)
 {
 	/* delete all objects */
@@ -128,5 +124,4 @@ delete_list(struct d_list **list)
 		d_list_del_obj((*list)->obj, list);
 
 	free(*list);
-	return NULL;
 }

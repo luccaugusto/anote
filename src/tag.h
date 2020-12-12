@@ -14,6 +14,7 @@ Note tag_search_note(char *needle_text, struct tag *haystack);
 void tag_del(Tag t, struct d_list **list);
 void ch_note_tag(Note n, Tag n_tag, Tag cur_tag);
 void tag_add_note(Note note, char *tag);
+void tag_del_note(Note n, struct tag *t);
 void tag_set_note_list(struct d_list **list, struct tag *t);
 
 /* GLOBAL VARIABLES */

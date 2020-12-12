@@ -76,7 +76,6 @@ write_notes_to_file(char *mode)
 	struct d_list *i;
 	struct d_list *j;
 	int notes_written = 0;
-	int n_pri;
 
 	notes_file = fopen(notes_file_name, mode);
 

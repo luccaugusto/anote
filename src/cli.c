@@ -151,7 +151,7 @@ start_anote_cli(void)
 		switch (c) {
 			case 'a': /* QUICK ADD, default priority */
 				input = prompt_user("Note text: ", 0);
-				if (input) {
+				if (strlen(input) > 0) {
 					n_aux = new_note(input);
 					note_set_priority(DEFAULT_PRIORITY, n_aux);
 

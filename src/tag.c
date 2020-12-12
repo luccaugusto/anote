@@ -37,7 +37,7 @@ tag_get(char *name)
 
 		if (i->obj) {
 			t = (i->obj);
- 			if (strcmp(name, t->name) == 0)
+ 			if (strcmp(name, tag_get_name(t)) == 0)
 				break;
 		}
 
@@ -86,6 +86,25 @@ tag_get_size(void)
 	return sizeof(struct tag);
 }
 
+void
+tag_set_note_list(struct d_list **list, struct tag *t)
+{
+	t->notes = *list;
+	t->notes_number = d_list_length(list);
+}
+
+void
+tag_set_n_number(int n_number, struct tag *t)
+{
+	t->notes_number = n_number;
+}
+
+void
+tag_set_name(char *name, struct tag *t)
+{
+	t->name = name;
+}
+
 Note
 tag_search_note(char *needle_text, struct tag *haystack)
 {
@@ -127,7 +146,7 @@ tag_del(struct tag *t, struct d_list **list)
 		free(aux);
 	}
 
-	t->notes_number--;
+	tag_set_n_number(tag_get_n_number(t) - 1, t);
 }
 
 /* changes note n from tag cur_tag to tag n_tag */
@@ -161,7 +180,7 @@ tag_add_note(Note note, char *tag_name)
 
 		if (i->obj) {
 			t = (i->obj);
- 			if (strcmp(tag_name, t->name) == 0)
+ 			if (strcmp(tag_name, tag_get_name(t)) == 0)
 				break;
 		}
 
@@ -169,14 +188,14 @@ tag_add_note(Note note, char *tag_name)
 	}
 
 	/* tag not found, create a new one */
-	if (i->obj == NULL || strcmp(tag_name, t->name) != 0) {
+	if (i->obj == NULL || strcmp(tag_name, tag_get_name(t)) != 0) {
 		t = new_tag(tag_name);
 		d_list_add(t, &global_tag_list, sizeof(struct tag));
 	}
 
 	/* keep notes ordered by priotiry */
 	n_pri = note_get_priority(note);
-	ref = t->notes;
+	ref = tag_get_notes(t);
 
 	/* ref is the first note with lower priority */
 	while (ref->next) {
@@ -186,7 +205,7 @@ tag_add_note(Note note, char *tag_name)
 	}
 
 	d_list_add_before(note, ref, &t->notes, note_get_size());
-	t->notes_number++;
+	tag_set_n_number(tag_get_n_number(t) + 1, t);
 }
 
 void
@@ -201,7 +220,7 @@ tag_del_note(Note note, char *tag_name)
 
 		if (i->obj) {
 			t = (i->obj);
- 			if (strcmp(tag_name, t->name) == 0)
+ 			if (strcmp(tag_name, tag_get_name(t)) == 0)
 				break;
 		}
 
@@ -209,16 +228,9 @@ tag_del_note(Note note, char *tag_name)
 	}
 
 	/* tag not found, nothing to do */
-	if (i->obj == NULL || strcmp(tag_name, t->name) != 0)
+	if (i->obj == NULL || strcmp(tag_name, tag_get_name(t)) != 0)
 		return;
 
 	d_list_del_obj(note, &t->notes);
-	t->notes_number--;
-}
-
-void
-tag_set_note_list(struct d_list **list, struct tag *t)
-{
-	t->notes = *list;
-	t->notes_number = d_list_length(list);
+	tag_set_n_number(tag_get_n_number(t) - 1, t);
 }

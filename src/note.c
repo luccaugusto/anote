@@ -42,6 +42,7 @@ note_set_completed(int c, Note n)
 void
 note_set_text(char *n_text, Note n)
 {
+	n->text = realloc(n->text, sizeof(n_text));
 	strcpy(n->text, n_text);
 }
 

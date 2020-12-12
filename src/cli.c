@@ -1,4 +1,5 @@
 /* HEADERS */
+#include <errno.h>
 #include <ncurses.h>
 #include <menu.h>
 #include <panel.h>
@@ -24,7 +25,7 @@ void show_win(WINDOW *window);
 void hide_win(WINDOW *window);
 void print_tag_notes(WINDOW *window, Tag t);
 void populate_main_menu(void);
-void bind_menu(WINDOW *window, MENU *menu, int height, int widtdh);
+void bind_menu(WINDOW *window, MENU *menu, int height, int width);
 void build_tag_panels(WINDOW *window);
 void show_cmd(WINDOW *window);
 void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string/*, chtype color*/);
@@ -153,10 +154,14 @@ start_anote_cli(void)
 				if (input) {
 					n_aux = new_note(input);
 					note_set_priority(DEFAULT_PRIORITY, n_aux);
-					d_list_add(n_aux, &d_tag_notes, note_get_size());
+
+					tag_add_note(n_aux, d_tag_name);
+
 					/* reload window with new note */
 					load_displayed_tag(d_tag_name);
+
 					populate_main_menu();
+					bind_menu(main_win, main_menu, main_win_h, main_win_w);
 					wrefresh(menu_win(main_menu));
 				}
 				break;
@@ -184,6 +189,9 @@ start_anote_cli(void)
 void
 housekeeping(void)
 {
+	free(prompt_panel);
+	free(t_panel);
+
 	unpost_menu(main_menu);
 	free_menu(main_menu);
 
@@ -270,9 +278,8 @@ populate_main_menu(void)
 		main_items_size = d_tag_n_number + 1;
 		display_text_list = (char **) malloc(sizeof(char *) * (d_tag_n_number + 1));
 
-		n = d_tag_notes->obj;
-		for(i = d_tag_notes; i->next;i = i->next) {
-			text = note_get_text(n);
+		for(i = d_tag_notes; i->next; i = i->next) {
+			text = note_get_text(i->obj);
 			/* TODO support different display modes
 			   switch (display_mode) {
 			   case NOTE_ONLY:
@@ -295,12 +302,15 @@ populate_main_menu(void)
 			   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
 			   */
 			main_items[j++] = new_item(text, text);
-			n = i->next->obj;
 		}
 
 		display_text_list[d_tag_n_number] = (char *) NULL;
 		main_items[d_tag_n_number] = (ITEM *) NULL;
 		main_menu = new_menu((ITEM **) main_items);
+
+		if (!main_menu)
+			exit(errno);
+
 	} else {
 		main_items = calloc(1, sizeof(ITEM *));
 		main_items[0] = (ITEM *) NULL;
@@ -420,7 +430,7 @@ main_win_actions(int c)
 				if (answer[0] == 'y' || answer[0] == 'Y') {
 					n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
 
-					tag_del_note(n_aux, displayed_tag);
+					tag_del_note(n_aux, d_tag_name);
 					note_del(n_aux);
 
 					load_displayed_tag(d_tag_name);
@@ -428,6 +438,7 @@ main_win_actions(int c)
 					/* erase list from the menu */
 					werase(menu_sub(main_menu));
 					populate_main_menu();
+					bind_menu(main_win, main_menu, main_win_h, main_win_w);
 					wrefresh(menu_win(main_menu));
 				}
 			} else {

@@ -190,16 +190,30 @@ tag_add_note(Note note, char *tag_name)
 }
 
 void
-tag_del_note(Note n, struct tag *t)
+tag_del_note(Note note, char *tag_name)
 {
-	struct d_list *l = tag_get_notes(t);
-	d_list_del_obj(n, &l);
-	t->notes_number--;
+	struct d_list *i;
+	struct tag *t;
 
-	/* clears list */
-	if (t->notes_number == 0) {
-		t->notes = new_list_node();
+	/* find tag on the list */
+	i = global_tag_list;
+	while (i->next) {
+
+		if (i->obj) {
+			t = (i->obj);
+ 			if (strcmp(tag_name, t->name) == 0)
+				break;
+		}
+
+		i = i->next;
 	}
+
+	/* tag not found, nothing to do */
+	if (i->obj == NULL || strcmp(tag_name, t->name) != 0)
+		return;
+
+	d_list_del_obj(note, &t->notes);
+	t->notes_number--;
 }
 
 void

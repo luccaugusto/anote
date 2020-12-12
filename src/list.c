@@ -100,7 +100,7 @@ d_list_del_obj(void *obj, struct d_list **list)
 	if (i->obj == obj) {
 
 		aux = *list;
-		*list = aux->next;
+		*list = (*list)->next;
 		free(aux);
 
 	} else {
@@ -110,7 +110,7 @@ d_list_del_obj(void *obj, struct d_list **list)
 
 		if (i->next->obj == obj) {
 			aux = i->next;
-			i->next = aux->next;
+			i->next = i->next->next;
 			free(aux);
 		}
 	}

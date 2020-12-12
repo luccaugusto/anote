@@ -18,6 +18,7 @@ void housekeeping(void);
 
 void delete_win(WINDOW *local_win);
 void show_win(WINDOW *window);
+void hide_win(WINDOW *window);
 void print_tag_notes(WINDOW *window, Tag t);
 void populate_main_menu(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int widtdh);
@@ -27,6 +28,7 @@ void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *
 
 void main_win_actions(int c);
 void side_win_actions(int c);
+char *prompt_user(char *question);
 
 /* GLOBAL VARIABLES */
 extern struct d_list *global_tag_list;
@@ -42,6 +44,7 @@ int d_tag_n_number;
 char *d_tag_name;
 char **display_text_list;
 
+WINDOW *prompt_win;
 WINDOW *main_win;
 WINDOW *side_win;
 WINDOW *cur_win;
@@ -50,7 +53,11 @@ MENU *main_menu;
 MENU *side_menu;
 ITEM **main_items;
 ITEM *cur_item;
+PANEL *prompt_panel;
 PANEL *t_panel;
+
+int prompt_win_h;
+int prompt_win_w;
 int main_win_h;
 int main_win_w;
 int side_win_h;
@@ -79,13 +86,15 @@ organize_window_space(void)
 {
 	getmaxyx(stdscr,max_row,max_col);
 
-	footer_h = 4;
+	footer_h = HEADER_HEIGHT + 1;
 	main_win_h = max_row - footer_h;
 	side_win_h = max_row - footer_h;
+	prompt_win_h = HEADER_HEIGHT + 1;
 
 	footer_w = max_col;
 	main_win_w = max_col/10.0 * 7; /* 70% for main */
 	side_win_w = max_col - main_win_w;
+	prompt_win_w = max_col/2;
 }
 
 void
@@ -113,6 +122,9 @@ start_anote_cli(void)
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
+	prompt_win = create_new_win(prompt_win_h, prompt_win_w, max_row/4, max_col/4);
+	prompt_panel = new_panel(prompt_win);
+
 	cur_win = main_win;
 
 	label = malloc(strlen(label) + strlen(arg_tag_name));
@@ -188,9 +200,7 @@ WINDOW
 void
 delete_win(WINDOW *local_win)
 {
-	/* draws a blank border to erase the old one */
-	wborder(local_win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-	wrefresh(local_win);
+	hide_win(local_win);
 	delwin(local_win);
 }
 
@@ -198,6 +208,14 @@ void /* colors not yet supported */
 show_win(WINDOW *window/*, chtype color */)
 {
 	box(window, 0, 0);
+	wrefresh(window);
+}
+
+void
+hide_win(WINDOW *window)
+{
+	/* draws a blank border to erase the old one */
+	wborder(window, ' ', ' ', ' ',' ',' ',' ',' ',' ');
 	wrefresh(window);
 }
 
@@ -286,6 +304,7 @@ bind_menu(WINDOW *window, MENU *menu, int height, int width/* chtype colors */)
 	set_menu_mark(menu, "-> ");
 
 	menu_opts_off(menu,O_NONCYCLIC);
+	menu_opts_off(menu,O_SHOWDESC);
 	post_menu(menu);
 	wrefresh(window);
 }
@@ -350,6 +369,8 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 void /* notes manipulation */
 main_win_actions(int c)
 {
+	char *answer;
+
 	switch(c)
 	{
 		/* MOVE KEYS */
@@ -373,13 +394,19 @@ main_win_actions(int c)
 
 		/* MANIPULATION KEYS */
 		case 'd': /* delete */
-			n_aux = tag_search_note(item_name(current_item(main_menu)), displayed_tag);
-			/* PROMPT FOR CONFIRMATION */
-			d_list_del_obj(n_aux, d_tag_notes);
-			note_del(n_aux);
-			werase(menu_sub(main_menu));
-			populate_main_menu();
-			bind_menu(main_win, main_menu, main_win_h, main_win_w);
+			if (current_item(main_menu)) {
+				answer = prompt_user("Delete selected note? [y/N]: ");
+				if (answer[0] == 'y' || answer[0] == 'Y') {
+					n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
+					d_list_del_obj(n_aux, d_tag_notes);
+					note_del(n_aux);
+					werase(menu_sub(main_menu));
+					populate_main_menu();
+					bind_menu(main_win, main_menu, main_win_h, main_win_w);
+				}
+			} else {
+				prompt_user("Nothing to delete here");
+			}
 			break;
 		case KEY_CTAB:
 			cur_win = side_win;
@@ -422,3 +449,22 @@ side_win_actions(int c)
 	}
 
 }
+
+char *
+prompt_user(char *question)
+{
+	char *answer = malloc(256);
+	WINDOW *p_win = panel_window(prompt_panel);;
+
+	mvwprintw(p_win, 1, 1, question);
+	box(p_win, 0, 0);
+	show_panel(prompt_panel);
+
+	wgetstr(p_win, answer);
+
+	hide_win(p_win);
+	hide_panel(prompt_panel);
+
+	return answer;
+}
+

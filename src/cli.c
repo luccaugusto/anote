@@ -28,7 +28,7 @@ void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *
 
 void main_win_actions(int c);
 void side_win_actions(int c);
-char *prompt_user(char *question);
+char *prompt_user(char *question, int align_center);
 
 /* GLOBAL VARIABLES */
 extern struct d_list *global_tag_list;
@@ -395,7 +395,7 @@ main_win_actions(int c)
 		/* MANIPULATION KEYS */
 		case 'd': /* delete */
 			if (current_item(main_menu)) {
-				answer = prompt_user("Delete selected note? [y/N]: ");
+				answer = prompt_user("Delete selected note? [y/N]: ", 0);
 				if (answer[0] == 'y' || answer[0] == 'Y') {
 					n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
 					d_list_del_obj(n_aux, d_tag_notes);
@@ -405,7 +405,7 @@ main_win_actions(int c)
 					bind_menu(main_win, main_menu, main_win_h, main_win_w);
 				}
 			} else {
-				prompt_user("Nothing to delete here");
+				prompt_user("Nothing to delete here", 1);
 			}
 			break;
 		case KEY_CTAB:
@@ -451,17 +451,22 @@ side_win_actions(int c)
 }
 
 char *
-prompt_user(char *question)
+prompt_user(char *question, int align_center)
 {
 	char *answer = malloc(256);
 	WINDOW *p_win = panel_window(prompt_panel);;
 
-	mvwprintw(p_win, 1, 1, question);
+	if (align_center)
+		print_align_center(p_win, 1, 1, prompt_win_w, question);
+	else
+		mvwprintw(p_win, 1, 1, question);
+
 	box(p_win, 0, 0);
 	show_panel(prompt_panel);
 
 	wgetstr(p_win, answer);
 
+	werase(p_win);
 	hide_win(p_win);
 	hide_panel(prompt_panel);
 

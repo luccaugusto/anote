@@ -1,48 +1,37 @@
-SHELL = /bin/sh
-.POSIX:
+# anote - suckless note taking program
+# See LICENSE file for copyright and license details
 
-# anote version
-VERSION = 1.0.0
-
-CONFIG_DIR=${XDG_CONFIG_HOME/.anote}
-
-CC=gcc
-LIBS=-lpanel -lncurses -lmenu
-RM=rm -rf
-#flags
-CFLAGS= -c -w -Wall
-#GDB DEBUG ENABLED
-DEBUG=-g
-#GDB DEBUG DISABLED
-#DEBUG=
+include config.mk
 
 C_SRC=${wildcard ./src/*.c}
 H_SRC=${wildcard ./src/*.h}
 OBJ=${subst .c,.o,${subst src,build,${C_SRC}}}
-
-PROJ_NAME = anote
 
 all: clean options BD_DIR ${PROJ_NAME}
 
 options:
 	@ echo ${PROJ_NAME} build options:
 	@ echo "CFLAGS = ${CFLAGS}"
-	@ echo ' '
+	@ echo
 
-${PROJ_NAME}: ${OBJ}
+${PROJ_NAME}: config.h ${OBJ}
 	@ echo "building binary using ${CC} linker: $@"
 	${CC} $^ -o $@ ${LIBS} ${DEBUG}
+	@ echo '------------------------'
 	@ echo 'finished building binary'
-	@ echo ' '
+	@ echo
+
+config.h:
+	cp ./src/config.def.h ./src/$@
 
 ./build/%.o: ./src/%.c ./src/%.h
 	@ echo "Building target using ${CC} compiler: $<"
-	${CC} $< ${CFLAGS} ${DEBUG} -o $@
+	${CC} $< -c ${CFLAGS} -o $@
 	@ echo ' '
 
 ./build/main.o: ./src/main.c ${H_SRC}
 	@ echo "Building target using ${CC} compiler: $<"
-	${CC} $< ${CFLAGS} ${DEBUG} -o $@
+	${CC} $< ${CFLAGS} -o $@
 	@ echo ' '
 
 BD_DIR:

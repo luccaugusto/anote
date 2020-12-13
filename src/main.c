@@ -56,7 +56,7 @@ load_notes_from_file(void)
 			cur_note = read_until_separator('\n', notes_file);
 
 			/* if read something */
-			if (!is_blank(cur_note)) {
+			if (!is_blank(cur_tag) && !is_blank(cur_note)) {
 				n = new_note(cur_note);
 				note_set_priority(cur_pri, n);
 				tag_add_note(n, cur_tag);
@@ -86,16 +86,18 @@ write_notes_to_file(char *mode)
 		t = i->obj;
 		j = tag_get_notes(t);
 
-		if (!j)
-			continue;
-
-		for (; j->obj; j = j->next) {
+		while (j->obj) {
 			n = j->obj;
 			text = note_get_text(n);
 			if (!is_blank(text)) {
 				fprintf(notes_file, "%s %d %s\n", tag_get_name(t), note_get_priority(n), text);
 				notes_written++;
 			}
+
+			if (j->next)
+				j = j->next;
+			else
+				break;
 		}
 	}
 
@@ -119,19 +121,36 @@ build_file_name(void)
 void
 list_notes(void)
 {
+	int has_notes = 0;
 	struct d_list *i;
 	struct d_list *j;
 	Note n;
 	Tag t;
 
-	for (i = global_tag_list; i->obj; i = i->next) {
+	i = global_tag_list;
+	while (i->obj) {
 		t = i->obj;
+		j = tag_get_notes(t);
+
 		printf("Notes Tagged %s\n", tag_get_name(t));
-		for (j = tag_get_notes(t); j->obj; j = j->next) {
+
+		while (j->obj) {
+
 			n = j->obj;
 			printf("\t- %d %s\n", note_get_priority(n), note_get_text(n));
+			has_notes++;
+
+			if (j->next) j = j->next;
+			else break;
 		}
+
+
+		if (i->next) i = i->next;
+		else break;
 	}
+
+	if (!has_notes)
+		printf("No notes\n");
 }
 
 void

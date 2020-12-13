@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "anote.h"
 #include "list.h"
@@ -179,34 +180,37 @@ tag_add_note(Note note, char *tag_name)
 	i = global_tag_list;
 	while (i->next) {
 
-		if (i->obj) {
-			t = (i->obj);
- 			if (strcmp(tag_name, tag_get_name(t)) == 0)
-				break;
-		}
+		t = i->obj;
+		if (strcmp(tag_name, tag_get_name(t)) == 0)
+			break;
 
 		i = i->next;
 	}
 
 	/* tag not found, create a new one */
 	if (i->obj == NULL || strcmp(tag_name, tag_get_name(t)) != 0) {
+
 		t = new_tag(tag_name);
+		t->notes->obj = note;
+
 		d_list_add(t, &global_tag_list, sizeof(struct tag));
-	}
 
-	/* keep notes ordered by priotiry */
-	n_pri = note_get_priority(note);
-	ref = tag_get_notes(t);
+	} else {
 
-	/* ref is the first note with lower priority */
-	while (ref->next) {
-		if (!(ref->obj && n_pri >= note_get_priority(ref->obj)))
+		/* keep notes ordered by priotiry */
+		n_pri = note_get_priority(note);
+		ref = tag_get_notes(t);
+
+		/* ref is the first note with lower priority */
+		while (ref->next) {
+			if (!(ref->obj && n_pri >= note_get_priority(ref->obj)))
 				break;
-		ref = ref->next;
-	}
+			ref = ref->next;
+		}
 
-	d_list_add_before(note, ref, &t->notes, note_get_size());
-	tag_set_n_number(tag_get_n_number(t) + 1, t);
+		d_list_add_before(note, ref, &t->notes, note_get_size());
+		tag_set_n_number(tag_get_n_number(t) + 1, t);
+	}
 }
 
 void

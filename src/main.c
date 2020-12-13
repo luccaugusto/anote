@@ -94,10 +94,8 @@ write_notes_to_file(char *mode)
 				notes_written++;
 			}
 
-			if (j->next)
-				j = j->next;
-			else
-				break;
+			if (j->next) j = j->next;
+			else break;
 		}
 	}
 
@@ -132,7 +130,8 @@ list_notes(void)
 		t = i->obj;
 		j = tag_get_notes(t);
 
-		printf("Notes Tagged %s\n", tag_get_name(t));
+		if (d_list_length(&j) > 0)
+			printf("Notes Tagged %s\n", tag_get_name(t));
 
 		while (j->obj) {
 

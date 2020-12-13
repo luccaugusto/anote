@@ -10,9 +10,15 @@ d_list_length(struct d_list **list)
 {
 	int l = 0;
 	struct d_list *i;
-	if ((*list))
-		for (i=*list; i->next; i = i->next)
+	if ((*list)) {
+		i=(*list);
+		while (i->obj) {
 			++l;
+
+			if (i->next) i = i->next;
+			else break;
+		}
+	}
 	return l;
 }
 

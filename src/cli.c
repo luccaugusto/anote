@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "anote.h"
 #include "config.h"
 #include "list.h"
 #include "note.h"
@@ -446,8 +447,26 @@ build_tag_panels(WINDOW *window)
 void
 show_cmd(WINDOW *window)
 {
-	mvwprintw(window, 1, 1, "q: save & quit");
-	mvwprintw(window, 2, 1, "t: toogle show mode");
+	int col_offset = 1;
+	char *commands[] = {
+		"q: save & quit",
+		"t: toogle show mode",
+		"a: quick add note",
+		"A: add note to chosen tag",
+		"i: add note set priority",
+		"I: add note set priority and tag",
+		NULL,
+	};
+
+	int i = 0;
+	while (commands[i]) {
+		mvwprintw(window, 1, col_offset, commands[i]);
+		mvwprintw(window, 2, col_offset, commands[i+1]);
+
+		col_offset += MAX(strlen(commands[i]), strlen(commands[i+1])) + 1;
+
+		i+=2;
+	}
 }
 
 void /* colors not yet supported */

@@ -1,5 +1,6 @@
 /* HEADERS */
 #include <stdlib.h>
+#include <string.h>
 
 #include "list.h"
 
@@ -78,7 +79,6 @@ void /* adds last object and points it to the head to make a circular list */
 d_list_add_circ(void *obj, struct d_list **list, size_t obj_size)
 {
 	struct d_list *i;
-	struct d_list *aux;
 
 	i = *list;
 	for (; i->next != *list; i = i->next);

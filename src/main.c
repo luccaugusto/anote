@@ -4,6 +4,7 @@
 
 /* HEADERS */
 #include <errno.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 
 #include "anote.h"
 #include "cli.h"
+#include "config.h"
 #include "list.h"
 #include "note.h"
 #include "tag.h"
@@ -37,9 +39,7 @@ load_notes_from_file(void)
 	char *cur_tag = "";
 	char *cur_note;
 	int cur_pri;
-	int c;
 	Note n;
-	Tag t;
 
 	build_file_name();
 
@@ -56,7 +56,7 @@ load_notes_from_file(void)
 			cur_note = read_until_separator('\n', notes_file);
 
 			/* if read something */
-			if (strcmp(cur_tag, "") != 0) {
+			if (!is_blank(cur_note)) {
 				n = new_note(cur_note);
 				note_set_priority(cur_pri, n);
 				tag_add_note(n, cur_tag);
@@ -76,6 +76,7 @@ write_notes_to_file(char *mode)
 	struct d_list *i;
 	struct d_list *j;
 	int notes_written = 0;
+	char *text;
 
 	notes_file = fopen(notes_file_name, mode);
 
@@ -90,8 +91,11 @@ write_notes_to_file(char *mode)
 
 		for (; j->obj; j = j->next) {
 			n = j->obj;
-			fprintf(notes_file, "%s %d %s\n", tag_get_name(t), note_get_priority(n), note_get_text(n));
-			notes_written++;
+			text = note_get_text(n);
+			if (!is_blank(text)) {
+				fprintf(notes_file, "%s %d %s\n", tag_get_name(t), note_get_priority(n), text);
+				notes_written++;
+			}
 		}
 	}
 
@@ -106,13 +110,10 @@ build_file_name(void)
 
 	/* defaults to XDG_CONFIG_HOME/anote */
 	if (!notes_path) {
-		notes_path = notes_path == NULL ? getenv("XDG_CONFIG_HOME") : notes_path;
-		notes_path = realloc(notes_path, strlen(notes_path) + 6);
-		sprintf(notes_path, "%s.anote", notes_path);
+		notes_path = concatenate(getenv("XDG_CONFIG_HOME"), "/.anote");
 	}
 
-	notes_file_name = malloc(strlen(notes_path) + 9);
-	sprintf(notes_file_name, "%s/NOTES_FILE_NAME", notes_path);
+	notes_file_name = concatenate(notes_path, "/"NOTES_FILE_NAME);
 }
 
 void
@@ -183,7 +184,7 @@ main(int argc, char *argv[])
 				command = 'l';
 				break;
 			case 'p':
-				priority = optarg;
+				priority = str2int(optarg);
 				break;
 			case 't': /* specify tag */
 				arg_tag_name = optarg;

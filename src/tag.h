@@ -13,7 +13,7 @@ void tag_set_note_list(struct d_list **list, struct tag *t);
 void tag_set_n_number(int n_number, struct tag *t);
 void tag_set_name(char *name, struct tag *t);
 
-Note tag_search_note(char *needle_text, struct tag *haystack);
+Note tag_search_note(const char *needle_text, struct tag *haystack);
 
 void tag_del(Tag t, struct d_list **list);
 void ch_note_tag(Note n, Tag n_tag, Tag cur_tag);

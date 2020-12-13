@@ -1,11 +1,44 @@
 /* HEADERS */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* FUNCTION DEFINITION */
 /* ************************** *
        STRING MANIPULATION
  * ************************** */
+
+int
+str2int(char *str)
+{
+	int l = strlen(str);
+	int val = 1; /* value of the position (units, decimals, hundreds) */
+	int ret = 0;
+
+	/* starts from the end of the string (less significative position)
+	 * and multiply by the value of its position
+	 */
+	for (int i=l-1; i>=0; --i) {
+		ret += (str[i]-48) * val;
+		val*=10;
+	}
+	return ret;
+}
+
+int
+is_blank(char *str)
+{
+	int blank = 1;
+	int i = 0;
+	while (i < strlen(str)) {
+		if (!(str[i] == ' ' || str[i] == '\n' || str[i] == '\t')) {
+			blank = 0;
+			break;
+		}
+		++i;
+	}
+	return blank;
+}
 
 /* remove quotation marks and spaces outside of them */
 char *
@@ -62,23 +95,6 @@ concatenate(char *beginning, char *ending)
 
 	ret[beg_size + end_size] = '\0';
 
-	return ret;
-}
-
-int
-str2int(char *str)
-{
-	int l = strlen(str);
-	int val = 1; /* value of the position (units, decimals, hundreds) */
-	int ret = 0;
-
-	/* starts from the end of the string (less significative position)
-	 * and multiply by the value of its position
-	 */
-	for (int i=l-1; i>=0; --i) {
-		ret += (str[i]-48) * val;
-		val*=10;
-	}
 	return ret;
 }
 

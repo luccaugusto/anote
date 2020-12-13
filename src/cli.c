@@ -4,12 +4,15 @@
 #include <menu.h>
 #include <panel.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 #include "list.h"
 #include "note.h"
 #include "tag.h"
 #include "cli.h"
+#include "utils.h"
 
 /* FUNCTION PROTOTYPES */
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
@@ -21,7 +24,7 @@ void housekeeping(void);
 void delete_win(WINDOW *local_win);
 void show_win(WINDOW *window);
 void hide_win(WINDOW *window);
-void print_tag_notes(WINDOW *window, Tag t);
+void draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */);
 void populate_main_menu(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
 void build_tag_panels(WINDOW *window);
@@ -146,12 +149,11 @@ start_anote_cli(void)
 	doupdate();
 	t_panel = panel_list->obj;
 
-	init_pair
 	do {
 		switch (c) {
 			case 'a': /* QUICK ADD, default priority */
 				input = prompt_user("Note text [blank to cancel]: ", 0);
-				if (strlen(input) > 0) {
+				if (!is_blank(input)) {
 					n_aux = new_note(input);
 					note_set_priority(DEFAULT_PRIORITY, n_aux);
 
@@ -160,14 +162,41 @@ start_anote_cli(void)
 					/* reload window with new note */
 					load_displayed_tag(d_tag_name);
 
+					werase(menu_sub(main_menu));
 					populate_main_menu();
 					bind_menu(main_win, main_menu, main_win_h, main_win_w);
 					wrefresh(menu_win(main_menu));
 				}
 				break;
+			case 'A': /* ADD A NOTE set tag */
+				input = prompt_user("Note text [blank to cancel]: ", 0);
+				if (!is_blank(input)) {
+					n_aux = new_note(input);
+
+					input = prompt_user("On which tag? [blank for default]: ", 0);
+					if (is_blank(input))
+						input = DEFAULT_TAG;
+
+					note_set_priority(DEFAULT_PRIORITY, n_aux);
+
+					tag_add_note(n_aux, input);
+
+					if (strcmp(input, d_tag_name) == 0) {
+						/* reload window with new note */
+						load_displayed_tag(d_tag_name);
+
+						werase(menu_sub(main_menu));
+						populate_main_menu();
+						bind_menu(main_win, main_menu, main_win_h, main_win_w);
+						wrefresh(menu_win(main_menu));
+					} else {
+						/* TODO RELOAD OTHER TAGS WINDOW */
+					}
+				}
+				break;
 			case 'i': /* ADD A NOTE set priority */
 				input = prompt_user("Note text [blank to cancel]: ", 0);
-				if (strlen(input) > 0) {
+				if (!is_blank(input)) {
 					n_aux = new_note(input);
 
 					intput = str2int(prompt_user("Note priority [0-9]: ", 0));
@@ -181,6 +210,7 @@ start_anote_cli(void)
 					/* reload window with new note */
 					load_displayed_tag(d_tag_name);
 
+					werase(menu_sub(main_menu));
 					populate_main_menu();
 					bind_menu(main_win, main_menu, main_win_h, main_win_w);
 					wrefresh(menu_win(main_menu));
@@ -188,16 +218,18 @@ start_anote_cli(void)
 				break;
 			case 'I': /* ADD A NOTE set priority and tag */
 				input = prompt_user("Note text [blank to cancel]: ", 0);
-				if (strlen(input) > 0) {
+				if (!is_blank(input)) {
 					n_aux = new_note(input);
 
 					intput = str2int(prompt_user("Note priority [0-9]: ", 0));
 					while (intput < 0 || 9 < intput)
 						intput = str2int(prompt_user("Type a valid number please [0-9]: ", 0));
 
-					input = prompt_user("On which tag? ", 0);
+					input = prompt_user("On which tag? [blank for default]: ", 0);
+					if (is_blank(input))
+						input = DEFAULT_TAG;
 
-					note_set_priority(intput, n_aux);
+					note_set_priority(DEFAULT_PRIORITY, n_aux);
 
 					tag_add_note(n_aux, input);
 
@@ -205,10 +237,14 @@ start_anote_cli(void)
 						/* reload window with new note */
 						load_displayed_tag(d_tag_name);
 
+						werase(menu_sub(main_menu));
 						populate_main_menu();
 						bind_menu(main_win, main_menu, main_win_h, main_win_w);
 						wrefresh(menu_win(main_menu));
+					} else {
+						/* TODO RELOAD OTHER TAGS WINDOW */
 					}
+
 				}
 				break;
 			default:
@@ -294,7 +330,7 @@ void
 populate_main_menu(void)
 {
 	struct d_list *i;
-	Note n = NULL;
+	/*Note n = NULL;*/
 	char *text;
 	int j=0;
 
@@ -439,7 +475,6 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 void /* notes manipulation */
 main_win_actions(int c)
 {
-	struct d_list *aux;
 	char *answer;
 
 	switch(c)
@@ -542,7 +577,9 @@ prompt_user(char *question, int align_center)
 
 	show_panel(prompt_panel);
 
+	echo();
 	wgetstr(p_win, answer);
+	noecho();
 
 	werase(p_win);
 	hide_panel(prompt_panel);

@@ -1,4 +1,7 @@
 /* HEADERS */
+#include <stdlib.h>
+#include <string.h>
+
 #include "note.h"
 
 /* TYPES */

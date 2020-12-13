@@ -1,5 +1,6 @@
 /* HEADERS */
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "anote.h"
@@ -106,7 +107,7 @@ tag_set_name(char *name, struct tag *t)
 }
 
 Note
-tag_search_note(char *needle_text, struct tag *haystack)
+tag_search_note(const char *needle_text, struct tag *haystack)
 {
 	struct d_list *i;
 	Note needle;
@@ -142,7 +143,7 @@ tag_del(struct tag *t, struct d_list **list)
 		for (i = t_aux->notes; i->next; i = i->next)
 			note_del(i->obj);
 
-		delete_list(t_aux->notes);
+		delete_list(&(t_aux->notes));
 		free(aux);
 	}
 

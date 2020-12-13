@@ -5,7 +5,7 @@
 #define MAIN_WIN_REL_WIDTH 70
 #define MENU_MARK "->"
 #define DEFAULT_TAG "general"
-#define NOTES_FILE_NAME .anotes
+#define NOTES_FILE_NAME ".anotes"
 
 enum COLORS {
 	sel_bg,
@@ -16,4 +16,4 @@ enum COLORS {
 	hl_fg,
 	nohl_bg,
 	nohl_fg,
-}
+};

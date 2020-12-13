@@ -113,8 +113,9 @@ void
 start_anote_cli(void)
 {
 	int c = -1;
-	char *label = "Notes";
+	int intput;
 	char *input;
+	char *label = "Notes";
 	panel_list = new_list_node_circ();
 
 	init_cli();
@@ -149,7 +150,7 @@ start_anote_cli(void)
 	do {
 		switch (c) {
 			case 'a': /* QUICK ADD, default priority */
-				input = prompt_user("Note text: ", 0);
+				input = prompt_user("Note text [blank to cancel]: ", 0);
 				if (strlen(input) > 0) {
 					n_aux = new_note(input);
 					note_set_priority(DEFAULT_PRIORITY, n_aux);
@@ -164,11 +165,51 @@ start_anote_cli(void)
 					wrefresh(menu_win(main_menu));
 				}
 				break;
-			case 'i':
-				/* ADD A NOTE set priority */
+			case 'i': /* ADD A NOTE set priority */
+				input = prompt_user("Note text [blank to cancel]: ", 0);
+				if (strlen(input) > 0) {
+					n_aux = new_note(input);
+
+					intput = str2int(prompt_user("Note priority [0-9]: ", 0));
+					while (intput < 0 || 9 < intput)
+						intput = str2int(prompt_user("Type a valid number please [0-9]: ", 0));
+
+					note_set_priority(intput, n_aux);
+
+					tag_add_note(n_aux, d_tag_name);
+
+					/* reload window with new note */
+					load_displayed_tag(d_tag_name);
+
+					populate_main_menu();
+					bind_menu(main_win, main_menu, main_win_h, main_win_w);
+					wrefresh(menu_win(main_menu));
+				}
 				break;
-			case 'I':
-				/* ADD A NOTE set priority and tag */
+			case 'I': /* ADD A NOTE set priority and tag */
+				input = prompt_user("Note text [blank to cancel]: ", 0);
+				if (strlen(input) > 0) {
+					n_aux = new_note(input);
+
+					intput = str2int(prompt_user("Note priority [0-9]: ", 0));
+					while (intput < 0 || 9 < intput)
+						intput = str2int(prompt_user("Type a valid number please [0-9]: ", 0));
+
+					input = prompt_user("On which tag? ", 0);
+
+					note_set_priority(intput, n_aux);
+
+					tag_add_note(n_aux, input);
+
+					if (strcmp(input, d_tag_name) == 0) {
+						/* reload window with new note */
+						load_displayed_tag(d_tag_name);
+
+						populate_main_menu();
+						bind_menu(main_win, main_menu, main_win_h, main_win_w);
+						wrefresh(menu_win(main_menu));
+					}
+				}
 				break;
 			default:
 				if (cur_win == main_win) main_win_actions(c);

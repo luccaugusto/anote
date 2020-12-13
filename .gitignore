@@ -1,2 +1,3 @@
 build/*
 anote
+src/config.h

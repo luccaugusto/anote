@@ -28,7 +28,7 @@ struct d_list *global_tag_list;
 char *errmsg;
 FILE *notes_file;
 char *notes_file_name;
-char *arg_tag_name = "general"; /* general is default tag */
+char *arg_tag_name = DEFAULT_TAG;
 ANOTE_ERROR aerr;
 
 void
@@ -108,11 +108,11 @@ build_file_name(void)
 	if (!notes_path) {
 		notes_path = notes_path == NULL ? getenv("XDG_CONFIG_HOME") : notes_path;
 		notes_path = realloc(notes_path, strlen(notes_path) + 6);
-		sprintf(notes_path, "%sanote", notes_path);
+		sprintf(notes_path, "%s.anote", notes_path);
 	}
 
 	notes_file_name = malloc(strlen(notes_path) + 9);
-	sprintf(notes_file_name, "%s/notes.txt", notes_path);
+	sprintf(notes_file_name, "%s/NOTES_FILE_NAME", notes_path);
 }
 
 void

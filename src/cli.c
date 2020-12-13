@@ -5,13 +5,11 @@
 #include <panel.h>
 #include <stdio.h>
 
+#include "config.h"
 #include "list.h"
 #include "note.h"
 #include "tag.h"
 #include "cli.h"
-
-#define DEFAULT_PRIORITY 0
-#define ARRAY_SIZE(x) sizeof(x[0]) / sizeof(x)
 
 /* FUNCTION PROTOTYPES */
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
@@ -43,7 +41,7 @@ Tag displayed_tag;
 Note n_aux;
 struct d_list *d_tag_notes;
 struct d_list *panel_list;
-int display_mode = NOTE_ONLY;
+int display_mode = DEFAULT_DISPLAY_MODE;
 int d_tag_n_number;
 int main_items_size;
 char *d_tag_name;
@@ -97,7 +95,7 @@ organize_window_space(void)
 	prompt_win_h = HEADER_HEIGHT + 1;
 
 	footer_w = max_col;
-	main_win_w = max_col/10.0 * 7; /* 70% for main */
+	main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
 	side_win_w = max_col - main_win_w;
 	prompt_win_w = max_col/2;
 }
@@ -147,6 +145,7 @@ start_anote_cli(void)
 	doupdate();
 	t_panel = panel_list->obj;
 
+	init_pair
 	do {
 		switch (c) {
 			case 'a': /* QUICK ADD, default priority */
@@ -331,7 +330,7 @@ bind_menu(WINDOW *window, MENU *menu, int height, int width/* chtype colors */)
 	set_menu_sub(menu, derwin(window, height-HEADER_HEIGHT, width-2, HEADER_HEIGHT, 1));
 
 	/* * to mark */
-	set_menu_mark(menu, "-> ");
+	set_menu_mark(menu, MENU_MARK);
 
 	menu_opts_off(menu,O_NONCYCLIC);
 	menu_opts_off(menu,O_SHOWDESC);

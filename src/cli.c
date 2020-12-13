@@ -420,18 +420,59 @@ void
 build_tag_panels(WINDOW *window)
 {
 	Tag t;
+	PANEL *p;
+	WINDOW *p_window;
 	struct d_list *i;
+	struct d_list *j;
+	char *text;
+	int k;
+	int p_height;
+	int t_n_number;
 	int x_offset = 1;
 	int y_offset = HEADER_HEIGHT;
-	PANEL *p;
 
 	for(i = global_tag_list; i->next; i=i->next) {
 		t = i->obj;
 		if (tag_get_name(t) != d_tag_name) {
 
-			p = new_panel(window);
+			t_n_number = tag_get_n_number(t);
+			if (0 <= t_n_number && t_n_number < MAX_NOTES_PER_PANEL)
+				p_height = t_n_number;
+			else /* number of notes + header + borders */
+				p_height = MAX_NOTES_PER_PANEL;
+
+			p_height += HEADER_HEIGHT + 3;
+
+			p_window = derwin(window, p_height, side_win_w - 2, y_offset, x_offset);
+			p = new_panel(p_window);
 			d_list_add_circ(p, &panel_list, sizeof(*p));
-			mvwprintw(window, y_offset++, x_offset, "%s\n", tag_get_name(t));
+			box(p_window, 0, 0);
+			draw_headers(p_window, p_height, side_win_w, tag_get_name(t));
+
+			/* limit of MAX_NOTES_PER_PANEL */
+			j = tag_get_notes(t);
+			k = 0;
+			while (j->obj && k < MAX_NOTES_PER_PANEL) {
+				text = note_get_text(j->obj);
+
+				/* truncate the string if its longer than side_win_w-borders characters */
+				if (strlen(text) > side_win_w - 2) {
+					/* -5 = 2 borders and ... */
+					text = substr(text, 0, side_win_w - 5);
+					text = concatenate(text, "...");
+				}
+
+				mvwprintw(p_window, y_offset, x_offset, text);
+
+				++y_offset;
+				++k;
+
+				if (j->next) j = j->next;
+				else break;
+			}
+
+			if (k < t_n_number)
+				mvwprintw(p_window, y_offset, x_offset, "+++");
 
 		}
 	}

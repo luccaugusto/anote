@@ -1,3 +1,5 @@
+#define HEADER_HEIGHT 3
+
 /* types */
 typedef enum {
 	NOTE_ONLY = 0,

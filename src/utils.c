@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
+
 /* FUNCTION DEFINITION */
 /* ************************** *
        STRING MANIPULATION
@@ -38,6 +40,20 @@ is_blank(char *str)
 		++i;
 	}
 	return blank;
+}
+
+char *
+substr(char *str, int begin, int end)
+{
+	char *ret;
+	if (end > strlen(str))
+		end = strlen(str);
+
+	for (int i=begin; i < end; ++i) {
+		ret = concatenate(ret, &str[i]);
+	}
+
+	return ret;
 }
 
 /* remove quotation marks and spaces outside of them */

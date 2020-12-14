@@ -38,6 +38,7 @@ void side_win_actions(int c);
 char *prompt_user(char *question, int align_center);
 
 void prompt_add_note(short tag, short priority);
+int prompt_delete_tag(void);
 
 /* GLOBAL VARIABLES */
 Tag displayed_tag;
@@ -166,6 +167,14 @@ start_anote_cli(void)
 				break;
 			case 'I': /* ADD A NOTE set priority and tag */
 				prompt_add_note(1, 1);
+				break;
+			case 'D': /* Delete a tag */
+				if (prompt_delete_tag()) {
+					prompt_user("Tag Deleted", ALIGN_CENTER);
+					reload_side_win();
+				} else {
+					prompt_user("Tag could not be deleted", ALIGN_CENTER);
+				}
 				break;
 			default:
 				if (cur_win == main_win) main_win_actions(c);
@@ -378,6 +387,8 @@ show_cmd(WINDOW *window)
 		"A: add note to chosen tag",
 		"i: add note set priority",
 		"I: add note set priority and tag",
+		"d: delete selected note",
+		"D: delete selected tag",
 		NULL,
 	};
 
@@ -546,26 +557,62 @@ prompt_add_note(short tag, short priority)
 	n_aux = new_note(input);
 
 	if (priority) {
-		intput = str2int(prompt_user("Note priority [0-9]: ", 0));
+		intput = str2int(prompt_user("Note priority [0-9]: ", ALIGN_LEFT));
 
 		while (intput < 0 || 9 < intput)
-			intput = str2int(prompt_user("Type a valid number please [0-9]: ", 0));
+			intput = str2int(prompt_user("Type a valid number please [0-9]: ", ALIGN_LEFT));
 
 		n_pri = intput;
 	}
 
 	if (tag) {
-		input = prompt_user("On which tag? [blank for default]: ", 0);
+		input = prompt_user("On which tag? [blank for default]: ", ALIGN_LEFT);
 		if (!is_blank(input))
 			n_tag = input;
+		if (tag_get(n_tag) == NULL)
+			create_panel = 1;
 	}
 
 	note_set_priority(n_pri, n_aux);
 	tag_add_note(n_aux, n_tag);
+
+	if (create_panel) {
+		anote_new_panel(side_win, tag_get(n_tag));
+	}
 
 	/* reload main window or side window */
 	if (strcmp(n_tag, d_tag_name) == 0)
 		reload_main_win();
 	else
 		reload_side_win();
+}
+
+int
+prompt_delete_tag(void)
+{
+	Tag t;
+	PANEL *p;
+	int r = 0;
+	char *answer = malloc(sizeof(char));
+
+	answer = prompt_user("Delete which tag? ", ALIGN_LEFT);
+	if (!is_blank(answer)) {
+
+		t = tag_get(answer);
+		if (!t) {
+			prompt_user("Tag does not exist", ALIGN_CENTER);
+		} else {
+
+			/* deletes the panel containing the tag */
+			p = anote_search_panel(t);
+			if (p == NULL)
+				return 0;
+
+			d_list_del_obj(p, &panel_list);
+			del_panel(p);
+			tag_del(t, &global_tag_list);
+			r = 1;
+		}
+	}
+	return r;
 }

@@ -33,34 +33,14 @@ anote_panel_height(Tag t)
 }
 
 void
-build_tag_panels(WINDOW *window)
-{
-	Tag t;
-	PANEL *p;
-	struct d_list *i;
-	int x_offset = 1;
-	int y_offset = HEADER_HEIGHT;
-
-	for(i = global_tag_list; i->next; i=i->next) {
-		t = i->obj;
-		if (tag_get_name(t) != d_tag_name) {
-			p = anote_new_panel(window, t, y_offset, x_offset);
-			anote_show_panel(p, y_offset, x_offset);
-
-			y_offset += anote_panel_height(t);
-		}
-	}
-
-	update_panels();
-}
-
-void
-anote_show_panel(PANEL *p, int y_offset, int x_offset)
+anote_show_panel(PANEL *p)
 {
 	struct d_list *j;
 	WINDOW *p_window;
 	int k;
 	int p_height;
+	int y_offset = HEADER_HEIGHT;
+	int x_offset = 1;
 	char *text;
 
 	p_height = anote_panel_height((Tag) panel_userptr(p));
@@ -93,6 +73,32 @@ anote_show_panel(PANEL *p, int y_offset, int x_offset)
 
 	if (k < tag_get_n_number((Tag) panel_userptr(p)))
 		mvwprintw(p_window, y_offset, x_offset, "+++");
+}
+
+void
+build_tag_panels(WINDOW *window)
+{
+	Tag t;
+	PANEL *p;
+	struct d_list *i;
+	int x_offset = 1;
+	int y_offset = HEADER_HEIGHT;
+
+	i = global_tag_list;
+	while (i->obj) {
+		t = i->obj;
+		if (tag_get_name(t) != d_tag_name) {
+			p = anote_new_panel(window, t, y_offset, x_offset);
+			anote_show_panel(p);
+
+			y_offset += anote_panel_height(t);
+		}
+
+		if (i->next) i = i->next;
+		else break;
+	}
+
+	update_panels();
 }
 
 PANEL * /* create panel and insert it on list */

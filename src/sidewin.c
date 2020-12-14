@@ -65,7 +65,7 @@ anote_show_panel(PANEL *p)
 		/* truncate the string if its longer than side_win_w-borders characters */
 		if (strlen(text) > side_win_w - 2) {
 			/* -5 = 2 borders and ... */
-			text = substr(text, 0, side_win_w - 5);
+			text = substr(text, 0, side_win_w - 7);
 			text = concatenate(text, "...");
 		}
 

@@ -46,12 +46,13 @@ char *
 substr(char *str, int begin, int end)
 {
 	char *ret;
+
 	if (end > strlen(str))
 		end = strlen(str);
 
-	for (int i=begin; i < end; ++i) {
-		ret = concatenate(ret, &str[i]);
-	}
+	ret = malloc(sizeof(char) * (end-begin));
+
+	memcpy(ret, &str[begin], (end-begin));
 
 	return ret;
 }

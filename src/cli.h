@@ -20,8 +20,11 @@ typedef enum {
 /* FUNCTION PROTOTYPES */
 void start_anote_cli(void);
 void draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */);
+void reload_main_win(void);
+void reload_side_win(void);
 
 /* GLOBAL VARIABLES */
+extern WINDOW *side_win;
 extern Tag displayed_tag;
 extern int d_tag_n_number;
 extern char *d_tag_name;

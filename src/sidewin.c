@@ -54,7 +54,7 @@ anote_show_panel(PANEL *p)
 	p_window = panel_window(p);
 
 	box(p_window, 0, 0);
-	draw_headers(p_window, p_height, side_win_w, tag_get_name((Tag) panel_userptr(p)));
+	draw_headers(p_window, p_height, side_win_w - 2, tag_get_name((Tag) panel_userptr(p)));
 
 	/* limit of MAX_NOTES_PER_PANEL */
 	j = tag_get_notes((Tag) panel_userptr(p));

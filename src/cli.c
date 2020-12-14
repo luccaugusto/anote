@@ -12,8 +12,9 @@
 #include "list.h"
 #include "note.h"
 #include "tag.h"
-#include "cli.h"
+#include "sidewin.h"
 #include "utils.h"
+#include "cli.h"
 
 /* FUNCTION PROTOTYPES */
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
@@ -25,10 +26,10 @@ void housekeeping(void);
 void delete_win(WINDOW *local_win);
 void show_win(WINDOW *window, chtype color);
 void hide_win(WINDOW *window);
-void draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */);
+void reload_main_win(void);
+void reload_side_win(void);
 void populate_main_menu(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
-void build_tag_panels(WINDOW *window);
 void show_cmd(WINDOW *window);
 void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string/*, chtype color*/);
 
@@ -39,10 +40,6 @@ char *prompt_user(char *question, int align_center);
 void prompt_add_note(short tag, short priority);
 
 /* GLOBAL VARIABLES */
-extern struct d_list *global_tag_list;
-extern FILE *notes_file;
-extern char *notes_file_name;
-
 Tag displayed_tag;
 Note n_aux;
 struct d_list *d_tag_notes;
@@ -242,6 +239,35 @@ hide_win(WINDOW *window)
 	wrefresh(window);
 }
 
+void
+reload_main_win(void)
+{
+	load_displayed_tag(d_tag_name);
+
+	werase(menu_sub(main_menu));
+	populate_main_menu();
+	bind_menu(main_win, main_menu, main_win_h, main_win_w);
+	wrefresh(menu_win(main_menu));
+}
+
+void
+reload_side_win(void)
+{
+	struct d_list *i;
+	int y_offset = HEADER_HEIGHT;
+
+	i = panel_list;
+	while (i->obj) {
+		anote_show_panel(i->obj, y_offset, 1);
+		y_offset += anote_panel_height((Tag) panel_userptr(i->obj));
+
+		if (i->next) i = i->next;
+		else break;
+	}
+
+	update_panels();
+}
+
 void /* colors not yet supported */
 draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */)
 {
@@ -338,75 +364,6 @@ bind_menu(WINDOW *window, MENU *menu, int height, int width/* chtype colors */)
 	menu_opts_off(menu,O_SHOWDESC);
 	post_menu(menu);
 	wrefresh(window);
-}
-
-void
-build_tag_panels(WINDOW *window)
-{
-	Tag t;
-	PANEL *p;
-	WINDOW *p_window;
-	struct d_list *i;
-	struct d_list *j;
-	char *text;
-	int k;
-	int p_height;
-	int t_n_number;
-	int x_offset = 1;
-	int y_offset = HEADER_HEIGHT;
-
-	for(i = global_tag_list; i->next; i=i->next) {
-		t = i->obj;
-		if (tag_get_name(t) != d_tag_name) {
-
-			t_n_number = tag_get_n_number(t);
-			if (0 <= t_n_number && t_n_number < MAX_NOTES_PER_PANEL)
-				p_height = t_n_number;
-			else /* number of notes + header + borders */
-				p_height = MAX_NOTES_PER_PANEL;
-
-			p_height += HEADER_HEIGHT + 3;
-
-			p_window = derwin(window, p_height, side_win_w - 2, y_offset, x_offset);
-			p = new_panel(p_window);
-			d_list_add_circ(p, &panel_list, sizeof(*p));
-			box(p_window, 0, 0);
-			draw_headers(p_window, p_height, side_win_w, tag_get_name(t));
-
-			/* limit of MAX_NOTES_PER_PANEL */
-			j = tag_get_notes(t);
-			k = 0;
-			while (j->obj && k < MAX_NOTES_PER_PANEL) {
-				text = note_get_text(j->obj);
-
-				/* truncate the string if its longer than side_win_w-borders characters */
-				if (strlen(text) > side_win_w - 2) {
-					/* -5 = 2 borders and ... */
-					text = substr(text, 0, side_win_w - 5);
-					text = concatenate(text, "...");
-				}
-
-				mvwprintw(p_window, y_offset, x_offset, text);
-
-				++y_offset;
-				++k;
-
-				if (j->next) j = j->next;
-				else break;
-			}
-
-			if (k < t_n_number)
-				mvwprintw(p_window, y_offset, x_offset, "+++");
-
-		}
-	}
-
-	/* point each panel to the next one */
-	for(i = panel_list; i->next != panel_list; i = i->next) {
-		set_panel_userptr(i->obj, i->next->obj);
-	}
-	set_panel_userptr(i->obj, i->next->obj);
-	update_panels();
 }
 
 void
@@ -575,8 +532,8 @@ void
 prompt_add_note(short tag, short priority)
 {
 	int intput;
-	char *input;
 	int n_pri = DEFAULT_PRIORITY;
+	char *input;
 	char *n_tag = DEFAULT_TAG;
 
 	input = prompt_user("Note text [blank to cancel]: ", 0);
@@ -604,16 +561,9 @@ prompt_add_note(short tag, short priority)
 	note_set_priority(n_pri, n_aux);
 	tag_add_note(n_aux, n_tag);
 
-	if (strcmp(n_tag, d_tag_name) == 0) {
-		/* reload window with new note */
-		load_displayed_tag(d_tag_name);
-
-		werase(menu_sub(main_menu));
-		populate_main_menu();
-		bind_menu(main_win, main_menu, main_win_h, main_win_w);
-		wrefresh(menu_win(main_menu));
-	} else {
-		/* TODO RELOAD OTHER TAGS WINDOW */
-	}
-
+	/* reload main window or side window */
+	if (strcmp(n_tag, d_tag_name) == 0)
+		reload_main_win();
+	else
+		reload_side_win();
 }

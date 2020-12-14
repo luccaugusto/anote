@@ -15,11 +15,26 @@ typedef enum {
 	NOTE_COMP_PRIO,
 } DisplayModes;
 
-/* GLOBAL VARIABLES */
-extern struct d_list *global_tag_list;
-extern char *arg_tag_name;
-
 /* FUNCTION PROTOTYPES */
 void start_anote_cli(void);
+void draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */);
+
+/* GLOBAL VARIABLES */
+extern Tag displayed_tag;
+extern int d_tag_n_number;
+extern char *d_tag_name;
+extern struct d_list *d_tag_notes;
+
+extern struct d_list *panel_list;
+extern int prompt_win_h;
+extern int prompt_win_w;
+extern int main_win_h;
+extern int main_win_w;
+extern int side_win_h;
+extern int side_win_w;
+extern int footer_h;
+extern int footer_w;
+extern int max_row;
+extern int max_col;
 
 #endif

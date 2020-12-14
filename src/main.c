@@ -5,17 +5,18 @@
 /* HEADERS */
 #include <errno.h>
 #include <getopt.h>
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "anote.h"
-#include "cli.h"
 #include "config.h"
 #include "list.h"
 #include "note.h"
 #include "tag.h"
+#include "cli.h"
 #include "utils.h"
 
 /* FUNCTION PROTOTYPES */

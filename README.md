@@ -25,19 +25,21 @@ Currently under development.
 
 ## TODO
 ### Shell
-+ implement remove function alternative without dmenu
-+ add function to import every todo item from a project
++ implement remove function alternative without dmenu.
++ add function to import every todo item from a project.
 
 ### Data
 + Change shell script output format to suit the CLI application as well.
-+ save the date a note was added and increase its priority automattically as time passes
++ save the date a note was added and increase its priority automattically as time passes.
++ Allow tags to have spaces in their name.
 
 ### CLI
-+ Different modes to show displayed notes: only text, priority + text, completed + text, priority + completed + text
-+ Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about)
-+ Tab to change the selected tag window
-+ enter to make selected window master
-+ tick note as complete
-+ vim bindings
-+ Implement colors: show more prioritary notes in red, mid priority notes in orange, other notes in white
-+ Make a window to hold a shell instance so user can run simple commands inside anote
++ Different modes to show displayed notes: only text, priority + text, completed + text, priority + completed + text.
++ Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about).
++ Tab to change the selected tag window.
++ enter to make selected window master.
++ Key to expand selected tag if not all its notes are displayed.
++ tick note as complete.
++ vim bindings.
++ Implement colors: show more prioritary notes in red, mid priority notes in orange, other notes in white.
++ Make a window to hold a shell instance so user can run simple commands inside anote.

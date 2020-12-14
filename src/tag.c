@@ -131,7 +131,6 @@ tag_del(struct tag *t, struct d_list **list)
 {
 	struct d_list *i;
 	struct d_list *aux;
-	struct tag *t_aux;
 
 	for (i = *list; i->next && i->next->obj != t; i = i->next);
 	aux = i->next;
@@ -139,16 +138,13 @@ tag_del(struct tag *t, struct d_list **list)
 	/* tag found */
 	if (aux->obj == t) {
 		i->next = aux->next;
-		t_aux = aux->obj;
 
-		for (i = t_aux->notes; i->next; i = i->next)
+		for (i = t->notes; i->next; i = i->next)
 			note_del(i->obj);
 
-		delete_list(&(t_aux->notes));
+		delete_list(&(t->notes));
 		free(aux);
 	}
-
-	tag_set_n_number(tag_get_n_number(t) - 1, t);
 }
 
 /* changes note n from tag cur_tag to tag n_tag */

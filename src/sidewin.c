@@ -13,6 +13,10 @@
 #include "utils.h"
 #include "sidewin.h"
 
+/* GLOBAL VARIABLES */
+int side_y_offset = HEADER_HEIGHT;
+int side_x_offset = 1;
+
 /* FUNCTION DEFINITIONS */
 
 int /* calculate panel height */
@@ -27,7 +31,7 @@ anote_panel_height(Tag t)
 		p_height = MAX_NOTES_PER_PANEL;
 
  	/* height + header + borders */
-	p_height += HEADER_HEIGHT + 3;
+	p_height+=HEADER_HEIGHT + 3;
 
 	return p_height;
 }
@@ -42,6 +46,9 @@ anote_show_panel(PANEL *p)
 	int y_offset = HEADER_HEIGHT;
 	int x_offset = 1;
 	char *text;
+
+	if (!p)
+		return;
 
 	p_height = anote_panel_height((Tag) panel_userptr(p));
 	p_window = panel_window(p);
@@ -81,17 +88,13 @@ build_tag_panels(WINDOW *window)
 	Tag t;
 	PANEL *p;
 	struct d_list *i;
-	int x_offset = 1;
-	int y_offset = HEADER_HEIGHT;
 
 	i = global_tag_list;
 	while (i->obj) {
 		t = i->obj;
 		if (tag_get_name(t) != d_tag_name) {
-			p = anote_new_panel(window, t, y_offset, x_offset);
+			p = anote_new_panel(window, t);
 			anote_show_panel(p);
-
-			y_offset += anote_panel_height(t);
 		}
 
 		if (i->next) i = i->next;
@@ -102,15 +105,39 @@ build_tag_panels(WINDOW *window)
 }
 
 PANEL * /* create panel and insert it on list */
-anote_new_panel(WINDOW *window, Tag t, int y_offset, int x_offset)
+anote_new_panel(WINDOW *window, Tag t)
 {
-	PANEL *p;
+	PANEL *p = NULL;
 	WINDOW *p_window;
+	int p_height = anote_panel_height(t);
 
-	p_window = derwin(window, anote_panel_height(t), side_win_w - 2, y_offset, x_offset);
-	p = new_panel(p_window);
-	set_panel_userptr(p, t); /* panel_userptr point to its tag */
-	d_list_add_circ(p, &panel_list, sizeof(*p));
+	p_window = derwin(window, p_height, side_win_w - 2, side_y_offset, side_x_offset);
+	if (p_window) {
+		p = new_panel(p_window);
+		set_panel_userptr(p, t); /* panel_userptr point to its tag */
+		d_list_add_circ(p, &panel_list, sizeof(*p));
+		side_y_offset+=p_height;
+	}
+
+	return p;
+}
+
+PANEL * /* returns the panel containing t */
+anote_search_panel(Tag t)
+{
+	PANEL *p = NULL;
+	struct d_list *i;
+
+	i = panel_list;
+	while (panel_userptr(i->obj) != t) {
+		if (i->next) i = i->next;
+		else break;
+	}
+
+	/* found it */
+	if (panel_userptr(i->obj) == t) {
+		p = i->obj;
+	}
 
 	return p;
 }

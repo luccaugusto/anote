@@ -254,12 +254,13 @@ void
 reload_side_win(void)
 {
 	struct d_list *i;
-	int y_offset = HEADER_HEIGHT;
 
 	i = panel_list;
 	while (i->obj) {
-		anote_show_panel(i->obj, y_offset, 1);
-		y_offset += anote_panel_height((Tag) panel_userptr(i->obj));
+		if (tag_get_name((Tag) panel_userptr(i->obj)) != d_tag_name) {
+			werase(panel_window(i->obj));
+			anote_show_panel(i->obj);
+		}
 
 		if (i->next) i = i->next;
 		else break;
@@ -442,7 +443,7 @@ main_win_actions(int c)
 		/* MANIPULATION KEYS */
 		case 'd': /* delete */
 			if (current_item(main_menu)) {
-				answer = prompt_user("Delete selected note? [y/N]: ", 0);
+				answer = prompt_user("Delete selected note? [y/N]: ", ALIGN_LEFT);
 				if (answer[0] == 'y' || answer[0] == 'Y') {
 					n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
 
@@ -458,7 +459,7 @@ main_win_actions(int c)
 					wrefresh(menu_win(main_menu));
 				}
 			} else {
-				prompt_user("Nothing to delete here", 1);
+				prompt_user("Nothing to delete here", ALIGN_CENTER);
 			}
 			break;
 		case KEY_CTAB:
@@ -532,11 +533,12 @@ void
 prompt_add_note(short tag, short priority)
 {
 	int intput;
+	int create_panel = 0;
 	int n_pri = DEFAULT_PRIORITY;
 	char *input;
 	char *n_tag = DEFAULT_TAG;
 
-	input = prompt_user("Note text [blank to cancel]: ", 0);
+	input = prompt_user("Note text [blank to cancel]: ", ALIGN_LEFT);
 
 	if (is_blank(input))
 		return;

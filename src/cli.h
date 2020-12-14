@@ -9,7 +9,9 @@
 
 /* types */
 typedef enum {
-	NOTE_ONLY = 0,
+	ALIGN_LEFT = 0,
+	ALIGN_CENTER,
+	NOTE_ONLY,
 	NOTE_COMP,
 	NOTE_PRIO,
 	NOTE_COMP_PRIO,

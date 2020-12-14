@@ -23,7 +23,7 @@ void load_displayed_tag(char *tag_name);
 void housekeeping(void);
 
 void delete_win(WINDOW *local_win);
-void show_win(WINDOW *window);
+void show_win(WINDOW *window, chtype color);
 void hide_win(WINDOW *window);
 void draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */);
 void populate_main_menu(void);
@@ -35,6 +35,8 @@ void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *
 void main_win_actions(int c);
 void side_win_actions(int c);
 char *prompt_user(char *question, int align_center);
+
+void prompt_add_note(short tag, short priority);
 
 /* GLOBAL VARIABLES */
 extern struct d_list *global_tag_list;
@@ -79,10 +81,16 @@ void
 init_cli(void)
 {
 	initscr();            /* start ncurses                   */
-	/*start_color();*/    /* colors not yet supported        */
+	start_color();        /* start colors support            */
 	raw();                /* Line buffering disabled	     */
 	keypad(stdscr, TRUE); /* Enables function and arrow keys */
 	noecho();             /* Don't echo() while we do getch  */
+
+	/* setup color pairs */
+	init_pair(SELECTED_COLORS, COLOR_YELLOW, COLOR_YELLOW);
+	init_pair(UNSELECTED_COLORS, COLOR_YELLOW, COLOR_YELLOW);
+	init_pair(HIGHLIGHT_COLORS, COLOR_YELLOW, COLOR_YELLOW);
+	init_pair(DEFAULT_COLORS, COLOR_YELLOW, COLOR_YELLOW);
 }
 
 /* creates main, side and footer windows
@@ -117,8 +125,6 @@ void
 start_anote_cli(void)
 {
 	int c = -1;
-	int intput;
-	char *input;
 	char *label = "Notes";
 	panel_list = new_list_node_circ();
 
@@ -153,109 +159,25 @@ start_anote_cli(void)
 	do {
 		switch (c) {
 			case 'a': /* QUICK ADD, default priority */
-				input = prompt_user("Note text [blank to cancel]: ", 0);
-				if (!is_blank(input)) {
-					n_aux = new_note(input);
-					note_set_priority(DEFAULT_PRIORITY, n_aux);
-
-					tag_add_note(n_aux, d_tag_name);
-
-					/* reload window with new note */
-					load_displayed_tag(d_tag_name);
-
-					werase(menu_sub(main_menu));
-					populate_main_menu();
-					bind_menu(main_win, main_menu, main_win_h, main_win_w);
-					wrefresh(menu_win(main_menu));
-				}
-				break;
-			case 'A': /* ADD A NOTE set tag */
-				input = prompt_user("Note text [blank to cancel]: ", 0);
-				if (!is_blank(input)) {
-					n_aux = new_note(input);
-
-					input = prompt_user("On which tag? [blank for default]: ", 0);
-					if (is_blank(input))
-						input = DEFAULT_TAG;
-
-					note_set_priority(DEFAULT_PRIORITY, n_aux);
-
-					tag_add_note(n_aux, input);
-
-					if (strcmp(input, d_tag_name) == 0) {
-						/* reload window with new note */
-						load_displayed_tag(d_tag_name);
-
-						werase(menu_sub(main_menu));
-						populate_main_menu();
-						bind_menu(main_win, main_menu, main_win_h, main_win_w);
-						wrefresh(menu_win(main_menu));
-					} else {
-						/* TODO RELOAD OTHER TAGS WINDOW */
-					}
-				}
+				prompt_add_note(0, 0);
 				break;
 			case 'i': /* ADD A NOTE set priority */
-				input = prompt_user("Note text [blank to cancel]: ", 0);
-				if (!is_blank(input)) {
-					n_aux = new_note(input);
-
-					intput = str2int(prompt_user("Note priority [0-9]: ", 0));
-					while (intput < 0 || 9 < intput)
-						intput = str2int(prompt_user("Type a valid number please [0-9]: ", 0));
-
-					note_set_priority(intput, n_aux);
-
-					tag_add_note(n_aux, d_tag_name);
-
-					/* reload window with new note */
-					load_displayed_tag(d_tag_name);
-
-					werase(menu_sub(main_menu));
-					populate_main_menu();
-					bind_menu(main_win, main_menu, main_win_h, main_win_w);
-					wrefresh(menu_win(main_menu));
-				}
+				prompt_add_note(0, 1);
+				break;
+			case 'A': /* ADD A NOTE set tag */
+				prompt_add_note(1, 0);
 				break;
 			case 'I': /* ADD A NOTE set priority and tag */
-				input = prompt_user("Note text [blank to cancel]: ", 0);
-				if (!is_blank(input)) {
-					n_aux = new_note(input);
-
-					intput = str2int(prompt_user("Note priority [0-9]: ", 0));
-					while (intput < 0 || 9 < intput)
-						intput = str2int(prompt_user("Type a valid number please [0-9]: ", 0));
-
-					input = prompt_user("On which tag? [blank for default]: ", 0);
-					if (is_blank(input))
-						input = DEFAULT_TAG;
-
-					note_set_priority(DEFAULT_PRIORITY, n_aux);
-
-					tag_add_note(n_aux, input);
-
-					if (strcmp(input, d_tag_name) == 0) {
-						/* reload window with new note */
-						load_displayed_tag(d_tag_name);
-
-						werase(menu_sub(main_menu));
-						populate_main_menu();
-						bind_menu(main_win, main_menu, main_win_h, main_win_w);
-						wrefresh(menu_win(main_menu));
-					} else {
-						/* TODO RELOAD OTHER TAGS WINDOW */
-					}
-
-				}
+				prompt_add_note(1, 1);
 				break;
 			default:
 				if (cur_win == main_win) main_win_actions(c);
 				else                     side_win_actions(c);
 				break;
 		}
-		show_win(main_win);
-		show_win(side_win);
-		show_win(footer);
+		show_win(main_win, SELECTED_COLORS);
+		show_win(side_win, UNSELECTED_COLORS);
+		show_win(footer, UNSELECTED_COLORS);
 	} while ((c = wgetch(cur_win)) != 'q');
 
 
@@ -303,11 +225,13 @@ delete_win(WINDOW *local_win)
 	delwin(local_win);
 }
 
-void /* colors not yet supported */
-show_win(WINDOW *window/*, chtype color */)
+void
+show_win(WINDOW *window, chtype color)
 {
+	attron(color);
 	box(window, 0, 0);
 	wrefresh(window);
+	attroff(color);
 }
 
 void
@@ -647,3 +571,49 @@ prompt_user(char *question, int align_center)
 	return answer;
 }
 
+void
+prompt_add_note(short tag, short priority)
+{
+	int intput;
+	char *input;
+	int n_pri = DEFAULT_PRIORITY;
+	char *n_tag = DEFAULT_TAG;
+
+	input = prompt_user("Note text [blank to cancel]: ", 0);
+
+	if (is_blank(input))
+		return;
+
+	n_aux = new_note(input);
+
+	if (priority) {
+		intput = str2int(prompt_user("Note priority [0-9]: ", 0));
+
+		while (intput < 0 || 9 < intput)
+			intput = str2int(prompt_user("Type a valid number please [0-9]: ", 0));
+
+		n_pri = intput;
+	}
+
+	if (tag) {
+		input = prompt_user("On which tag? [blank for default]: ", 0);
+		if (!is_blank(input))
+			n_tag = input;
+	}
+
+	note_set_priority(n_pri, n_aux);
+	tag_add_note(n_aux, n_tag);
+
+	if (strcmp(n_tag, d_tag_name) == 0) {
+		/* reload window with new note */
+		load_displayed_tag(d_tag_name);
+
+		werase(menu_sub(main_menu));
+		populate_main_menu();
+		bind_menu(main_win, main_menu, main_win_h, main_win_w);
+		wrefresh(menu_win(main_menu));
+	} else {
+		/* TODO RELOAD OTHER TAGS WINDOW */
+	}
+
+}

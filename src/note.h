@@ -1,3 +1,6 @@
+#ifndef _NOTE_H
+#define _NOTE_H
+
 /* TYPES */
 typedef struct note *Note;
 
@@ -12,3 +15,5 @@ char *note_get_text(Note n);
 int note_get_priority(Note n);
 int note_get_size(void);
 int note_get_completed(Note n);
+
+#endif

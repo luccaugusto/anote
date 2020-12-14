@@ -1,3 +1,6 @@
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
 #define DEFAULT_PRIORITY 0
 #define DEFAULT_DISPLAY_MODE NOTE_ONLY
 #define DEFAULT_WIDTH 80
@@ -17,3 +20,5 @@ enum COLORS {
 	nohl_bg,
 	nohl_fg,
 };
+
+#endif

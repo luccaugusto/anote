@@ -1,3 +1,6 @@
+#ifndef _LIST_H
+#define _LIST_H
+
 /* TYPES */
 struct d_list {
 	void *obj;
@@ -13,3 +16,5 @@ void d_list_add(void *obj, struct d_list **list, size_t obj_size);
 void d_list_add_before(void *obj, struct d_list *ref, struct d_list **list, size_t obj_size);
 void d_list_add_circ(void *obj, struct d_list **list, size_t obj_size);
 void d_list_del_obj(void *obj, struct d_list **list);
+
+#endif

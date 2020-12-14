@@ -1,3 +1,6 @@
+#ifndef _TAG_H
+#define _TAG_H
+
 /* TYPES */
 typedef struct tag *Tag;
 
@@ -22,3 +25,5 @@ void tag_del_note(Note n, char *tag_name);
 
 /* GLOBAL VARIABLES */
 extern struct d_list *global_tag_list;
+
+#endif

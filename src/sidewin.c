@@ -24,6 +24,9 @@ WINDOW *side_win;
 int /* calculate panel height */
 anote_panel_height(Tag t)
 {
+	if (t == NULL)
+		return 0;
+
 	int p_height;
 	int t_n_number = tag_get_n_number(t);
 
@@ -143,23 +146,41 @@ anote_search_panel(Tag t)
 
 	return p;
 }
+/* repositions every panel setting the top_pan_index to
+ * the first position available and working from there.
+ */
+void
+scroll_panels(void)
+{
+	int new_y = HEADER_HEIGHT;
+	int new_x = 1;
+	struct d_list *i;
+
+	i = top_pan_index;
+	do {
+
+		move_panel(i->obj, new_y, new_x);
+		new_y += anote_panel_height((Tag) panel_userptr(i->obj));
+
+		i = i->next;
+	} while (i->obj && i != top_pan_index);
+
+}
 
 void
 reload_side_win(void)
 {
 	struct d_list *i;
 
-	werase(side_win);
-	draw_headers(side_win, side_win_h, side_win_w, "Other Notes");
+	CLEAR_WINDOW(side_win);
 
-	i = panel_list;
-	while (i->obj) {
+	i = top_pan_index;
+	do {
 		werase(panel_window(i->obj));
 		anote_show_panel(i->obj);
 
-		if (i->next) i = i->next;
-		else break;
-	}
+		i = i->next;
+	} while (i->obj && i != top_pan_index);
 
 	update_panels();
 }
@@ -169,13 +190,14 @@ side_win_actions(int c)
 {
 	switch(c)
 	{
-		/* TODO DO NOT MOVE ON THE MENU, MOVE ON PANElS */
 		case KEY_ENTER:
 			/* DISPLAY SELECTED TAG */
 			break;
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
+			CLEAR_WINDOW(side_win);
 			top_pan_index = top_pan_index->next;
+			scroll_panels();
 			reload_side_win();
 			break;
 		case 'k':      /* FALLTHROUGH */

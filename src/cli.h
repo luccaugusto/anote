@@ -7,6 +7,10 @@
 #define HIGHLIGHT_COLORS 3
 #define DEFAULT_COLORS 4
 
+#define CLEAR_WINDOW(x)                 \
+	mvwprintw(x, HEADER_HEIGHT, 1, ""); \
+	wclrtobot(x);
+
 /* ANOTE KEYS */
 typedef enum {
 	A_TAB = 9,

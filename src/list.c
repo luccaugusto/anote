@@ -90,10 +90,10 @@ d_list_add_circ(void *obj, struct d_list **list, size_t obj_size)
 	for (; i->next != *list; i = i->next);
 
 	i->next = new_list_node();
-	i->obj = malloc(obj_size);
+	i->next->obj = malloc(obj_size);
 	i->next->next = *list;
 
-	memcpy(i->obj, obj, obj_size);
+	memcpy(i->next->obj, obj, obj_size);
 }
 
 void /* removes obj node from list, does not free obj */

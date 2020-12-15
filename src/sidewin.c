@@ -152,7 +152,7 @@ anote_search_panel(Tag t)
 void
 scroll_panels(void)
 {
-	int new_y = HEADER_HEIGHT;
+	int new_y = HEADER_HEIGHT + 10;
 	int new_x = 1;
 	struct d_list *i;
 
@@ -160,11 +160,13 @@ scroll_panels(void)
 	do {
 
 		move_panel(i->obj, new_y, new_x);
+		anote_show_panel(i->obj);
 		new_y += anote_panel_height((Tag) panel_userptr(i->obj));
 
 		i = i->next;
 	} while (i->obj && i != top_pan_index);
 
+	doupdate();
 }
 
 void
@@ -196,7 +198,7 @@ side_win_actions(int c)
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
 			CLEAR_WINDOW(side_win);
-			top_pan_index = top_pan_index->next;
+			//top_pan_index = top_pan_index->next;
 			scroll_panels();
 			reload_side_win();
 			break;

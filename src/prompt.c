@@ -22,17 +22,18 @@ int prompt_win_h;
 int prompt_win_w;
 
 char *
-prompt_user(char *question, int align_center)
+prompt_user(char *question, char *label,int align_center)
 {
 	char *answer = malloc(sizeof(char));
 	WINDOW *p_win = panel_window(prompt_panel);;
 
 	box(p_win, 0, 0);
+	draw_headers(p_win, prompt_win_h, prompt_win_w, label);
 
 	if (align_center)
-		print_align_center(p_win, 1, 1, prompt_win_w, question);
+		print_align_center(p_win, HEADER_HEIGHT, 1, prompt_win_w, question);
 	else
-		mvwprintw(p_win, 1, 1, question);
+		mvwprintw(p_win, HEADER_HEIGHT, 1, question);
 
 	show_panel(prompt_panel);
 
@@ -53,10 +54,27 @@ prompt_add_note(short tag, short priority)
 	int create_panel = 0;
 	int n_pri = DEFAULT_PRIORITY;
 	char *input;
+	char *label;
+	char *label2;
+	char *label3;
 	char *n_tag = DEFAULT_TAG;
 	Note n_aux;
 
-	input = prompt_user("Note text [blank to cancel]: ", ALIGN_LEFT);
+	if (tag && priority) {
+		label = "Adding [note], priority and tag";
+		label2 = "Adding note, [priority] and tag";
+		label3 = "Adding note, priority and [tag]";
+	} else if (tag) {
+		label = "Adding [note] and tag";
+		label3 = "Adding note and [tag]";
+	} else if (priority) {
+		label = "Adding [note] and priority";
+		label2 = "Adding note and [priority]";
+	} else {
+		label = "Adding note";
+	}
+
+	input = prompt_user("Note text [blank to cancel]: ", label, ALIGN_LEFT);
 
 	if (is_blank(input))
 		return;
@@ -64,16 +82,16 @@ prompt_add_note(short tag, short priority)
 	n_aux = new_note(input);
 
 	if (priority) {
-		intput = str2int(prompt_user("Note priority [0-9]: ", ALIGN_LEFT));
+		intput = str2int(prompt_user("Note priority [0-9]: ", label2, ALIGN_LEFT));
 
 		while (intput < 0 || 9 < intput)
-			intput = str2int(prompt_user("Type a valid number please [0-9]: ", ALIGN_LEFT));
+			intput = str2int(prompt_user("Type a valid number please [0-9]: ", label2, ALIGN_LEFT));
 
 		n_pri = intput;
 	}
 
 	if (tag) {
-		input = prompt_user("On which tag? [blank for default]: ", ALIGN_LEFT);
+		input = prompt_user("On which tag? [blank for default]: ", label3, ALIGN_LEFT);
 		if (!is_blank(input)) {
 			n_tag = input;
 			if (tag_get(n_tag) == NULL)
@@ -85,7 +103,7 @@ prompt_add_note(short tag, short priority)
 	tag_add_note(n_aux, n_tag);
 
 	if (create_panel) {
-		anote_new_panel(side_win, tag_get(n_tag));
+		anote_new_panel(tag_get(n_tag));
 	}
 
 	/* reload main window or side window */
@@ -103,12 +121,12 @@ prompt_delete_tag(void)
 	int r = 0;
 	char *answer = malloc(sizeof(char));
 
-	answer = prompt_user("Delete which tag? ", ALIGN_LEFT);
+	answer = prompt_user("Delete which tag? [blank to cancel] ", "Deleting tag", ALIGN_LEFT);
 	if (!is_blank(answer)) {
 
 		t = tag_get(answer);
 		if (!t) {
-			prompt_user("Tag does not exist", ALIGN_CENTER);
+			prompt_user("Tag does not exist", "Deleting tag", ALIGN_CENTER);
 		} else {
 
 			/* deletes the panel containing the tag */

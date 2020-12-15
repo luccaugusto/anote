@@ -90,7 +90,7 @@ organize_window_space(void)
 	footer_h = HEADER_HEIGHT + 1;
 	main_win_h = max_row - footer_h;
 	side_win_h = max_row - footer_h;
-	prompt_win_h = HEADER_HEIGHT + 1;
+	prompt_win_h = HEADER_HEIGHT + HEADER_HEIGHT;
 
 	footer_w = max_col;
 	main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
@@ -385,7 +385,7 @@ main_win_actions(int c)
 		/* MANIPULATION KEYS */
 		case 'd': /* delete */
 			if (current_item(main_menu)) {
-				answer = prompt_user("Delete selected note? [y/N]: ", ALIGN_LEFT);
+				answer = prompt_user("Delete selected note? [y/N]: ", "Deleting Note", ALIGN_LEFT);
 				if (answer[0] == 'y' || answer[0] == 'Y') {
 					n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
 
@@ -401,7 +401,7 @@ main_win_actions(int c)
 					wrefresh(menu_win(main_menu));
 				}
 			} else {
-				prompt_user("Nothing to delete here", ALIGN_CENTER);
+				prompt_user("Nothing to delete here", "Deleting Note", ALIGN_CENTER);
 			}
 			break;
 		case 9:
@@ -432,10 +432,10 @@ execution_loop(void)
 				break;
 			case 'D': /* Delete a tag */
 				if (prompt_delete_tag()) {
-					prompt_user("Tag Deleted", ALIGN_CENTER);
+					prompt_user("Tag Deleted", "Deleting Tag", ALIGN_CENTER);
 					reload_side_win();
 				} else {
-					prompt_user("Tag could not be deleted", ALIGN_CENTER);
+					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);
 				}
 				break;
 			default:

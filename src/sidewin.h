@@ -1,6 +1,10 @@
 #ifndef _SIDEWIN_H
 #define _SIDEWIN_H
 
+/* GLOBAL VARIABLES */
+extern PANEL *t_panel;
+extern WINDOW *side_win;
+
 /* FUNCTION PROTOTYPES */
 int anote_panel_height(Tag t);
 void anote_show_panel(PANEL *p);

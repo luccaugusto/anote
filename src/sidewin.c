@@ -16,6 +16,8 @@
 /* GLOBAL VARIABLES */
 int side_y_offset = HEADER_HEIGHT;
 int side_x_offset = 1;
+PANEL *t_panel;
+WINDOW *side_win;
 
 /* FUNCTION DEFINITIONS */
 

@@ -10,7 +10,7 @@
 /* ANOTE KEYS */
 typedef enum {
 	A_TAB = 9,
-} A_Keys,
+} A_Keys;
 
 /* types */
 typedef enum {
@@ -29,7 +29,8 @@ void reload_main_win(void);
 void reload_side_win(void);
 
 /* GLOBAL VARIABLES */
-extern WINDOW *side_win;
+extern WINDOW *cur_win;
+extern WINDOW *main_win;
 extern Tag displayed_tag;
 extern int d_tag_n_number;
 extern char *d_tag_name;

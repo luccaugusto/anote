@@ -34,7 +34,7 @@ void show_cmd(WINDOW *window);
 
 void main_win_actions(int c);
 void side_win_actions(int c);
-void commands_loop(void);
+void execution_loop(void);
 
 /* GLOBAL VARIABLES */
 Tag displayed_tag;
@@ -48,13 +48,10 @@ char *d_tag_name;
 char **display_text_list;
 
 WINDOW *main_win;
-WINDOW *side_win;
 WINDOW *cur_win;
 WINDOW *footer;
 MENU *main_menu;
 ITEM **main_items;
-ITEM *cur_item;
-PANEL *t_panel;
 
 int main_win_h;
 int main_win_w;
@@ -144,7 +141,7 @@ start_anote_cli(void)
 	doupdate();
 	t_panel = panel_list->obj;
 
-	commands_loop();
+	execution_loop();
 
 	housekeeping();
 	endwin(); /* end curses */
@@ -153,20 +150,22 @@ start_anote_cli(void)
 void
 housekeeping(void)
 {
-	struct d_list *i;
+	//struct d_list *i;
 	free(prompt_panel);
 
 	unpost_menu(main_menu);
 	free_menu(main_menu);
 
+	/*
 	i = panel_list;
 	while (i->obj) {
-		d_list_del_obj(i->obj, &panel_list);
 		del_panel(i->obj);
+		d_list_del_obj(i->obj, &panel_list);
 
 		if (i->next) i = i->next;
 		else break;
 	}
+	*/
 
 	free(panel_list);
 
@@ -411,7 +410,7 @@ main_win_actions(int c)
 }
 
 void
-commands_loop(void)
+execution_loop(void)
 {
 	int c = -1;
 	do {

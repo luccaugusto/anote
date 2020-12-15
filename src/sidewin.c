@@ -141,3 +141,23 @@ anote_search_panel(Tag t)
 
 	return p;
 }
+
+void
+reload_side_win(void)
+{
+	struct d_list *i;
+
+	werase(side_win);
+	draw_headers(side_win, side_win_h, side_win_w, "Other Notes");
+
+	i = panel_list;
+	while (i->obj) {
+		werase(panel_window(i->obj));
+		anote_show_panel(i->obj);
+
+		if (i->next) i = i->next;
+		else break;
+	}
+
+	update_panels();
+}

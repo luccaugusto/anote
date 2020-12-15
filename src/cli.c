@@ -28,7 +28,6 @@ void delete_win(WINDOW *local_win);
 void show_win(WINDOW *window, chtype color);
 void hide_win(WINDOW *window);
 void reload_main_win(void);
-void reload_side_win(void);
 void populate_main_menu(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
 void show_cmd(WINDOW *window);
@@ -249,25 +248,6 @@ reload_main_win(void)
 	populate_main_menu();
 	bind_menu(main_win, main_menu, main_win_h, main_win_w);
 	wrefresh(menu_win(main_menu));
-}
-
-void
-reload_side_win(void)
-{
-	struct d_list *i;
-
-	i = panel_list;
-	while (i->obj) {
-		if (tag_get_name((Tag) panel_userptr(i->obj)) != d_tag_name) {
-			werase(panel_window(i->obj));
-			anote_show_panel(i->obj);
-		}
-
-		if (i->next) i = i->next;
-		else break;
-	}
-
-	update_panels();
 }
 
 void /* colors not yet supported */

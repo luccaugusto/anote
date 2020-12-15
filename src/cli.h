@@ -7,6 +7,11 @@
 #define HIGHLIGHT_COLORS 3
 #define DEFAULT_COLORS 4
 
+/* ANOTE KEYS */
+typedef enum {
+	A_TAB = 9,
+} A_Keys,
+
 /* types */
 typedef enum {
 	ALIGN_LEFT = 0,

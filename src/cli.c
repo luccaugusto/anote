@@ -34,6 +34,7 @@ void show_cmd(WINDOW *window);
 
 void main_win_actions(int c);
 void side_win_actions(int c);
+void commands_loop(void);
 
 /* GLOBAL VARIABLES */
 Tag displayed_tag;
@@ -51,7 +52,6 @@ WINDOW *side_win;
 WINDOW *cur_win;
 WINDOW *footer;
 MENU *main_menu;
-MENU *side_menu;
 ITEM **main_items;
 ITEM *cur_item;
 PANEL *t_panel;
@@ -113,7 +113,6 @@ load_displayed_tag(char *tag_name)
 void
 start_anote_cli(void)
 {
-	int c = -1;
 	char *label = "Notes";
 	panel_list = new_list_node_circ();
 
@@ -145,38 +144,7 @@ start_anote_cli(void)
 	doupdate();
 	t_panel = panel_list->obj;
 
-	do {
-		switch (c) {
-			case 'a': /* QUICK ADD, default priority */
-				prompt_add_note(0, 0);
-				break;
-			case 'i': /* ADD A NOTE set priority */
-				prompt_add_note(0, 1);
-				break;
-			case 'A': /* ADD A NOTE set tag */
-				prompt_add_note(1, 0);
-				break;
-			case 'I': /* ADD A NOTE set priority and tag */
-				prompt_add_note(1, 1);
-				break;
-			case 'D': /* Delete a tag */
-				if (prompt_delete_tag()) {
-					prompt_user("Tag Deleted", ALIGN_CENTER);
-					reload_side_win();
-				} else {
-					prompt_user("Tag could not be deleted", ALIGN_CENTER);
-				}
-				break;
-			default:
-				if (cur_win == main_win) main_win_actions(c);
-				else                     side_win_actions(c);
-				break;
-		}
-		show_win(main_win, SELECTED_COLORS);
-		show_win(side_win, UNSELECTED_COLORS);
-		show_win(footer, UNSELECTED_COLORS);
-	} while ((c = wgetch(cur_win)) != 'q');
-
+	commands_loop();
 
 	housekeeping();
 	endwin(); /* end curses */
@@ -185,11 +153,22 @@ start_anote_cli(void)
 void
 housekeeping(void)
 {
+	struct d_list *i;
 	free(prompt_panel);
-	free(t_panel);
 
 	unpost_menu(main_menu);
 	free_menu(main_menu);
+
+	i = panel_list;
+	while (i->obj) {
+		d_list_del_obj(i->obj, &panel_list);
+		del_panel(i->obj);
+
+		if (i->next) i = i->next;
+		else break;
+	}
+
+	free(panel_list);
 
 	/* free the menu items */
 	if (main_items != NULL) {
@@ -423,7 +402,7 @@ main_win_actions(int c)
 				prompt_user("Nothing to delete here", ALIGN_CENTER);
 			}
 			break;
-		case KEY_CTAB:
+		case 9:
 			cur_win = side_win;
 			break;
 		default:
@@ -442,25 +421,58 @@ side_win_actions(int c)
 			break;
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
-			menu_driver(side_menu, REQ_DOWN_ITEM);
 			break;
 		case 'k':      /* FALLTHROUGH */
 		case KEY_UP:
-			menu_driver(side_menu, REQ_UP_ITEM);
 			break;
 
 		case KEY_NPAGE:
-			menu_driver(side_menu, REQ_SCR_DPAGE);
 			break;
 
 		case KEY_PPAGE:
-			menu_driver(side_menu, REQ_SCR_UPAGE);
 			break;
-		case KEY_CTAB:
+		case A_TAB:
 			cur_win = main_win;
 			break;
 		default:
 			break;
 	}
 
+}
+
+void
+commands_loop(void)
+{
+	int c = -1;
+	do {
+		switch (c) {
+			case 'a': /* QUICK ADD, default priority */
+				prompt_add_note(0, 0);
+				break;
+			case 'i': /* ADD A NOTE set priority */
+				prompt_add_note(0, 1);
+				break;
+			case 'A': /* ADD A NOTE set tag */
+				prompt_add_note(1, 0);
+				break;
+			case 'I': /* ADD A NOTE set priority and tag */
+				prompt_add_note(1, 1);
+				break;
+			case 'D': /* Delete a tag */
+				if (prompt_delete_tag()) {
+					prompt_user("Tag Deleted", ALIGN_CENTER);
+					reload_side_win();
+				} else {
+					prompt_user("Tag could not be deleted", ALIGN_CENTER);
+				}
+				break;
+			default:
+				if (cur_win == main_win) main_win_actions(c);
+				else                     side_win_actions(c);
+				break;
+		}
+		show_win(main_win, SELECTED_COLORS);
+		show_win(side_win, UNSELECTED_COLORS);
+		show_win(footer, UNSELECTED_COLORS);
+	} while ((c = wgetch(cur_win)) != 'q');
 }

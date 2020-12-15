@@ -16,7 +16,7 @@
 /* GLOBAL VARIABLES */
 int side_y_offset = HEADER_HEIGHT;
 int side_x_offset = 1;
-PANEL *t_panel;
+struct d_list *top_pan_index;
 WINDOW *side_win;
 
 /* FUNCTION DEFINITIONS */
@@ -85,7 +85,7 @@ anote_show_panel(PANEL *p)
 }
 
 void
-build_tag_panels(WINDOW *window)
+build_tag_panels(void)
 {
 	Tag t;
 	PANEL *p;
@@ -95,7 +95,7 @@ build_tag_panels(WINDOW *window)
 	while (i->obj) {
 		t = i->obj;
 		if (tag_get_name(t) != d_tag_name) {
-			p = anote_new_panel(window, t);
+			p = anote_new_panel(t);
 			anote_show_panel(p);
 		}
 
@@ -107,13 +107,13 @@ build_tag_panels(WINDOW *window)
 }
 
 PANEL * /* create panel and insert it on list */
-anote_new_panel(WINDOW *window, Tag t)
+anote_new_panel(Tag t)
 {
 	PANEL *p = NULL;
 	WINDOW *p_window;
 	int p_height = anote_panel_height(t);
 
-	p_window = derwin(window, p_height, side_win_w - 2, side_y_offset, side_x_offset);
+	p_window = derwin(side_win, p_height, side_win_w - 2, side_y_offset, side_x_offset);
 	if (p_window) {
 		p = new_panel(p_window);
 		set_panel_userptr(p, t); /* panel_userptr point to its tag */
@@ -130,7 +130,7 @@ anote_search_panel(Tag t)
 	PANEL *p = NULL;
 	struct d_list *i;
 
-	i = panel_list;
+	i = top_pan_index;
 	while (panel_userptr(i->obj) != t) {
 		if (i->next) i = i->next;
 		else break;
@@ -175,6 +175,8 @@ side_win_actions(int c)
 			break;
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
+			top_pan_index = top_pan_index->next;
+			reload_side_win();
 			break;
 		case 'k':      /* FALLTHROUGH */
 		case KEY_UP:

@@ -2,14 +2,14 @@
 #define _SIDEWIN_H
 
 /* GLOBAL VARIABLES */
-extern PANEL *t_panel;
 extern WINDOW *side_win;
+extern struct d_list *top_pan_index;
 
 /* FUNCTION PROTOTYPES */
 int anote_panel_height(Tag t);
 void anote_show_panel(PANEL *p);
-void build_tag_panels(WINDOW *window);
-PANEL *anote_new_panel(WINDOW *window, Tag t);
+void build_tag_panels(void);
+PANEL *anote_new_panel(Tag t);
 PANEL *anote_search_panel(Tag t);
 void reload_side_win(void);
 void side_win_actions(int c);

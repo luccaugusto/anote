@@ -135,11 +135,12 @@ start_anote_cli(void)
 	populate_main_menu();
 	bind_menu(main_win, main_menu, main_win_h, main_win_w);
 
-	build_tag_panels(side_win);
+	build_tag_panels();
 	show_cmd(footer);
 
 	doupdate();
-	t_panel = panel_list->obj;
+	/* set top panel as first on list */
+	top_pan_index = panel_list;
 
 	execution_loop();
 

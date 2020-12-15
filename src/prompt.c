@@ -74,10 +74,11 @@ prompt_add_note(short tag, short priority)
 
 	if (tag) {
 		input = prompt_user("On which tag? [blank for default]: ", ALIGN_LEFT);
-		if (!is_blank(input))
+		if (!is_blank(input)) {
 			n_tag = input;
-		if (tag_get(n_tag) == NULL)
-			create_panel = 1;
+			if (tag_get(n_tag) == NULL)
+				create_panel = 1;
+		}
 	}
 
 	note_set_priority(n_pri, n_aux);

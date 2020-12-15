@@ -32,10 +32,10 @@ struct tag *
 tag_get(char *name)
 {
 	struct d_list *i;
-	struct tag *t;
+	struct tag *t = NULL;
 	/* find tag on the list */
 	i = global_tag_list;
-	while (i->next) {
+	while (i->obj) {
 
 		if (i->obj) {
 			t = (i->obj);
@@ -43,11 +43,12 @@ tag_get(char *name)
 				break;
 		}
 
-		i = i->next;
+		if (i->next) i = i->next;
+		else break;
 	}
 
-	/* reached and of list and did not match any tags */
-	if (!i)
+	/* tag not found */
+	if (strcmp(name, tag_get_name(i->obj)) != 0)
 		t = NULL;
 
 	return t;
@@ -67,7 +68,7 @@ char *
 tag_get_name(struct tag *t)
 {
 	char *r = "";
-	if (t->name)
+	if (t)
 		r = (t->name);
 	return r;
 }

@@ -8,6 +8,7 @@ void build_tag_panels(WINDOW *window);
 PANEL *anote_new_panel(WINDOW *window, Tag t);
 PANEL *anote_search_panel(Tag t);
 void reload_side_win(void);
+void side_win_actions(int c);
 
 
 #endif

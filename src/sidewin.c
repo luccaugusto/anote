@@ -161,3 +161,33 @@ reload_side_win(void)
 
 	update_panels();
 }
+
+void /* tag manipulations */
+side_win_actions(int c)
+{
+	switch(c)
+	{
+		/* TODO DO NOT MOVE ON THE MENU, MOVE ON PANElS */
+		case KEY_ENTER:
+			/* DISPLAY SELECTED TAG */
+			break;
+		case 'j':      /* FALLTHROUGH */
+		case KEY_DOWN:
+			break;
+		case 'k':      /* FALLTHROUGH */
+		case KEY_UP:
+			break;
+
+		case KEY_NPAGE:
+			break;
+
+		case KEY_PPAGE:
+			break;
+		case A_TAB:
+			cur_win = main_win;
+			break;
+		default:
+			break;
+	}
+
+}

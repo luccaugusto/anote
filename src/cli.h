@@ -8,7 +8,7 @@
 #define DEFAULT_COLORS 4
 
 #define CLEAR_WINDOW(x)     \
-	wmove(x, HEADER_HEIGHT + 2, 1); \
+	wmove(x, HEADER_HEIGHT, 1); \
 	wclrtobot(x);
 
 /* ANOTE KEYS */

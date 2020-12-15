@@ -40,7 +40,6 @@ void execution_loop(void);
 Tag displayed_tag;
 Note n_aux;
 struct d_list *d_tag_notes;
-struct d_list *panel_list;
 int display_mode = DEFAULT_DISPLAY_MODE;
 int d_tag_n_number;
 int main_items_size;
@@ -135,12 +134,9 @@ start_anote_cli(void)
 	populate_main_menu();
 	bind_menu(main_win, main_menu, main_win_h, main_win_w);
 
-
 	build_tag_panels();
 	show_cmd(footer);
 
-	/* set top panel as first on list */
-	top_pan_index = panel_list;
 
 	doupdate();
 

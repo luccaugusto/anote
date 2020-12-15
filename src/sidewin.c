@@ -16,7 +16,9 @@
 /* GLOBAL VARIABLES */
 int side_y_offset = HEADER_HEIGHT;
 int side_x_offset = 1;
-struct d_list *top_pan_index;
+struct d_list *top_tag_index;
+struct d_list *circ_tag_list;
+struct d_list *panel_list;
 WINDOW *side_win;
 
 /* FUNCTION DEFINITIONS */
@@ -94,10 +96,12 @@ build_tag_panels(void)
 	PANEL *p;
 	struct d_list *i;
 
+	circ_tag_list = new_list_node_circ();
 	i = global_tag_list;
 	while (i->obj) {
 		t = i->obj;
 		if (tag_get_name(t) != d_tag_name) {
+			d_list_add_circ(t, &circ_tag_list, tag_get_size());
 			p = anote_new_panel(t);
 			anote_show_panel(p);
 		}
@@ -106,7 +110,11 @@ build_tag_panels(void)
 		else break;
 	}
 
+	/* first tag is the first of the circular list */
+	top_tag_index = circ_tag_list;
+
 	update_panels();
+	doupdate();
 }
 
 PANEL * /* create panel and insert it on list */
@@ -131,41 +139,51 @@ PANEL * /* returns the panel containing t */
 anote_search_panel(Tag t)
 {
 	PANEL *p = NULL;
-	struct d_list *i;
+	struct d_list *i; /* traverse tag_list   */
 
-	i = top_pan_index;
-	while (panel_userptr(i->obj) != t) {
-		if (i->next) i = i->next;
-		else break;
-	}
+	i = panel_list;
+	do {
+
+		if (panel_userptr(i->obj) == t)
+			break;
+
+		i = i->next;
+	} while (i != panel_list);
 
 	/* found it */
-	if (panel_userptr(i->obj) == t) {
+	if (panel_userptr(i->obj) == t)
 		p = i->obj;
-	}
 
 	return p;
 }
-/* repositions every panel setting the top_pan_index to
+
+/* repositions every panel setting the top_tag_index to
  * the first position available and working from there.
  */
 void
 scroll_panels(void)
 {
-	int new_y = HEADER_HEIGHT + 10;
-	int new_x = 1;
+	side_y_offset = HEADER_HEIGHT;
 	struct d_list *i;
+	PANEL *p;
+	Tag tag;
 
-	i = top_pan_index;
+	i = top_tag_index;
 	do {
 
-		move_panel(i->obj, new_y, new_x);
-		anote_show_panel(i->obj);
-		new_y += anote_panel_height((Tag) panel_userptr(i->obj));
+		tag = i->obj;
+		p = anote_search_panel(tag);
+		if (p) {
+			move_panel(p, side_y_offset, side_x_offset);
+			side_y_offset += anote_panel_height(tag);
+		} else {
+			p = anote_new_panel(tag);
+		}
 
 		i = i->next;
-	} while (i->obj && i != top_pan_index);
+	} while (tag && i != top_tag_index);
 
+	update_panels();
 	doupdate();
 }
 
@@ -173,18 +191,19 @@ void
 reload_side_win(void)
 {
 	struct d_list *i;
+	PANEL *p;
 
 	CLEAR_WINDOW(side_win);
 
-	i = top_pan_index;
+	i = top_tag_index;
 	do {
-		werase(panel_window(i->obj));
-		anote_show_panel(i->obj);
+		p = anote_search_panel(i->obj);
+
+		werase(panel_window(p));
+		anote_show_panel(p);
 
 		i = i->next;
-	} while (i->obj && i != top_pan_index);
-
-	update_panels();
+	} while (i != top_tag_index);
 }
 
 void /* tag manipulations */
@@ -198,7 +217,7 @@ side_win_actions(int c)
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
 			CLEAR_WINDOW(side_win);
-			//top_pan_index = top_pan_index->next;
+			top_tag_index = top_tag_index->next;
 			scroll_panels();
 			reload_side_win();
 			break;

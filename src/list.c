@@ -87,13 +87,21 @@ d_list_add_circ(void *obj, struct d_list **list, size_t obj_size)
 	struct d_list *i;
 
 	i = *list;
-	for (; i->next != *list; i = i->next);
+	/* adds to the head */
+	if (i->obj == NULL) {
 
-	i->next = new_list_node();
-	i->next->obj = malloc(obj_size);
-	i->next->next = *list;
+		i->obj = malloc(obj_size);
+		memcpy(i->next->obj, obj, obj_size);
 
-	memcpy(i->next->obj, obj, obj_size);
+	} else {
+		for (; i->next != *list; i = i->next);
+		i->next = new_list_node();
+		i->next->obj = malloc(obj_size);
+		i->next->next = *list;
+
+		memcpy(i->next->obj, obj, obj_size);
+	}
+
 }
 
 void /* removes obj node from list, does not free obj */
@@ -130,4 +138,18 @@ delete_list(struct d_list **list)
 		d_list_del_obj((*list)->obj, list);
 
 	free(*list);
+}
+
+struct d_list *
+d_list_find(void *obj, struct d_list **list)
+{
+	struct d_list *i;
+
+	i = *list;
+	for (; i->next && i->obj != obj; i = i->next);
+
+	if (i->obj != obj)
+		i = NULL;
+
+	return i;
 }

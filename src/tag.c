@@ -232,7 +232,7 @@ tag_add_note(Note note, char *tag_name)
 		}
 
 		d_list_add_before(note, ref, &t->notes, note_get_size());
-		tag_set_n_number(tag_get_n_number(t) + 1, t);
+		tag_set_n_number(t->notes_number + 1, t);
 	}
 }
 
@@ -260,5 +260,5 @@ tag_del_note(Note note, char *tag_name)
 		return;
 
 	d_list_del_obj(note, &t->notes);
-	tag_set_n_number(tag_get_n_number(t) - 1, t);
+	tag_set_n_number(t->notes_number - 1, t);
 }

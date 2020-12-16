@@ -21,7 +21,6 @@
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
 void init_cli(void);
 void organize_window_space(void);
-void load_displayed_tag(char *tag_name);
 void housekeeping(void);
 
 void delete_win(WINDOW *local_win);
@@ -219,7 +218,14 @@ hide_win(WINDOW *window)
 void
 reload_main_win(void)
 {
+	char *label;
+
+	CLEAR_WINDOW(main_win);
 	load_displayed_tag(d_tag_name);
+
+	label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
+	sprintf(label, "%s Notes", arg_tag_name);
+	draw_headers(main_win, main_win_h, main_win_w, label);
 
 	werase(menu_sub(main_menu));
 	populate_main_menu();
@@ -242,7 +248,8 @@ populate_main_menu(void)
 	struct d_list *i;
 	/*Note n = NULL;*/
 	char *text;
-	int j=0;
+	int j = 0;
+	int n = 0;
 
 	if (display_text_list)
 		free(display_text_list);
@@ -256,15 +263,17 @@ populate_main_menu(void)
 		free(main_items);
 	}
 
+	n = d_list_length(&d_tag_notes);
 
 	/* Create items */
-	if (d_tag_n_number > 0) {
+	if (n > 0) {
 
-		main_items = (ITEM **) calloc(d_tag_n_number + 1, sizeof(ITEM *));
-		main_items_size = d_tag_n_number + 1;
-		display_text_list = (char **) malloc(sizeof(char *) * (d_tag_n_number + 1));
+		main_items = (ITEM **) calloc(n + 1, sizeof(ITEM *));
+		main_items_size = n + 1;
+		display_text_list = (char **) malloc(sizeof(char *) * (n + 1));
 
-		for(i = d_tag_notes; i->next; i = i->next) {
+		i = d_tag_notes;
+		while (i->obj) {
 			text = note_get_text(i->obj);
 			/* TODO support different display modes
 			   switch (display_mode) {
@@ -288,10 +297,13 @@ populate_main_menu(void)
 			   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
 			   */
 			main_items[j++] = new_item(text, text);
+
+			if (i->next) i = i->next;
+			else break;
 		}
 
-		display_text_list[d_tag_n_number] = (char *) NULL;
-		main_items[d_tag_n_number] = (ITEM *) NULL;
+		display_text_list[n] = (char *) NULL;
+		main_items[n] = (ITEM *) NULL;
 		main_menu = new_menu((ITEM **) main_items);
 
 		if (!main_menu)

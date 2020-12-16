@@ -14,6 +14,8 @@
 /* ANOTE KEYS */
 typedef enum {
 	A_TAB = 9,
+	A_NEWLINE = 10,
+	A_CR = 13,
 } A_Keys;
 
 /* types */
@@ -28,9 +30,9 @@ typedef enum {
 
 /* FUNCTION PROTOTYPES */
 void start_anote_cli(void);
+void load_displayed_tag(char *tag_name);
 void draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */);
 void reload_main_win(void);
-void reload_side_win(void);
 
 /* GLOBAL VARIABLES */
 extern WINDOW *cur_win;

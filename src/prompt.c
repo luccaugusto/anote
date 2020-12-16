@@ -107,7 +107,8 @@ prompt_add_note(short tag, short priority)
 	if (create_panel) {
 		t_aux = tag_get(n_tag);
 		p = anote_new_panel(t_aux);
-		d_list_add_circ(p, &panel_list, sizeof(*p));
+		if (p)
+			d_list_add_circ(p, &panel_list, sizeof(*p));
 		d_list_add_circ(t_aux, &circ_tag_list, tag_get_size());
 	}
 
@@ -144,6 +145,8 @@ prompt_delete_tag(void)
 			tag_del(t, &global_tag_list);
 			tag_del_circ(t, &circ_tag_list);
 			r = 1;
+
+			update_panels();
 		}
 	}
 	return r;

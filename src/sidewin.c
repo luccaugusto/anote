@@ -17,6 +17,7 @@
 int side_y_offset = HEADER_HEIGHT;
 int side_x_offset = 1;
 struct d_list *top_tag_index;
+struct d_list *sel_tag_index;
 struct d_list *circ_tag_list;
 struct d_list *panel_list;
 WINDOW *side_win;
@@ -112,6 +113,7 @@ build_tag_panels(void)
 
 	/* first tag is the first of the circular list */
 	top_tag_index = circ_tag_list;
+	sel_tag_index = top_tag_index;
 
 	update_panels();
 	doupdate();
@@ -231,14 +233,21 @@ side_win_actions(int c)
 {
 	switch(c)
 	{
-		case KEY_ENTER:
-			/* DISPLAY SELECTED TAG */
+		case A_CR:      /* FALLTHROUGH */
+		case A_NEWLINE:
+			CLEAR_WINDOW(side_win);
+			load_displayed_tag(tag_get_name(sel_tag_index->obj));
+			delete_panels();
+			scroll_panels();
+			reload_side_win();
+			reload_main_win();
 			break;
 
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
 			CLEAR_WINDOW(side_win);
 			top_tag_index = top_tag_index->next;
+			sel_tag_index = top_tag_index;
 			delete_panels();
 			scroll_panels();
 			reload_side_win();
@@ -248,15 +257,10 @@ side_win_actions(int c)
 		case KEY_UP:
 			CLEAR_WINDOW(side_win);
 			top_tag_index = d_list_prev(top_tag_index->obj, &circ_tag_list);
+			sel_tag_index = top_tag_index;
 			delete_panels();
 			scroll_panels();
 			reload_side_win();
-			break;
-
-		case KEY_NPAGE:
-			break;
-
-		case KEY_PPAGE:
 			break;
 
 		case A_TAB:

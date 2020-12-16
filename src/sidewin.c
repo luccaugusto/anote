@@ -188,6 +188,24 @@ scroll_panels(void)
 }
 
 void
+delete_panels(void)
+{
+	struct d_list *i;
+	struct d_list *aux;
+
+	i = panel_list;
+	do {
+
+		del_panel(i->obj);
+
+	} while (i != panel_list);
+
+	delete_list(&panel_list);
+
+	panel_list = new_list_node_circ();
+}
+
+void
 reload_side_win(void)
 {
 	struct d_list *i;
@@ -214,15 +232,23 @@ side_win_actions(int c)
 		case KEY_ENTER:
 			/* DISPLAY SELECTED TAG */
 			break;
+
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
 			CLEAR_WINDOW(side_win);
 			top_tag_index = top_tag_index->next;
+			delete_panels();
 			scroll_panels();
 			reload_side_win();
 			break;
+
 		case 'k':      /* FALLTHROUGH */
 		case KEY_UP:
+			CLEAR_WINDOW(side_win);
+			top_tag_index = d_list_prev(top_tag_index->obj, &circ_tag_list);
+			delete_panels();
+			scroll_panels();
+			reload_side_win();
 			break;
 
 		case KEY_NPAGE:
@@ -230,9 +256,11 @@ side_win_actions(int c)
 
 		case KEY_PPAGE:
 			break;
+
 		case A_TAB:
 			cur_win = main_win;
 			break;
+
 		default:
 			break;
 	}

@@ -130,13 +130,9 @@ d_list_del_obj(void *obj, struct d_list **list)
 	}
 }
 
-void
+void /* delete all objects */
 delete_list(struct d_list **list)
 {
-	/* delete all objects */
-	while (*list)
-		d_list_del_obj((*list)->obj, list);
-
 	free(*list);
 }
 
@@ -149,6 +145,20 @@ d_list_find(void *obj, struct d_list **list)
 	for (; i->next && i->obj != obj; i = i->next);
 
 	if (i->obj != obj)
+		i = NULL;
+
+	return i;
+}
+
+struct d_list *
+d_list_prev(void *obj, struct d_list **list)
+{
+	struct d_list *i;
+
+	i = *list;
+	for (; i->next && i->next->obj != obj; i = i->next);
+
+	if (i->next->obj != obj)
 		i = NULL;
 
 	return i;

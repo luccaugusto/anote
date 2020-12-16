@@ -11,6 +11,7 @@ void anote_show_panel(PANEL *p);
 void build_tag_panels(void);
 PANEL *anote_new_panel(Tag t);
 PANEL *anote_search_panel(Tag t);
+void delete_panels(void);
 void reload_side_win(void);
 void side_win_actions(int c);
 

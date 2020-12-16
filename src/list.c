@@ -130,6 +130,37 @@ d_list_del_obj(void *obj, struct d_list **list)
 	}
 }
 
+void /* removes obj node from circular list, does not free obj */
+d_list_del_obj_circ(void *obj, struct d_list **list)
+{
+	struct d_list *i;
+	struct d_list *aux;
+
+	i=*list;
+	if (i->obj == obj) {
+
+		aux = *list;
+		*list = (*list)->next;
+		free(aux);
+
+	} else {
+
+		/* finds the position */
+		do {
+			if (i->next->obj == obj)
+				break;
+
+			i = i->next;
+		} while (i != *list);
+
+		if (i->next->obj == obj) {
+			aux = i->next;
+			i->next = i->next->next;
+			free(aux);
+		}
+	}
+}
+
 void /* delete all objects */
 delete_list(struct d_list **list)
 {

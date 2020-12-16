@@ -4,6 +4,7 @@
 /* GLOBAL VARIABLES */
 extern WINDOW *side_win;
 extern struct d_list *top_tag_index;
+extern struct d_list *circ_tag_list;
 
 /* FUNCTION PROTOTYPES */
 int anote_panel_height(Tag t);

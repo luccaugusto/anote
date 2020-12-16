@@ -59,6 +59,8 @@ prompt_add_note(short tag, short priority)
 	char *label3;
 	char *n_tag = DEFAULT_TAG;
 	Note n_aux;
+	Tag t_aux;
+	PANEL *p;
 
 	if (tag && priority) {
 		label = "Adding [note], priority and tag";
@@ -103,7 +105,10 @@ prompt_add_note(short tag, short priority)
 	tag_add_note(n_aux, n_tag);
 
 	if (create_panel) {
-		anote_new_panel(tag_get(n_tag));
+		t_aux = tag_get(n_tag);
+		p = anote_new_panel(t_aux);
+		d_list_add_circ(p, &panel_list, sizeof(*p));
+		d_list_add_circ(t_aux, &circ_tag_list, tag_get_size());
 	}
 
 	/* reload main window or side window */
@@ -137,6 +142,7 @@ prompt_delete_tag(void)
 			d_list_del_obj(p, &panel_list);
 			del_panel(p);
 			tag_del(t, &global_tag_list);
+			tag_del_circ(t, &circ_tag_list);
 			r = 1;
 		}
 	}

@@ -19,6 +19,7 @@ void tag_set_name(char *name, struct tag *t);
 Note tag_search_note(const char *needle_text, struct tag *haystack);
 
 void tag_del(Tag t, struct d_list **list);
+void tag_del_circ(Tag t, struct d_list **list);
 void ch_note_tag(Note n, Tag n_tag, Tag cur_tag);
 void tag_add_note(Note note, char *tag_name);
 void tag_del_note(Note n, char *tag_name);

@@ -148,6 +148,32 @@ tag_del(struct tag *t, struct d_list **list)
 	}
 }
 
+/* deletes a tag and all its notes circular list*/
+void
+tag_del_circ(struct tag *t, struct d_list **list)
+{
+	struct d_list *i;
+	struct d_list *aux;
+	char *name = tag_get_name(t);
+
+	/* find the tag on list */
+	i = *list;
+	do {
+		if (strcmp(name, tag_get_name(i->next->obj)) == 0)
+			break;
+
+		i = i->next;
+	} while (i->next != *list);
+
+	aux = i->next;
+
+	/* tag found */
+	if (strcmp(name, tag_get_name(i->next->obj)) == 0) {
+		i->next = aux->next;
+		free(aux);
+	}
+}
+
 /* changes note n from tag cur_tag to tag n_tag */
 void
 ch_note_tag(Note n, struct tag *n_tag, struct tag *cur_tag)

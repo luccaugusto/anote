@@ -138,20 +138,23 @@ anote_new_panel(Tag t)
 PANEL * /* returns the panel containing t */
 anote_search_panel(Tag t)
 {
+	Tag t_aux;
 	PANEL *p = NULL;
 	struct d_list *i; /* traverse tag_list   */
+	char *name = tag_get_name(t);;
 
 	i = panel_list;
 	do {
+		t_aux = (Tag) panel_userptr(i->obj);
 
-		if (panel_userptr(i->obj) == t)
+		if (strcmp(name, tag_get_name(t_aux)) == 0)
 			break;
 
 		i = i->next;
 	} while (i != panel_list);
 
 	/* found it */
-	if (panel_userptr(i->obj) == t)
+	if (strcmp(name, tag_get_name(t_aux)) == 0)
 		p = i->obj;
 
 	return p;
@@ -177,11 +180,11 @@ scroll_panels(void)
 			move_panel(p, side_y_offset, side_x_offset);
 			side_y_offset += anote_panel_height(tag);
 		} else {
-			p = anote_new_panel(tag);
+			anote_new_panel(tag);
 		}
 
 		i = i->next;
-	} while (tag && i != top_tag_index);
+	} while (side_y_offset < side_win_h && i != top_tag_index);
 
 	update_panels();
 	doupdate();
@@ -191,7 +194,6 @@ void
 delete_panels(void)
 {
 	struct d_list *i;
-	struct d_list *aux;
 
 	i = panel_list;
 	do {

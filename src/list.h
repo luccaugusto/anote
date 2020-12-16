@@ -16,6 +16,7 @@ void d_list_add(void *obj, struct d_list **list, size_t obj_size);
 void d_list_add_before(void *obj, struct d_list *ref, struct d_list **list, size_t obj_size);
 void d_list_add_circ(void *obj, struct d_list **list, size_t obj_size);
 void d_list_del_obj(void *obj, struct d_list **list);
+void d_list_del_obj_circ(void *obj, struct d_list **list);
 struct d_list *d_list_find(void *obj, struct d_list **list);
 struct d_list *d_list_prev(void *obj, struct d_list **list);
 

@@ -39,7 +39,7 @@ anote_panel_height(Tag t)
 		p_height = MAX_NOTES_PER_PANEL;
 
  	/* height + header + borders */
-	p_height+=HEADER_HEIGHT + 3;
+	p_height+=HEADER_HEIGHT + 2;
 
 	return p_height;
 }
@@ -96,6 +96,8 @@ build_tag_panels(void)
 	Tag t;
 	PANEL *p;
 	struct d_list *i;
+
+	side_y_offset = HEADER_HEIGHT;
 
 	circ_tag_list = new_list_node_circ();
 	i = global_tag_list;
@@ -238,7 +240,7 @@ side_win_actions(int c)
 			CLEAR_WINDOW(side_win);
 			load_displayed_tag(tag_get_name(sel_tag_index->obj));
 			delete_panels();
-			scroll_panels();
+			build_tag_panels();
 			reload_side_win();
 			reload_main_win();
 			break;

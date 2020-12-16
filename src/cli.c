@@ -220,11 +220,11 @@ reload_main_win(void)
 {
 	char *label;
 
-	CLEAR_WINDOW(main_win);
+	werase(main_win);
 	load_displayed_tag(d_tag_name);
 
 	label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
-	sprintf(label, "%s Notes", arg_tag_name);
+	sprintf(label, "%s Notes", d_tag_name);
 	draw_headers(main_win, main_win_h, main_win_w, label);
 
 	werase(menu_sub(main_menu));

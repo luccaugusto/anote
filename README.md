@@ -31,13 +31,11 @@ Currently under development.
 ### Data
 + Change shell script output format to suit the CLI application as well.
 + save the date a note was added and increase its priority automattically as time passes.
-+ Allow tags to have spaces in their name.
 
 ### CLI
 + Scroll only if there are more notes that are not displayed
 + Different modes to show displayed notes: only text, priority + text, completed + text, priority + completed + text.
 + Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about).
-+ enter to make selected window master.
 + Key to expand selected tag if not all its notes are displayed.
 + tick note as complete.
 + vim bindings.

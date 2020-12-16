@@ -37,7 +37,6 @@ Currently under development.
 + Scroll only if there are more notes that are not displayed
 + Different modes to show displayed notes: only text, priority + text, completed + text, priority + completed + text.
 + Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about).
-+ Tab to change the selected tag window.
 + enter to make selected window master.
 + Key to expand selected tag if not all its notes are displayed.
 + tick note as complete.

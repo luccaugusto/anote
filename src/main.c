@@ -83,11 +83,13 @@ write_notes_to_file(char *mode)
 
 	RETURN_IF(!notes_file, errno);
 
-	for (i = global_tag_list; i->obj; i = i->next) {
+	i = global_tag_list;
+	while (i->next) {
 		t = i->obj;
 		j = tag_get_notes(t);
 
-		while (j->obj) {
+		while (j->next) {
+
 			n = j->obj;
 			text = note_get_text(n);
 			if (!is_blank(text)) {
@@ -95,9 +97,10 @@ write_notes_to_file(char *mode)
 				notes_written++;
 			}
 
-			if (j->next) j = j->next;
-			else break;
+			j = j->next;
 		}
+
+		i = i->next;
 	}
 
 	fclose(notes_file);
@@ -127,26 +130,24 @@ list_notes(void)
 	Tag t;
 
 	i = global_tag_list;
-	while (i->obj) {
+	while (i->next) {
 		t = i->obj;
 		j = tag_get_notes(t);
 
 		if (d_list_length(&j) > 0)
 			printf("Notes Tagged %s\n", tag_get_name(t));
 
-		while (j->obj) {
+		while (j->next) {
 
 			n = j->obj;
 			printf("\t- %d %s\n", note_get_priority(n), note_get_text(n));
 			has_notes++;
 
-			if (j->next) j = j->next;
-			else break;
+			j = j->next;
 		}
 
 
-		if (i->next) i = i->next;
-		else break;
+		i = i->next;
 	}
 
 	if (!has_notes)
@@ -228,7 +229,7 @@ main(int argc, char *argv[])
 
 	/* load informed tag */
 	default_tag = new_tag(arg_tag_name);
-	d_list_add(default_tag, &global_tag_list, tag_get_size());
+	d_list_append(default_tag, &global_tag_list, tag_get_size());
 
 	switch (command) {
 		case 'a':

@@ -174,29 +174,14 @@ tag_del_circ(struct tag *t, struct d_list **list)
 	}
 }
 
-/* changes note n from tag cur_tag to tag n_tag */
-void
-ch_note_tag(Note n, struct tag *n_tag, struct tag *cur_tag)
-{
-	struct d_list *i;
-	struct d_list *aux;
-
-	/* remove n from its tag */
-	for (i=cur_tag->notes; i->next != NULL && i->next->obj != n; i = i->next);
-
-	aux = i->next;
-	i->next = (aux) ? aux->next : NULL;
-
-	/* add n to n_tag */
-	d_list_add(&n, &n_tag->notes, note_get_size());
-}
-
 void /* adds a note to the tag ordered by priority */
 tag_add_note(Note note, char *tag_name)
 {
 	struct d_list *ref;
 	struct d_list *i;
 	struct tag *t;
+	int append = 1;
+	int found = 0;
 	int n_pri;
 
 	/* find tag on the list */
@@ -204,35 +189,47 @@ tag_add_note(Note note, char *tag_name)
 	while (i->next) {
 
 		t = i->obj;
-		if (strcmp(tag_name, tag_get_name(t)) == 0)
+		if (strcmp(tag_name, tag_get_name(t)) == 0) {
+			found = 1;
 			break;
+		}
 
 		i = i->next;
 	}
 
-	/* tag not found, create a new one */
-	if (i->obj == NULL || strcmp(tag_name, tag_get_name(t)) != 0) {
-
-		t = new_tag(tag_name);
-		t->notes->obj = note;
-
-		d_list_add(t, &global_tag_list, sizeof(struct tag));
-
-	} else {
+	if (found) {
 
 		/* keep notes ordered by priotiry */
 		n_pri = note_get_priority(note);
 		ref = tag_get_notes(t);
 
-		/* ref is the first note with lower priority */
+		/* if there is a note with a lower priority, add current note before it
+		 * otherwise append it to the list.
+		 * 0 = max priority */
 		while (ref->next) {
-			if (!(ref->obj && n_pri >= note_get_priority(ref->obj)))
+			if (n_pri < note_get_priority(ref->obj)) {
+				append = 0;
 				break;
+			}
+
 			ref = ref->next;
 		}
 
-		d_list_add_before(note, ref, &t->notes, note_get_size());
-		tag_set_n_number(t->notes_number + 1, t);
+		if (append)
+			d_list_append(note, &(t->notes), note_get_size());
+		else
+			d_list_add_before(note, ref, &(t->notes), note_get_size());
+
+		t->notes_number++;
+
+	/* tag not found, create a new one */
+	} else {
+
+		t = new_tag(tag_name);
+		t->notes->obj = note;
+		t->notes_number++;
+
+		d_list_append(t, &global_tag_list, sizeof(struct tag));
 	}
 }
 

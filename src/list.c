@@ -40,16 +40,27 @@ new_list_node_circ(void)
 	return list;
 }
 
-void
-d_list_add(void *obj, struct d_list **list, size_t obj_size)
+void /* append to list */
+d_list_append(void *obj, struct d_list **list, size_t obj_size)
 {
 	struct d_list *i;
-	for (i=*list; i->obj; i = i->next);
 
-	i->next = new_list_node();
-	i->obj = malloc(obj_size);
+	i=*list;
+	/* insert on head */
+	if (i->obj == NULL) {
 
-	memcpy(i->obj, obj, obj_size);
+		i->obj = malloc(obj_size);
+		memcpy(i->obj, obj, obj_size);
+
+	} else {
+
+		for (; i->next; i = i->next);
+
+		i->next = new_list_node();
+		i->next->obj = malloc(obj_size);
+		memcpy(i->next->obj, obj, obj_size);
+	}
+
 }
 
 void /* adds obj before ref, if ref not found, adds to end of the list*/

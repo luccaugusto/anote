@@ -54,6 +54,7 @@ anote_show_panel(PANEL *p)
 	int y_offset = HEADER_HEIGHT;
 	int x_offset = 1;
 	char *text;
+	char *name;
 
 	if (!p)
 		return;
@@ -61,11 +62,12 @@ anote_show_panel(PANEL *p)
 	p_height = anote_panel_height((Tag) panel_userptr(p));
 	p_window = panel_window(p);
 
+	name = tag_get_name((Tag) panel_userptr(p));
 	box(p_window, 0, 0);
-	draw_headers(p_window, p_height, side_win_w - 2, tag_get_name((Tag) panel_userptr(p)));
+	draw_headers(p_window, p_height, side_win_w - 2, name);
 
 	/* limit of MAX_NOTES_PER_PANEL */
-	j = tag_get_notes((Tag) panel_userptr(p));
+	j = tag_get_notes(tag_get(name));
 	k = 0;
 	while (j->obj && k < MAX_NOTES_PER_PANEL) {
 		text = note_get_text(j->obj);

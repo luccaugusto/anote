@@ -412,7 +412,7 @@ main_win_actions(int c)
 				prompt_user("Nothing to delete here", "Deleting Note", ALIGN_CENTER);
 			}
 			break;
-		case 9:
+		case A_TAB:
 			cur_win = side_win;
 			break;
 		default:

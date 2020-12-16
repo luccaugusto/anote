@@ -167,6 +167,20 @@ delete_list(struct d_list **list)
 	free(*list);
 }
 
+void /* delete all objects in circular list*/
+delete_list_circ(struct d_list **list)
+{
+	struct d_list *aux;
+
+	while ((*list)->next != *list) {
+		aux = (*list)->next;
+		(*list)->next = aux->next;
+		free(aux);
+	}
+
+	free(*list);
+}
+
 struct d_list *
 d_list_find(void *obj, struct d_list **list)
 {

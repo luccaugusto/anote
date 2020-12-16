@@ -240,9 +240,11 @@ side_win_actions(int c)
 			CLEAR_WINDOW(side_win);
 			load_displayed_tag(tag_get_name(sel_tag_index->obj));
 			delete_panels();
+			delete_list_circ(&circ_tag_list);
 			build_tag_panels();
 			reload_side_win();
 			reload_main_win();
+			cur_win = main_win;
 			break;
 
 		case 'j':      /* FALLTHROUGH */

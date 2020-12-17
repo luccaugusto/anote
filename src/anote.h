@@ -17,6 +17,6 @@ typedef enum {
 extern struct d_list *global_tag_list;
 extern FILE *notes_file;
 extern char *notes_file_name;
-extern char *arg_tag_name;
+extern char *def_tag;
 
 #endif

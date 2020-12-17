@@ -23,7 +23,9 @@
 void load_notes_from_file(void);
 int write_notes_to_file(char *mode);
 void build_file_name(void);
-void list_notes(void);
+void list_all(void);
+void list_tag(Tag t);
+void list_notes(char *tag);
 void help(void);
 
 /* GLOBAL VARIABLES */
@@ -31,7 +33,8 @@ struct d_list *global_tag_list;
 char *errmsg;
 FILE *notes_file;
 char *notes_file_name;
-char *arg_tag_name = DEFAULT_TAG;
+char *arg_tag_name = NULL;
+char *def_tag = DEFAULT_TAG;
 ANOTE_ERROR aerr;
 
 void
@@ -147,7 +150,7 @@ build_file_name(void)
 }
 
 void
-list_notes(void)
+list_all(void)
 {
 	int has_notes = 0;
 	struct d_list *i;
@@ -180,6 +183,42 @@ list_notes(void)
 }
 
 void
+list_tag(Tag t)
+{
+	int has_notes = 0;
+	struct d_list *j;
+	Note n;
+
+	j = tag_get_notes(t);
+
+	if (d_list_length(&j) > 0)
+		printf("Notes Tagged %s\n", tag_get_name(t));
+
+	while (j->obj) {
+
+		n = j->obj;
+		printf("\t- %d %s\n", note_get_priority(n), note_get_text(n));
+		has_notes++;
+
+		CONTINUE_IF(j, j->next);
+	}
+
+	if (!has_notes)
+		printf("No notes tagged %s\n", tag_get_name(t));
+}
+
+void
+list_notes(char *tag)
+{
+	/* list everything */
+	if (tag) {
+		list_tag(tag_get(tag));
+	} else {
+		list_all();
+	}
+}
+
+void
 help(void)
 {
 	/* TODO: write the full help thingy */
@@ -208,28 +247,35 @@ main(int argc, char *argv[])
 
 	global_tag_list = new_list_node();
 
-	while ((c = getopt(argc,argv,"a:i:hlp:t:")) != -1) {
+	while ((c = getopt(argc,argv,"a:di:hlp:t:")) != -1) {
 		switch (c) {
 			case 'a': /* add note */
 				interactive = 0;
 				command = 'a';
 				note = optarg;
 				break;
+			case 'd':
+				arg_tag_name = DEFAULT_TAG;
+				break;
 			case 'i': /* import file */
 				interactive = 0;
 				command = 'i';
 				notes_file_name = optarg;
 				break;
-			case 'h':
+			case 'h': /* help */
 				interactive = 0;
 				help();
 				break;
-			case 'l':
+			case 'l': /* list */
 				interactive = 0;
 				command = 'l';
 				break;
-			case 'p':
+			case 'p': /* specify priority */
 				priority = str2int(optarg);
+				break;
+			case 'r': /* remove */
+
+				errno = ENOTSUP;
 				break;
 			case 't': /* specify tag */
 				arg_tag_name = optarg;
@@ -253,7 +299,7 @@ main(int argc, char *argv[])
 	}
 
 	/* load informed tag */
-	default_tag = new_tag(arg_tag_name);
+	default_tag = new_tag(def_tag);
 	d_list_append(default_tag, &global_tag_list, tag_get_size());
 
 	switch (command) {
@@ -261,7 +307,7 @@ main(int argc, char *argv[])
 			build_file_name();
 			n = new_note(note);
 			note_set_priority(priority, n);
-			tag_add_note(n, arg_tag_name);
+			tag_add_note(n, def_tag);
 			if(write_notes_to_file("a") < 0){
 				fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));
 			}
@@ -274,7 +320,7 @@ main(int argc, char *argv[])
 
 		case 'l':
 			load_notes_from_file();
-			list_notes();
+			list_notes(arg_tag_name);
 			break;
 	}
 

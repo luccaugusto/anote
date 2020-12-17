@@ -119,7 +119,7 @@ start_anote_cli(void)
 	organize_window_space();
 
 	/* show informed tag notes on main window as default */
-	load_displayed_tag(arg_tag_name);
+	load_displayed_tag(def_tag);
 
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
@@ -129,8 +129,8 @@ start_anote_cli(void)
 
 	cur_win = main_win;
 
-	label = malloc(strlen(label) + strlen(arg_tag_name));
-	sprintf(label, "%s Notes", arg_tag_name);
+	label = malloc(strlen(label) + strlen(def_tag));
+	sprintf(label, "%s Notes", def_tag);
 	draw_headers(main_win, main_win_h, main_win_w, label, COLOR_PAIR(MAIN_WIN_COLORS));
 	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", COLOR_PAIR(SIDE_WIN_COLORS));
 

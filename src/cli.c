@@ -273,6 +273,7 @@ populate_main_menu(void)
 
 		i = d_tag_notes;
 		while (i->obj) {
+			/* TODO if text does not fit on screen (real long note), break it into 2 items */
 			text = note_get_text(i->obj);
 			/* TODO support different display modes
 			   switch (display_mode) {
@@ -342,12 +343,14 @@ show_cmd(WINDOW *window)
 	char *commands[] = {
 		"q: save & quit",
 		"t: toogle show mode",
-		"a: quick add note",
-		"A: add note to chosen tag",
-		"i: add note set priority",
-		"I: add note set priority and tag",
-		"d: delete selected note",
-		"D: delete selected tag",
+		"a: quick add nt",
+		"A: add nt to tag",
+		"i: add nt set priority",
+		"I: add nt set pri and tag",
+		"d: del selected note",
+		"D: del selected tag",
+		"Enter: Sel tag to main window",
+		"Tab: Change window",
 		NULL,
 	};
 

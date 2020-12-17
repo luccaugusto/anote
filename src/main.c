@@ -20,7 +20,7 @@
 #include "utils.h"
 
 /* FUNCTION PROTOTYPES */
-void load_notes_from_file(void);
+void load_notes_from_file(char *n_file);
 int write_notes_to_file(char *mode);
 void build_file_name(void);
 void list_all(void);
@@ -37,17 +37,16 @@ char *arg_tag_name = NULL;
 char *def_tag = DEFAULT_TAG;
 ANOTE_ERROR aerr;
 
+
 void
-load_notes_from_file(void)
+load_notes_from_file(char *n_file)
 {
 	char *cur_tag = "";
 	char *cur_note;
 	int cur_pri;
 	Note n;
 
-	build_file_name();
-
-	notes_file = fopen(notes_file_name, "r");
+	notes_file = fopen(n_file, "r");
 
 	/* reads file and creates notes */
 	if (notes_file) {
@@ -247,37 +246,36 @@ main(int argc, char *argv[])
 
 	global_tag_list = new_list_node();
 
-	while ((c = getopt(argc,argv,"a:di:hlp:t:")) != -1) {
+	while ((c = getopt(argc,argv,"a:di:hlp:rt:")) != -1) {
 		switch (c) {
-			case 'a': /* add note */
+			case 'a':                           /* add note */
 				interactive = 0;
 				command = 'a';
 				note = optarg;
 				break;
-			case 'd':
+			case 'd':                           /* set default tag */
 				arg_tag_name = DEFAULT_TAG;
 				break;
-			case 'i': /* import file */
-				interactive = 0;
+			case 'i':                           /* import file */
 				command = 'i';
 				notes_file_name = optarg;
 				break;
-			case 'h': /* help */
+			case 'h':                           /* help */
 				interactive = 0;
 				help();
 				break;
-			case 'l': /* list */
+			case 'l':                           /* list */
 				interactive = 0;
 				command = 'l';
 				break;
-			case 'p': /* specify priority */
+			case 'p':                           /* specify priority */
 				priority = str2int(optarg);
 				break;
-			case 'r': /* remove */
-
-				errno = ENOTSUP;
+			case 'r':                           /* remove */
+				interactive = 0;
+				command = 'r';
 				break;
-			case 't': /* specify tag */
+			case 't':                           /* specify tag */
 				arg_tag_name = optarg;
 				break;
 			case '?':
@@ -313,19 +311,24 @@ main(int argc, char *argv[])
 			}
 			break;
 
-		case 'i':/* import file */
-			printf("Operation not yet supported");
-			exit(-ENOTSUP);
+		case 'r':
+			errno = ENOTSUP;
+			fprintf(stderr, "ERROR: %s\n", strerror( errno ));
+			exit(-errno);
 			break;
-
+		case 'i':/* import file */
+			load_notes_from_file(notes_file_name);
+			break;
 		case 'l':
-			load_notes_from_file();
+			build_file_name();
+			load_notes_from_file(notes_file_name);
 			list_notes(arg_tag_name);
 			break;
 	}
 
 	if (interactive) {
-		load_notes_from_file();
+		build_file_name();
+		load_notes_from_file(notes_file_name);
 		start_anote_cli();
 		if(write_notes_to_file("w") < 0){
 			fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));

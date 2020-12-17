@@ -75,7 +75,6 @@ init_cli(void)
 	init_pair(SELECTED_COLORS, sel_fg, sel_bg);
 	init_pair(UNSELECTED_COLORS, unsel_fg, unsel_bg);
 	init_pair(HIGHLIGHT_COLORS, hl_fg, hl_bg);
-	init_pair(DEFAULT_COLORS, nohl_bg, nohl_bg);
 	init_pair(MENU_COLORS_FG, menu_fg_sel, menu_bg_sel);
 	init_pair(MENU_COLORS_BG, menu_fg_usl, menu_bg_usl);
 	MAIN_WIN_COLORS = SELECTED_COLORS;
@@ -239,7 +238,7 @@ reload_main_win(void)
 void
 draw_headers(WINDOW *window, int height, int width, char *label, chtype color)
 {
-	attron(color);
+	wattrset(window, color);
 	mvwaddch(window, 2, 0, ACS_LTEE);
 	mvwhline(window, 2, 1, ACS_HLINE, width - 2);
 	mvwaddch(window, 2, width - 1, ACS_RTEE);
@@ -263,9 +262,8 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 
 	length = strlen(string);
 	x = start_x + (width - length) / 2;
-	attron(color);
+	wattrset(win, color);
 	mvwprintw(win, y, x, "%s", string);
-	attroff(color);
 	refresh();
 }
 

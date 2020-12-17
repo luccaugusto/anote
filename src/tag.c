@@ -113,10 +113,13 @@ tag_search_note(const char *needle_text, struct tag *haystack)
 	struct d_list *i;
 	Note needle;
 
-	for (i = tag_get_notes(haystack); i->next; i = i->next) {
+	i = tag_get_notes(haystack);
+	while (i->obj) {
 		needle = i->obj;
 		if (strcmp(needle_text, note_get_text(needle)) == 0)
 			break;
+
+		CONTINUE_IF(i, i->next);
 	}
 
 	if (strcmp(needle_text, note_get_text(needle)) != 0)
@@ -132,19 +135,39 @@ tag_del(struct tag *t, struct d_list **list)
 	struct d_list *i;
 	struct d_list *aux;
 
-	for (i = *list; i->next && i->next->obj != t; i = i->next);
-	aux = i->next;
+	i = *list;
+
+	/* has to move the head */
+	if (i->obj == t) {
+
+		aux = i;
+		*list = (*list)->next;
+
+	} else {
+
+		/* finds tag in list */
+		while (i->obj) {
+			if (i->next->obj == t) {
+				aux = i->next;
+				i->next = aux->next;
+				break;
+			}
+			CONTINUE_IF(i, i->next);
+		}
+
+	}
 
 	/* tag found */
 	if (aux->obj == t) {
-		i->next = aux->next;
 
+		/* delete all notes */
 		for (i = t->notes; i->next; i = i->next)
 			note_del(i->obj);
 
 		delete_list(&(t->notes));
 		free(aux);
 	}
+	/* else nothing to do */
 }
 
 /* deletes a tag and all its notes circular list*/
@@ -205,13 +228,13 @@ tag_add_note(Note note, char *tag_name)
 		/* if there is a note with a lower priority, add current note before it
 		 * otherwise append it to the list.
 		 * 0 = max priority */
-		while (ref->next) {
+		while (ref->obj) {
 			if (n_pri < note_get_priority(ref->obj)) {
 				append = 0;
 				break;
 			}
 
-			ref = ref->next;
+			CONTINUE_IF(ref, ref->next);
 		}
 
 		if (append)
@@ -240,7 +263,7 @@ tag_del_note(Note note, char *tag_name)
 
 	/* find tag on the list */
 	i = global_tag_list;
-	while (i->next) {
+	while (i->obj) {
 
 		if (i->obj) {
 			t = (i->obj);
@@ -248,7 +271,7 @@ tag_del_note(Note note, char *tag_name)
 				break;
 		}
 
-		i = i->next;
+		CONTINUE_IF(i, i->next);
 	}
 
 	/* tag not found, nothing to do */

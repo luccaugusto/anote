@@ -160,8 +160,7 @@ housekeeping(void)
 		del_panel(i->obj);
 		d_list_del_obj(i->obj, &panel_list);
 
-		if (i->next) i = i->next;
-		else break;
+		CONTINUE_IF(i, i->next);
 	}
 	*/
 
@@ -298,8 +297,7 @@ populate_main_menu(void)
 			   */
 			main_items[j++] = new_item(text, text);
 
-			if (i->next) i = i->next;
-			else break;
+			CONTINUE_IF(i, i->next);
 		}
 
 		display_text_list[n] = (char *) NULL;

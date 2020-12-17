@@ -4,6 +4,7 @@
 /* CONTROL FLOW MACROS */
 #define EXIT_IF(x,s) if (x){fprintf(strderr, "%s", s); exit(errno);}
 #define RETURN_IF(x,e) if (x) return -(errno = e);
+#define CONTINUE_IF(x,y) if (y) x = y; else break;
 
 #define MAX(x,y) (x > y ? x : y)
 

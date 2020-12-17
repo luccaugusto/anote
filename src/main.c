@@ -74,21 +74,32 @@ write_notes_to_file(char *mode)
 {
 	Tag t;
 	Note n;
+	FILE *notes_real_file;
 	struct d_list *i;
 	struct d_list *j;
+	int ch;
 	int notes_written = 0;
 	char *text;
+	char *swap = NULL;
 
-	notes_file = fopen(notes_file_name, mode);
+	/* TODO */
+	/* if on write mode, write to swap file first */
+	if (0 && strcmp(mode, "w") == 0) {
+		swap = malloc(sizeof(char) * (strlen(notes_file_name) + 4));
+		sprintf(swap, "%s.swp", notes_file_name);
+		notes_file = fopen(swap, mode);
+	} else {
+		notes_file = fopen(notes_file_name, mode);
+	}
 
 	RETURN_IF(!notes_file, errno);
 
 	i = global_tag_list;
-	while (i->next) {
+	while (i->obj) {
 		t = i->obj;
 		j = tag_get_notes(t);
 
-		while (j->next) {
+		while (j->obj) {
 
 			n = j->obj;
 			text = note_get_text(n);
@@ -97,10 +108,25 @@ write_notes_to_file(char *mode)
 				notes_written++;
 			}
 
-			j = j->next;
+			CONTINUE_IF(j, j->next);
 		}
 
-		i = i->next;
+		CONTINUE_IF(i, i->next);
+	}
+
+	/* TODO */
+	/* copy contents to real notes file */
+	if (0 && swap) {
+		/* go to beggining of file */
+		fseek(notes_file, 0, SEEK_SET);
+		notes_real_file = fopen(notes_file_name, mode);
+
+		while ((ch = fgetc(notes_file)) != EOF) {
+			fputc(ch, notes_real_file);
+		}
+
+		fclose(notes_real_file);
+		remove(swap);
 	}
 
 	fclose(notes_file);
@@ -130,24 +156,23 @@ list_notes(void)
 	Tag t;
 
 	i = global_tag_list;
-	while (i->next) {
+	while (i->obj) {
 		t = i->obj;
 		j = tag_get_notes(t);
 
 		if (d_list_length(&j) > 0)
 			printf("Notes Tagged %s\n", tag_get_name(t));
 
-		while (j->next) {
+		while (j->obj) {
 
 			n = j->obj;
 			printf("\t- %d %s\n", note_get_priority(n), note_get_text(n));
 			has_notes++;
 
-			j = j->next;
+			CONTINUE_IF(j, j->next);
 		}
 
-
-		i = i->next;
+		CONTINUE_IF(i, i->next);
 	}
 
 	if (!has_notes)

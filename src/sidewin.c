@@ -84,8 +84,7 @@ anote_show_panel(PANEL *p)
 		++y_offset;
 		++k;
 
-		if (j->next) j = j->next;
-		else break;
+		CONTINUE_IF(j, j->next);
 	}
 
 	if (k < tag_get_n_number((Tag) panel_userptr(p)))
@@ -111,8 +110,7 @@ build_tag_panels(void)
 			anote_show_panel(p);
 		}
 
-		if (i->next) i = i->next;
-		else break;
+		CONTINUE_IF(i, i->next);
 	}
 
 	/* first tag is the first of the circular list */

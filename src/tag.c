@@ -43,8 +43,7 @@ tag_get(char *name)
 				break;
 		}
 
-		if (i->next) i = i->next;
-		else break;
+		CONTINUE_IF(i, i->next);
 	}
 
 	/* tag not found */
@@ -186,7 +185,7 @@ tag_add_note(Note note, char *tag_name)
 
 	/* find tag on the list */
 	i = global_tag_list;
-	while (i->next) {
+	while (i->obj) {
 
 		t = i->obj;
 		if (strcmp(tag_name, tag_get_name(t)) == 0) {
@@ -194,10 +193,10 @@ tag_add_note(Note note, char *tag_name)
 			break;
 		}
 
-		i = i->next;
+		CONTINUE_IF(i, i->next);
 	}
 
-	if (found) {
+	if (i->obj != NULL && found) {
 
 		/* keep notes ordered by priotiry */
 		n_pri = note_get_priority(note);

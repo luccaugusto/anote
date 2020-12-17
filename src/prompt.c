@@ -28,10 +28,10 @@ prompt_user(char *question, char *label,int align_center)
 	WINDOW *p_win = panel_window(prompt_panel);;
 
 	box(p_win, 0, 0);
-	draw_headers(p_win, prompt_win_h, prompt_win_w, label, UNSELECTED_COLORS);
+	draw_headers(p_win, prompt_win_h, prompt_win_w, label, COLOR_PAIR(UNSELECTED_COLORS));
 
 	if (align_center)
-		print_align_center(p_win, HEADER_HEIGHT, 1, prompt_win_w, question, UNSELECTED_COLORS);
+		print_align_center(p_win, HEADER_HEIGHT, 1, prompt_win_w, question, COLOR_PAIR(UNSELECTED_COLORS));
 	else
 		mvwprintw(p_win, HEADER_HEIGHT, 1, question);
 

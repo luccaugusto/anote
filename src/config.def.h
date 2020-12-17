@@ -12,11 +12,11 @@
 
 enum COLORS {
 	sel_bg = COLOR_BLACK,
-	sel_fg = COLOR_YELLOW,
+	sel_fg = COLOR_RED,
 	unsel_bg = COLOR_BLACK,
-	unsel_fg = COLOR_RED,
+	unsel_fg = COLOR_YELLOW,
 	hl_bg = COLOR_WHITE,
-	hl_fg = COLOR_YELLOW,
+	hl_fg = COLOR_BLACK,
 	nohl_bg = COLOR_BLACK,
 	nohl_fg = COLOR_WHITE,
 	menu_bg_sel = COLOR_BLACK,

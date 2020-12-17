@@ -132,8 +132,8 @@ start_anote_cli(void)
 
 	label = malloc(strlen(label) + strlen(arg_tag_name));
 	sprintf(label, "%s Notes", arg_tag_name);
-	draw_headers(main_win, main_win_h, main_win_w, label, MAIN_WIN_COLORS);
-	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", SIDE_WIN_COLORS);
+	draw_headers(main_win, main_win_h, main_win_w, label, COLOR_PAIR(MAIN_WIN_COLORS));
+	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", COLOR_PAIR(SIDE_WIN_COLORS));
 
 	populate_main_menu();
 	bind_menu(main_win, main_menu, main_win_h, main_win_w);
@@ -205,7 +205,7 @@ delete_win(WINDOW *local_win)
 void
 show_win(WINDOW *window, chtype color)
 {
-	//wcolor_set(window, COLOR_PAIR(color), NULL);
+	wattrset(window, color);
 	box(window, 0, 0);
 	wrefresh(window);
 }
@@ -228,7 +228,7 @@ reload_main_win(void)
 
 	label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
 	sprintf(label, "%s Notes", d_tag_name);
-	draw_headers(main_win, main_win_h, main_win_w, label, MAIN_WIN_COLORS);
+	draw_headers(main_win, main_win_h, main_win_w, label, COLOR_PAIR(MAIN_WIN_COLORS));
 
 	werase(menu_sub(main_menu));
 	populate_main_menu();
@@ -239,12 +239,12 @@ reload_main_win(void)
 void
 draw_headers(WINDOW *window, int height, int width, char *label, chtype color)
 {
-	attron(COLOR_PAIR(color));
+	attron(color);
 	mvwaddch(window, 2, 0, ACS_LTEE);
 	mvwhline(window, 2, 1, ACS_HLINE, width - 2);
 	mvwaddch(window, 2, width - 1, ACS_RTEE);
 	print_align_center(window, 1, 0, width, label, color);
-	attroff(COLOR_PAIR(color));
+	attroff(color);
 }
 
 void
@@ -263,9 +263,9 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 
 	length = strlen(string);
 	x = start_x + (width - length) / 2;
-	attron(COLOR_PAIR(color));
+	attron(color);
 	mvwprintw(win, y, x, "%s", string);
-	attroff(COLOR_PAIR(color));
+	attroff(color);
 	refresh();
 }
 
@@ -347,8 +347,8 @@ populate_main_menu(void)
 	set_menu_back(main_menu, COLOR_PAIR(MENU_COLORS_BG));
 }
 
-void /* colors not yet supported */
-bind_menu(WINDOW *window, MENU *menu, int height, int width/* chtype colors */)
+void
+bind_menu(WINDOW *window, MENU *menu, int height, int width)
 {
 	keypad(window, TRUE);
 	unpost_menu(menu);
@@ -445,6 +445,8 @@ main_win_actions(int c)
 			break;
 		case A_TAB:
 			cur_win = side_win;
+			MAIN_WIN_COLORS = UNSELECTED_COLORS;
+			SIDE_WIN_COLORS = SELECTED_COLORS;
 			break;
 		default:
 			break;
@@ -487,9 +489,9 @@ execution_loop(void)
 				else                     side_win_actions(c);
 				break;
 		}
-		show_win(main_win, MAIN_WIN_COLORS);
-		show_win(side_win, SIDE_WIN_COLORS);
-		show_win(footer, MAIN_WIN_COLORS);
+		show_win(main_win, COLOR_PAIR(MAIN_WIN_COLORS));
+		show_win(side_win, COLOR_PAIR(SIDE_WIN_COLORS));
+		show_win(footer, COLOR_PAIR(UNSELECTED_COLORS));
 	} while ((c = wgetch(cur_win)) != 'q');
 quit_anote:
 	return;

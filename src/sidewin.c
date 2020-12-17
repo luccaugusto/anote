@@ -56,20 +56,27 @@ anote_show_panel(PANEL *p)
 	int x_offset = 1;
 	char *text;
 	char *name;
+	chtype color;
 
 	if (!p)
 		return;
 
+
 	p_height = anote_panel_height((Tag) panel_userptr(p));
 	p_window = panel_window(p);
-
 	name = tag_get_name((Tag) panel_userptr(p));
-	box(p_window, 0, 0);
-	draw_headers(p_window, p_height, side_win_w - 2, name, UNSELECTED_COLORS);
 
-	/* limit of MAX_NOTES_PER_PANEL */
+	color = COLOR_PAIR(UNSELECTED_COLORS);
+	if (strcmp(tag_get_name(sel_tag_index->obj), name) == 0)
+		color = COLOR_PAIR(SELECTED_COLORS);
+
+	wattrset(p_window, color);
+	box(p_window, 0, 0);
+	draw_headers(p_window, p_height, side_win_w - 2, name, color);
+
 	j = tag_get_notes(tag_get(name));
 	k = 0;
+	/* limit of MAX_NOTES_PER_PANEL */
 	while (j->obj && k < MAX_NOTES_PER_PANEL) {
 		text = note_get_text(j->obj);
 
@@ -80,9 +87,7 @@ anote_show_panel(PANEL *p)
 			text = concatenate(text, "...");
 		}
 
-		attron(COLOR_PAIR(1));
 		mvwprintw(p_window, y_offset, x_offset, text);
-		attroff(COLOR_PAIR(1));
 
 		++y_offset;
 		++k;
@@ -104,6 +109,11 @@ build_tag_panels(void)
 	side_y_offset = HEADER_HEIGHT;
 
 	circ_tag_list = new_list_node_circ();
+
+	/* first tag is the first of the circular list */
+	top_tag_index = circ_tag_list;
+	sel_tag_index = top_tag_index;
+
 	i = global_tag_list;
 	while (i->obj) {
 		t = i->obj;
@@ -115,10 +125,6 @@ build_tag_panels(void)
 
 		CONTINUE_IF(i, i->next);
 	}
-
-	/* first tag is the first of the circular list */
-	top_tag_index = circ_tag_list;
-	sel_tag_index = top_tag_index;
 
 	update_panels();
 	doupdate();
@@ -272,6 +278,8 @@ side_win_actions(int c)
 
 		case A_TAB:
 			cur_win = main_win;
+			MAIN_WIN_COLORS = SELECTED_COLORS;
+			SIDE_WIN_COLORS = UNSELECTED_COLORS;
 			break;
 
 		default:

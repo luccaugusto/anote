@@ -2,10 +2,6 @@
 #define _CLI_H
 
 #define HEADER_HEIGHT 3
-#define SELECTED_COLORS 1
-#define UNSELECTED_COLORS 2
-#define HIGHLIGHT_COLORS 3
-#define DEFAULT_COLORS 4
 
 #define CLEAR_WINDOW(x)     \
 	wmove(x, HEADER_HEIGHT, 1); \
@@ -18,7 +14,6 @@ typedef enum {
 	A_CR = 13,
 } A_Keys;
 
-/* types */
 typedef enum {
 	ALIGN_LEFT = 0,
 	ALIGN_CENTER,
@@ -28,10 +23,22 @@ typedef enum {
 	NOTE_COMP_PRIO,
 } DisplayModes;
 
+/* COLOR PAIRS */
+typedef enum {
+	SELECTED_COLORS = 1,
+	UNSELECTED_COLORS,
+	HIGHLIGHT_COLORS,
+	DEFAULT_COLORS,
+	MENU_COLORS_FG,
+	MENU_COLORS_BG,
+} AnoteColors;
+
+
 /* FUNCTION PROTOTYPES */
 void start_anote_cli(void);
 void load_displayed_tag(char *tag_name);
-void draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */);
+void draw_headers(WINDOW *window, int height, int width, char *label, chtype color);
+void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string, chtype color);
 void reload_main_win(void);
 
 /* GLOBAL VARIABLES */

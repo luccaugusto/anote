@@ -14,8 +14,9 @@
 #include "sidewin.h"
 
 /* GLOBAL VARIABLES */
-int side_y_offset = HEADER_HEIGHT;
+int SIDE_WIN_COLORS;
 int side_x_offset = 1;
+int side_y_offset = HEADER_HEIGHT;
 struct d_list *top_tag_index;
 struct d_list *sel_tag_index;
 struct d_list *circ_tag_list;
@@ -64,7 +65,7 @@ anote_show_panel(PANEL *p)
 
 	name = tag_get_name((Tag) panel_userptr(p));
 	box(p_window, 0, 0);
-	draw_headers(p_window, p_height, side_win_w - 2, name);
+	draw_headers(p_window, p_height, side_win_w - 2, name, UNSELECTED_COLORS);
 
 	/* limit of MAX_NOTES_PER_PANEL */
 	j = tag_get_notes(tag_get(name));
@@ -79,7 +80,9 @@ anote_show_panel(PANEL *p)
 			text = concatenate(text, "...");
 		}
 
+		attron(COLOR_PAIR(1));
 		mvwprintw(p_window, y_offset, x_offset, text);
+		attroff(COLOR_PAIR(1));
 
 		++y_offset;
 		++k;

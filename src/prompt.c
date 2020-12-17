@@ -28,10 +28,10 @@ prompt_user(char *question, char *label,int align_center)
 	WINDOW *p_win = panel_window(prompt_panel);;
 
 	box(p_win, 0, 0);
-	draw_headers(p_win, prompt_win_h, prompt_win_w, label);
+	draw_headers(p_win, prompt_win_h, prompt_win_w, label, UNSELECTED_COLORS);
 
 	if (align_center)
-		print_align_center(p_win, HEADER_HEIGHT, 1, prompt_win_w, question);
+		print_align_center(p_win, HEADER_HEIGHT, 1, prompt_win_w, question, UNSELECTED_COLORS);
 	else
 		mvwprintw(p_win, HEADER_HEIGHT, 1, question);
 
@@ -150,26 +150,4 @@ prompt_delete_tag(void)
 		}
 	}
 	return r;
-}
-
-void /* colors not yet supported */
-print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string/*, chtype color*/)
-{
-	int length, x, y;
-
-	win = (win == NULL) ? stdscr : win;
-
-	getyx(win, y, x);
-
-	x = (start_x == 0) ? x : start_x;
-	y = (start_y == 0) ? y : start_y;
-
-	width = (width == 0) ? DEFAULT_WIDTH : width;
-
-	length = strlen(string);
-	x = start_x + (width - length) / 2;
-	/*wattron(win, color);*/ /* colors not yet supported */
-	mvwprintw(win, y, x, "%s", string);
-	/*wattroff(win, color);*/ /* colors not yet supported */
-	refresh();
 }

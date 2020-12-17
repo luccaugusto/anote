@@ -51,6 +51,7 @@ WINDOW *footer;
 MENU *main_menu;
 ITEM **main_items;
 
+int MAIN_WIN_COLORS;
 int main_win_h;
 int main_win_w;
 int side_win_h;
@@ -71,10 +72,14 @@ init_cli(void)
 	noecho();             /* Don't echo() while we do getch  */
 
 	/* setup color pairs */
-	init_pair(SELECTED_COLORS, COLOR_YELLOW, COLOR_YELLOW);
-	init_pair(UNSELECTED_COLORS, COLOR_YELLOW, COLOR_YELLOW);
-	init_pair(HIGHLIGHT_COLORS, COLOR_YELLOW, COLOR_YELLOW);
-	init_pair(DEFAULT_COLORS, COLOR_YELLOW, COLOR_YELLOW);
+	init_pair(SELECTED_COLORS, sel_fg, sel_bg);
+	init_pair(UNSELECTED_COLORS, unsel_fg, unsel_bg);
+	init_pair(HIGHLIGHT_COLORS, hl_fg, hl_bg);
+	init_pair(DEFAULT_COLORS, nohl_bg, nohl_bg);
+	init_pair(MENU_COLORS_FG, menu_fg_sel, menu_bg_sel);
+	init_pair(MENU_COLORS_BG, menu_fg_usl, menu_bg_usl);
+	MAIN_WIN_COLORS = SELECTED_COLORS;
+	SIDE_WIN_COLORS = UNSELECTED_COLORS;
 }
 
 /* creates main, side and footer windows
@@ -127,8 +132,8 @@ start_anote_cli(void)
 
 	label = malloc(strlen(label) + strlen(arg_tag_name));
 	sprintf(label, "%s Notes", arg_tag_name);
-	draw_headers(main_win, main_win_h, main_win_w, label);
-	draw_headers(side_win, side_win_h, side_win_w, "Other Notes");
+	draw_headers(main_win, main_win_h, main_win_w, label, MAIN_WIN_COLORS);
+	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", SIDE_WIN_COLORS);
 
 	populate_main_menu();
 	bind_menu(main_win, main_menu, main_win_h, main_win_w);
@@ -200,10 +205,9 @@ delete_win(WINDOW *local_win)
 void
 show_win(WINDOW *window, chtype color)
 {
-	attron(color);
+	//wcolor_set(window, COLOR_PAIR(color), NULL);
 	box(window, 0, 0);
 	wrefresh(window);
-	attroff(color);
 }
 
 void
@@ -224,7 +228,7 @@ reload_main_win(void)
 
 	label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
 	sprintf(label, "%s Notes", d_tag_name);
-	draw_headers(main_win, main_win_h, main_win_w, label);
+	draw_headers(main_win, main_win_h, main_win_w, label, MAIN_WIN_COLORS);
 
 	werase(menu_sub(main_menu));
 	populate_main_menu();
@@ -232,13 +236,37 @@ reload_main_win(void)
 	wrefresh(menu_win(main_menu));
 }
 
-void /* colors not yet supported */
-draw_headers(WINDOW *window, int height, int width, char *label/*, chtype color */)
+void
+draw_headers(WINDOW *window, int height, int width, char *label, chtype color)
 {
+	attron(COLOR_PAIR(color));
 	mvwaddch(window, 2, 0, ACS_LTEE);
 	mvwhline(window, 2, 1, ACS_HLINE, width - 2);
 	mvwaddch(window, 2, width - 1, ACS_RTEE);
-	print_align_center(window, 1, 0, width, label/*, COLOR_PAIR(label_color)*/);
+	print_align_center(window, 1, 0, width, label, color);
+	attroff(COLOR_PAIR(color));
+}
+
+void
+print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string, chtype color)
+{
+	int length, x, y;
+
+	win = (win == NULL) ? stdscr : win;
+
+	getyx(win, y, x);
+
+	x = (start_x == 0) ? x : start_x;
+	y = (start_y == 0) ? y : start_y;
+
+	width = (width == 0) ? DEFAULT_WIDTH : width;
+
+	length = strlen(string);
+	x = start_x + (width - length) / 2;
+	attron(COLOR_PAIR(color));
+	mvwprintw(win, y, x, "%s", string);
+	attroff(COLOR_PAIR(color));
+	refresh();
 }
 
 void
@@ -315,6 +343,8 @@ populate_main_menu(void)
 		mvwprintw(main_win, HEADER_HEIGHT, 1, "No notes in this tag");
 	}
 
+	set_menu_fore(main_menu, COLOR_PAIR(MENU_COLORS_FG));
+	set_menu_back(main_menu, COLOR_PAIR(MENU_COLORS_BG));
 }
 
 void /* colors not yet supported */
@@ -447,13 +477,20 @@ execution_loop(void)
 					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);
 				}
 				break;
+			case 'Z': /* QUIT PROGRAM */
+				c = wgetch(cur_win);
+				if (c == 'Z') goto quit_anote;
+				if (c == 'Q') goto quit_anote;
+				break;
 			default:
 				if (cur_win == main_win) main_win_actions(c);
 				else                     side_win_actions(c);
 				break;
 		}
-		show_win(main_win, SELECTED_COLORS);
-		show_win(side_win, UNSELECTED_COLORS);
-		show_win(footer, UNSELECTED_COLORS);
+		show_win(main_win, MAIN_WIN_COLORS);
+		show_win(side_win, SIDE_WIN_COLORS);
+		show_win(footer, MAIN_WIN_COLORS);
 	} while ((c = wgetch(cur_win)) != 'q');
+quit_anote:
+	return;
 }

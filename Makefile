@@ -23,6 +23,7 @@ ${PROJ_NAME}: ${OBJ}
 
 config:
 	cp ./src/config.def.h ./src/$@.h
+	chmod -w ./src/$@.h
 
 ./build/%.o: ./src/%.c ./src/%.h
 	@ echo "Building target using ${CC} compiler: $<"

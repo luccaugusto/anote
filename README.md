@@ -51,4 +51,5 @@ The idea of this program however is to keep things simple, it just takes notes, 
 + tick note as complete.
 + vim bindings.
 + Implement colors: show more prioritary notes in red, mid priority notes in orange, other notes in white.
-+ Make a window to hold a shell instance so user can run simple commands inside anote.
++ Key binding to open a window with cal-3 command
++ Possibility to swap main window with side window and show tags panels side by side on the big window

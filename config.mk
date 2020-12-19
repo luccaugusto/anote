@@ -5,9 +5,7 @@ SHELL = /bin/sh
 VERSION = 1.0
 PROJ_NAME = anote
 
-
 #paths
-CONFIG_DIR=${XDG_CONFIG_HOME/anote}
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 

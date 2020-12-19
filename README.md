@@ -7,12 +7,12 @@ Probably the CLI application will engulf the shell script in the future.
 Notes are saved in plain text files in $NOTES_PATH directory or $XDG_CONFIG_HOME/anote/.notes if $NOTES_PATH is not set.
 
 This program follows the suckless philosophy, the configuration file is the source code itself.
-To change a configuration you must first change it on src/config.def.h and run '''make config'''.
+To change a configuration you must first change it on src/config.def.h and run ```make config```.
 
 This program is licensed under the GNU GPL3 License.
 
 # Instalation
-run '''sudo make install'''
+run ```sudo make install```
 
 ## Script
 The script has 4 functions:

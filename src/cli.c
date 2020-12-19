@@ -291,9 +291,9 @@ populate_main_menu(void)
 	if (display_text_list) {
 		while (display_text_list[j] != NULL)
 			free(display_text_list[j++]);
-		free(display_text_list);
 	}
 
+	j = 0;
 	/* free the old items */
 	if (main_items) {
 		while (main_items[j] != NULL)
@@ -306,6 +306,7 @@ populate_main_menu(void)
 	/* Create items */
 	if (n > 0) {
 
+		j = 0;
 		main_items = (ITEM **) calloc(n + 1, sizeof(ITEM *));
 		main_items_size = n + 1;
 		display_text_list = (char **) calloc(n + 1, sizeof(char *));
@@ -534,7 +535,7 @@ execution_loop(void)
 				}
 				break;
 			case 't': /* Toggle display mode */
-				note_dismode = (note_dismode + 1) % NOTE_COMP_PRIO;
+				note_dismode = (note_dismode + 1) % (NOTE_COMP_PRIO + 1);
 				reload_main_win();
 				break;
 			case 'Z': /* QUIT PROGRAM */

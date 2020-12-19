@@ -226,7 +226,8 @@ reload_side_win(void)
 	struct d_list *i;
 	PANEL *p;
 
-	CLEAR_WINDOW(side_win);
+	werase(side_win);
+	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", COLOR_PAIR(SIDE_WIN_COLORS));
 
 	i = top_tag_index;
 	do {
@@ -280,6 +281,8 @@ side_win_actions(int c)
 			cur_win = main_win;
 			MAIN_WIN_COLORS = SELECTED_COLORS;
 			SIDE_WIN_COLORS = UNSELECTED_COLORS;
+			reload_main_win();
+			reload_side_win();
 			break;
 
 		default:

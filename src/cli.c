@@ -371,6 +371,7 @@ show_cmd(WINDOW *window)
 	char *commands[] = {
 		"q: save & quit",
 		"t: toogle show mode",
+		"c: open calendar",
 		"a: quick add nt",
 		"A: add nt to tag",
 		"i: add nt set priority",
@@ -379,6 +380,7 @@ show_cmd(WINDOW *window)
 		"D: del selected tag",
 		"Enter: Sel tag to main window",
 		"Tab: Change window",
+		"",
 		NULL,
 	};
 
@@ -445,6 +447,8 @@ main_win_actions(int c)
 			cur_win = side_win;
 			MAIN_WIN_COLORS = UNSELECTED_COLORS;
 			SIDE_WIN_COLORS = SELECTED_COLORS;
+			reload_main_win();
+			reload_side_win();
 			break;
 		default:
 			break;
@@ -476,6 +480,9 @@ execution_loop(void)
 				} else {
 					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);
 				}
+				break;
+			case 'c': /* CALENDAR */
+				/* TODO */
 				break;
 			case 'Z': /* QUIT PROGRAM */
 				c = wgetch(cur_win);

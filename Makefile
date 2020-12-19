@@ -27,12 +27,12 @@ config:
 	chmod -w ./src/$@.h
 
 ./build/%.o: ./src/%.c ./src/%.h
-	@ echo "Building target using ${CC} compiler: $<"
+	@ echo "[${CC}] $<"
 	${CC} $< -c ${CFLAGS} -o $@
 	@ echo ' '
 
 ./build/main.o: ./src/main.c ${H_SRC}
-	@ echo "Building target using ${CC} compiler: $<"
+	@ echo "[${CC}] $<"
 	${CC} $< -c ${CFLAGS} -o $@
 	@ echo ' '
 

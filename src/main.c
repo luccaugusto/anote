@@ -32,6 +32,7 @@ void help(void);
 struct d_list *global_tag_list;
 char *errmsg;
 FILE *notes_file;
+char *notes_path;
 char *notes_file_name;
 char *arg_tag_name = NULL;
 char *def_tag = DEFAULT_TAG;
@@ -138,7 +139,7 @@ write_notes_to_file(char *mode)
 void
 build_file_name(void)
 {
-	char *notes_path = getenv("NOTES_PATH");
+	notes_path = getenv("NOTES_PATH");
 
 	/* defaults to XDG_CONFIG_HOME/anote */
 	if (!notes_path) {
@@ -329,6 +330,8 @@ main(int argc, char *argv[])
 	if (interactive) {
 		build_file_name();
 		load_notes_from_file(notes_file_name);
+		/* load tag passed on arguments or default tag */
+		def_tag = (arg_tag_name) ? arg_tag_name : def_tag;
 		start_anote_cli();
 		if(write_notes_to_file("w") < 0){
 			fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));

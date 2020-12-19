@@ -33,6 +33,7 @@ The idea of this program however is to keep things simple, it just takes notes, 
 ## TODO
 + Improve readme
 + Make install
++ Make man page
 
 ### Shell
 + implement remove function alternative without dmenu.

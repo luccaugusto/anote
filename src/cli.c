@@ -308,7 +308,7 @@ populate_main_menu(void)
 
 		main_items = (ITEM **) calloc(n + 1, sizeof(ITEM *));
 		main_items_size = n + 1;
-		display_text_list = (char **) malloc(sizeof(char *) * (n + 1));
+		display_text_list = (char **) calloc(n + 1, sizeof(char *));
 
 		i = d_tag_notes;
 		while (i->obj) {
@@ -345,7 +345,6 @@ populate_main_menu(void)
 			} else {
 
 				display_text_list[j] = build_note_display_text(i->obj);
-
 				main_items[j] = new_item(display_text_list[j], text);
 				++j;
 			}
@@ -535,7 +534,7 @@ execution_loop(void)
 				}
 				break;
 			case 't': /* Toggle display mode */
-				note_dismode = (note_dismode + 1) % (NOTE_COMP_PRIO + 1);
+				note_dismode = (note_dismode + 1) % NOTE_COMP_PRIO;
 				reload_main_win();
 				break;
 			case 'Z': /* QUIT PROGRAM */

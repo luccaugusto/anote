@@ -140,7 +140,6 @@ start_anote_cli(void)
 	build_tag_panels();
 	show_cmd(footer);
 
-
 	doupdate();
 
 	execution_loop();
@@ -273,8 +272,12 @@ populate_main_menu(void)
 	struct d_list *i;
 	/*Note n = NULL;*/
 	char *text;
+	char *full_text;
+	char *remainder;
 	int j = 0;
 	int n = 0;
+	int offset = 0; /* long note split offset */
+	int mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
 	if (display_text_list)
 		free(display_text_list);
@@ -299,30 +302,62 @@ populate_main_menu(void)
 
 		i = d_tag_notes;
 		while (i->obj) {
-			/* TODO if text does not fit on screen (real long note), break it into 2 items */
+
 			text = note_get_text(i->obj);
-			/* TODO support different display modes
-			   switch (display_mode) {
-			   case NOTE_ONLY:
-			   display_text_list[j] = malloc(strlen(text));
-			   sprintf(display_text_list[j], "%s", text);
-			   break;
-			   case NOTE_COMP:
-			   display_text_list[j] = malloc(strlen(text) + 5);
-			   sprintf(display_text_list[j], "%s [%c]", text, (note_get_completed(n)) ? 'V' : '-');
-			   break;
-			   case NOTE_PRIO:
-			   display_text_list[j] = malloc(strlen(text) + 7);
-			   sprintf(display_text_list[j], "%d. %s", note_get_priority(n), text);
-			   break;
-			   case NOTE_COMP_PRIO:
-			   display_text_list[j] = malloc(strlen(text) + 12);
-			   sprintf(display_text_list[j], "%d. %s [%c]", note_get_priority(n), text, (note_get_completed(n)) ? 'V' : '-');
-			   break;
-			   }
-			   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
-			   */
-			main_items[j++] = new_item(text, text);
+
+			/* note too wider than main_window - borders and MENU_MARK
+			 * split text in 2 items.
+			 * keep description as full text as it is used
+			 * to delete items */
+			if (strlen(text) > mw_content_w) {
+				full_text = text;
+				text = substr(full_text, 0, mw_content_w);
+
+				remainder = substr(full_text, mw_content_w, strlen(full_text));
+				remainder = concatenate("    ", remainder); /* indent text */
+
+				main_items[j++] = new_item(text, full_text);
+				do {
+					offset += mw_content_w;
+
+					/* adds a new position to the main items array */
+					main_items = realloc(main_items,
+							++main_items_size * sizeof (ITEM *));
+
+					/* adds the part of the note to the items */
+					main_items[j++] = new_item(remainder, full_text);
+
+					remainder = substr(full_text, offset, mw_content_w);
+					remainder = concatenate("\t", remainder); /* indent text */
+
+				} while (strlen(remainder) > mw_content_w);
+			}
+
+			else {
+
+				/* TODO support different display modes
+				   switch (display_mode) {
+				   case NOTE_ONLY:
+				   display_text_list[j] = malloc(strlen(text));
+				   sprintf(display_text_list[j], "%s", text);
+				   break;
+				   case NOTE_COMP:
+				   display_text_list[j] = malloc(strlen(text) + 5);
+				   sprintf(display_text_list[j], "%s [%c]", text, (note_get_completed(n)) ? 'V' : '-');
+				   break;
+				   case NOTE_PRIO:
+				   display_text_list[j] = malloc(strlen(text) + 7);
+				   sprintf(display_text_list[j], "%d. %s", note_get_priority(n), text);
+				   break;
+				   case NOTE_COMP_PRIO:
+				   display_text_list[j] = malloc(strlen(text) + 12);
+				   sprintf(display_text_list[j], "%d. %s [%c]", note_get_priority(n), text, (note_get_completed(n)) ? 'V' : '-');
+				   break;
+				   }
+				   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
+				   */
+				main_items[j++] = new_item(text, text);
+			}
 
 			CONTINUE_IF(i, i->next);
 		}
@@ -367,11 +402,12 @@ bind_menu(WINDOW *window, MENU *menu, int height, int width)
 void
 show_cmd(WINDOW *window)
 {
+	/* commands array should always have a pair number
+	 * of commands, insert a empty string if one is missing */
 	int col_offset = 1;
 	char *commands[] = {
 		"q: save & quit",
 		"t: toogle show mode",
-		"c: open calendar",
 		"a: quick add nt",
 		"A: add nt to tag",
 		"i: add nt set priority",
@@ -380,7 +416,6 @@ show_cmd(WINDOW *window)
 		"D: del selected tag",
 		"Enter: Sel tag to main window",
 		"Tab: Change window",
-		"",
 		NULL,
 	};
 
@@ -480,9 +515,6 @@ execution_loop(void)
 				} else {
 					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);
 				}
-				break;
-			case 'c': /* CALENDAR */
-				/* TODO */
 				break;
 			case 'Z': /* QUIT PROGRAM */
 				c = wgetch(cur_win);

@@ -14,9 +14,10 @@ typedef enum {
 } ANOTE_ERROR;
 
 /* GLOBAL VARIABLES */
-extern struct d_list *global_tag_list;
+extern char *def_tag;
+extern char *notes_path;
 extern FILE *notes_file;
 extern char *notes_file_name;
-extern char *def_tag;
+extern struct d_list *global_tag_list;
 
 #endif

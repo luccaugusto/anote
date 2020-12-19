@@ -15,13 +15,16 @@ typedef enum {
 } A_Keys;
 
 typedef enum {
-	ALIGN_LEFT = 0,
-	ALIGN_CENTER,
 	NOTE_ONLY,
 	NOTE_COMP,
 	NOTE_PRIO,
 	NOTE_COMP_PRIO,
 } DisplayModes;
+
+typedef enum {
+	ALIGN_LEFT = 0,
+	ALIGN_CENTER,
+} AlignModes;
 
 /* COLOR PAIRS */
 typedef enum {
@@ -35,6 +38,7 @@ typedef enum {
 
 /* FUNCTION PROTOTYPES */
 void start_anote_cli(void);
+void show_win(WINDOW *window, chtype color);
 void load_displayed_tag(char *tag_name);
 void draw_headers(WINDOW *window, int height, int width, char *label, chtype color);
 void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string, chtype color);

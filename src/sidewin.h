@@ -15,6 +15,7 @@ PANEL *anote_new_panel(Tag t);
 PANEL *anote_search_panel(Tag t);
 void delete_panels(void);
 void reload_side_win(void);
+void color_side_win(void);
 void scroll_panels(void);
 void side_win_actions(int c);
 

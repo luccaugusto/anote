@@ -24,12 +24,12 @@ void organize_window_space(void);
 void housekeeping(void);
 
 void delete_win(WINDOW *local_win);
-void show_win(WINDOW *window, chtype color);
 void hide_win(WINDOW *window);
 void reload_main_win(void);
 void populate_main_menu(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
 void show_cmd(WINDOW *window);
+char *build_note_display_text(Note n);
 
 void main_win_actions(int c);
 void side_win_actions(int c);
@@ -39,7 +39,7 @@ void execution_loop(void);
 Tag displayed_tag;
 Note n_aux;
 struct d_list *d_tag_notes;
-int display_mode = DEFAULT_DISPLAY_MODE;
+DisplayModes note_dismode = DEFAULT_DISPLAY_MODE;
 int d_tag_n_number;
 int main_items_size;
 char *d_tag_name;
@@ -235,6 +235,15 @@ reload_main_win(void)
 }
 
 void
+color_main_win(void)
+{
+	char *label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
+	sprintf(label, "%s Notes", d_tag_name);
+	draw_headers(main_win, main_win_h, main_win_w, label, COLOR_PAIR(MAIN_WIN_COLORS));
+	show_win(main_win, COLOR_PAIR(MAIN_WIN_COLORS));
+}
+
+void
 draw_headers(WINDOW *window, int height, int width, char *label, chtype color)
 {
 	wattrset(window, color);
@@ -270,7 +279,6 @@ void
 populate_main_menu(void)
 {
 	struct d_list *i;
-	/*Note n = NULL;*/
 	char *text;
 	char *full_text;
 	char *remainder;
@@ -279,19 +287,21 @@ populate_main_menu(void)
 	int offset = 0; /* long note split offset */
 	int mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
-	if (display_text_list)
+	/* free the old items */
+	if (display_text_list) {
+		while (display_text_list[j] != NULL)
+			free(display_text_list[j++]);
 		free(display_text_list);
+	}
 
 	/* free the old items */
 	if (main_items) {
-		for (int j=0; j < main_items_size; ++j) {
-			if (main_items[j] != NULL)
-				free(main_items[j]);
-		}
+		while (main_items[j] != NULL)
+			free(main_items[j++]);
 		free(main_items);
 	}
 
-	n = d_list_length(&d_tag_notes);
+	n = d_tag_n_number;
 
 	/* Create items */
 	if (n > 0) {
@@ -331,32 +341,13 @@ populate_main_menu(void)
 					remainder = concatenate("\t", remainder); /* indent text */
 
 				} while (strlen(remainder) > mw_content_w);
-			}
 
-			else {
+			} else {
 
-				/* TODO support different display modes
-				   switch (display_mode) {
-				   case NOTE_ONLY:
-				   display_text_list[j] = malloc(strlen(text));
-				   sprintf(display_text_list[j], "%s", text);
-				   break;
-				   case NOTE_COMP:
-				   display_text_list[j] = malloc(strlen(text) + 5);
-				   sprintf(display_text_list[j], "%s [%c]", text, (note_get_completed(n)) ? 'V' : '-');
-				   break;
-				   case NOTE_PRIO:
-				   display_text_list[j] = malloc(strlen(text) + 7);
-				   sprintf(display_text_list[j], "%d. %s", note_get_priority(n), text);
-				   break;
-				   case NOTE_COMP_PRIO:
-				   display_text_list[j] = malloc(strlen(text) + 12);
-				   sprintf(display_text_list[j], "%d. %s [%c]", note_get_priority(n), text, (note_get_completed(n)) ? 'V' : '-');
-				   break;
-				   }
-				   main_items[j] = new_item(display_text_list[j], display_text_list[j]);
-				   */
-				main_items[j++] = new_item(text, text);
+				display_text_list[j] = build_note_display_text(i->obj);
+
+				main_items[j] = new_item(display_text_list[j], text);
+				++j;
 			}
 
 			CONTINUE_IF(i, i->next);
@@ -430,6 +421,33 @@ show_cmd(WINDOW *window)
 	}
 }
 
+char *
+build_note_display_text(Note n)
+{
+	char *text;
+
+	switch (note_dismode) {
+		case NOTE_ONLY:
+			text = malloc(strlen(note_get_text(n)));
+			sprintf(text, "%s", note_get_text(n));
+			break;
+		case NOTE_COMP:
+			text = malloc(strlen(note_get_text(n)) + 5);
+			sprintf(text, "%s [%c]", note_get_text(n), (note_get_completed(n)) ? 'V' : '-');
+			break;
+		case NOTE_PRIO:
+			text = malloc(strlen(note_get_text(n)) + 7);
+			sprintf(text, "%d. %s", note_get_priority(n), note_get_text(n));
+			break;
+		case NOTE_COMP_PRIO:
+			text = malloc(strlen(note_get_text(n)) + 12);
+			sprintf(text, "%d. %s [%c]", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? 'V' : '-');
+			break;
+	}
+
+	return text;
+}
+
 void /* notes manipulation */
 main_win_actions(int c)
 {
@@ -482,8 +500,8 @@ main_win_actions(int c)
 			cur_win = side_win;
 			MAIN_WIN_COLORS = UNSELECTED_COLORS;
 			SIDE_WIN_COLORS = SELECTED_COLORS;
-			reload_main_win();
-			reload_side_win();
+			color_main_win();
+			color_side_win();
 			break;
 		default:
 			break;
@@ -515,6 +533,10 @@ execution_loop(void)
 				} else {
 					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);
 				}
+				break;
+			case 't': /* Toggle display mode */
+				note_dismode = (note_dismode + 1) % (NOTE_COMP_PRIO + 1);
+				reload_main_win();
 				break;
 			case 'Z': /* QUIT PROGRAM */
 				c = wgetch(cur_win);

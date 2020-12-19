@@ -240,6 +240,13 @@ reload_side_win(void)
 	} while (i != top_tag_index);
 }
 
+void
+color_side_win(void)
+{
+	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", COLOR_PAIR(SIDE_WIN_COLORS));
+	show_win(side_win, COLOR_PAIR(SIDE_WIN_COLORS));
+}
+
 void /* tag manipulations */
 side_win_actions(int c)
 {

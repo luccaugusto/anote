@@ -45,6 +45,7 @@ load_notes_from_file(char *n_file)
 	char *cur_tag = "";
 	char *cur_note;
 	int cur_pri;
+	int cur_complete;
 	Note n;
 
 	notes_file = fopen(n_file, "r");
@@ -55,14 +56,16 @@ load_notes_from_file(char *n_file)
 		 * tag priority note_text \n */
 
 		while (!feof(notes_file)) {
-			cur_tag = read_until_separator(' ', notes_file);
-			cur_pri = str2int(read_until_separator(' ', notes_file));
+			cur_tag = read_until_separator('|', notes_file);
+			cur_pri = str2int(read_until_separator('|', notes_file));
+			cur_complete = str2int(read_until_separator('|', notes_file));
 			cur_note = read_until_separator('\n', notes_file);
 
 			/* if read something */
 			if (!is_blank(cur_tag) && !is_blank(cur_note)) {
 				n = new_note(cur_note);
 				note_set_priority(cur_pri, n);
+				note_set_completed(cur_complete, n);
 				tag_add_note(n, cur_tag);
 			}
 		}
@@ -107,7 +110,7 @@ write_notes_to_file(char *mode)
 			n = j->obj;
 			text = note_get_text(n);
 			if (!is_blank(text)) {
-				fprintf(notes_file, "%s %d %s\n", tag_get_name(t), note_get_priority(n), text);
+				fprintf(notes_file, "%s|%d|%d|%s\n", tag_get_name(t), note_get_priority(n), note_get_completed(n), text);
 				notes_written++;
 			}
 

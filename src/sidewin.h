@@ -8,7 +8,7 @@ extern struct d_list *circ_tag_list;
 extern int SIDE_WIN_COLORS;
 
 /* FUNCTION PROTOTYPES */
-int anote_panel_height(Tag t);
+int anote_panel_height(Tag t, int full);
 void anote_show_panel(PANEL *p);
 void build_tag_panels(void);
 PANEL *anote_new_panel(Tag t);

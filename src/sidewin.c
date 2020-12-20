@@ -22,11 +22,12 @@ struct d_list *sel_tag_index;
 struct d_list *circ_tag_list;
 struct d_list *panel_list;
 WINDOW *side_win;
+PANEL *expanded_p;
 
 /* FUNCTION DEFINITIONS */
 
 int /* calculate panel height */
-anote_panel_height(Tag t)
+anote_panel_height(Tag t, int full)
 {
 	if (t == NULL)
 		return 0;
@@ -34,7 +35,10 @@ anote_panel_height(Tag t)
 	int p_height;
 	int t_n_number = tag_get_n_number(t);
 
-	if (0 <= t_n_number && t_n_number < MAX_NOTES_PER_PANEL)
+	/* no limit for this tag */
+	if (full)
+		p_height = t_n_number;
+	else if (0 <= t_n_number && t_n_number < MAX_NOTES_PER_PANEL)
 		p_height = t_n_number;
 	else
 		p_height = MAX_NOTES_PER_PANEL;
@@ -62,7 +66,7 @@ anote_show_panel(PANEL *p)
 		return;
 
 
-	p_height = anote_panel_height((Tag) panel_userptr(p));
+	p_height = anote_panel_height((Tag) panel_userptr(p), 0);
 	p_window = panel_window(p);
 	name = tag_get_name((Tag) panel_userptr(p));
 
@@ -135,7 +139,13 @@ anote_new_panel(Tag t)
 {
 	PANEL *p = NULL;
 	WINDOW *p_window;
-	int p_height = anote_panel_height(t);
+	int p_height;
+
+	/* load expanded tag with full height */
+	if (strcmp(tag_get_name((Tag) panel_userptr(expanded_p)), tag_get_name(t)) == 0)
+		p_height = anote_panel_height(t, 0);
+	else
+		p_height = anote_panel_height(t, 0);
 
 	p_window = derwin(side_win, p_height, side_win_w - 2, side_y_offset, side_x_offset);
 	if (p_window) {
@@ -191,7 +201,10 @@ scroll_panels(void)
 		p = anote_search_panel(tag);
 		if (p) {
 			move_panel(p, side_y_offset, side_x_offset);
-			side_y_offset += anote_panel_height(tag);
+
+			side_y_offset += (p == expanded_p) ?
+				anote_panel_height(tag, 1) : anote_panel_height(tag, 0);
+
 		} else {
 			anote_new_panel(tag);
 		}
@@ -279,6 +292,19 @@ side_win_actions(int c)
 			CLEAR_WINDOW(side_win);
 			top_tag_index = d_list_prev(top_tag_index->obj, &circ_tag_list);
 			sel_tag_index = top_tag_index;
+			delete_panels();
+			scroll_panels();
+			reload_side_win();
+			break;
+
+		case 'e': /* TODO: use tag instead of panel as reference to expanded */
+			/* toogles expanded */
+			if (expanded_p)
+				expanded_p = NULL;
+			else
+				expanded_p = anote_search_panel(sel_tag_index->obj);
+
+			CLEAR_WINDOW(side_win);
 			delete_panels();
 			scroll_panels();
 			reload_side_win();

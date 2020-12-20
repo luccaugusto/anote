@@ -180,8 +180,8 @@ housekeeping(void)
 	}
 }
 
-WINDOW
-*create_new_win(int height, int width, int start_y, int start_x)
+WINDOW *
+create_new_win(int height, int width, int start_y, int start_x)
 {
 	WINDOW *local_win;
 

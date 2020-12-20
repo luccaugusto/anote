@@ -119,6 +119,23 @@ concatenate(char *beginning, char *ending)
 	return ret;
 }
 
+/* finds a position to split the string
+ * that won't split a word in half
+ * and will be the closest to max_length
+ */
+int
+find_split_spot(char *str, int max_length)
+{
+	max_length = (max_length > strlen(str)) ?
+		strlen(str) : max_length;
+
+	/* finds the space immediatelly before max_length */
+	while (str[max_length] != ' ')
+		max_length--;
+
+	return max_length;
+}
+
 char *
 read_until_separator(char sep, FILE *file)
 {

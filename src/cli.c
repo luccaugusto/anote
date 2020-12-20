@@ -277,13 +277,16 @@ void
 populate_main_menu(void)
 {
 	struct d_list *i;
-	char *text;
-	char *full_text;
-	char *remainder;
+	char *text;         /* note text                     */
+	char *full_text;    /* full_text for item split      */
+	char *remainder;    /* item split remainder          */
+	int split_pos;      /* item split position           */
 	int j = 0;
-	int n = 0;
-	int offset = 0; /* long note split offset */
-	int mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
+	int n = 0;          /* note and item count           */
+	int offset = 0;     /* long note split offset        */
+	int mw_content_w;   /* main_win usable portion width */
+
+	mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
 	/* free the old items */
 	if (display_text_list) {
@@ -321,10 +324,11 @@ populate_main_menu(void)
 			if (strlen(text) > mw_content_w) {
 				full_text = build_note_display_text(i->obj);
 
-				remainder = substr(full_text, mw_content_w, strlen(full_text));
+				split_pos = find_split_spot(full_text, mw_content_w);
+				remainder = substr(full_text, split_pos, strlen(full_text));
 				remainder = concatenate("    ", remainder); /* indent text */
 
-				main_items[j++] = new_item(substr(full_text, 0, mw_content_w), text);
+				main_items[j++] = new_item(substr(full_text, 0, split_pos), text);
 				do {
 					offset += mw_content_w;
 
@@ -335,7 +339,7 @@ populate_main_menu(void)
 					/* adds the part of the note to the items */
 					main_items[j++] = new_item(remainder, text);
 
-					remainder = substr(full_text, offset, mw_content_w);
+					remainder = substr(full_text, offset, offset + mw_content_w);
 					remainder = concatenate("\t", remainder); /* indent text */
 
 				} while (strlen(remainder) > mw_content_w);
@@ -434,7 +438,7 @@ build_note_display_text(Note n)
 			break;
 		case NOTE_COMP:
 			str = malloc(strlen(note_get_text(n)) + 3 + strlen(COMPLETE_MARK));
-			sprintf(str, "%s [%c]", note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : '-');
+			sprintf(str, "%s [%s]", note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
 			break;
 		case NOTE_PRIO:
 			str = malloc(strlen(note_get_text(n)) + 7);
@@ -442,7 +446,7 @@ build_note_display_text(Note n)
 			break;
 		case NOTE_COMP_PRIO:
 			str = malloc(strlen(note_get_text(n)) + 10 + strlen(COMPLETE_MARK));
-			sprintf(str, "%d. %s [%c]", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : '-');
+			sprintf(str, "%d. %s [%s]", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
 			break;
 	}
 

@@ -2,9 +2,6 @@
 #define _CLI_H
 
 #define HEADER_HEIGHT 3
-#define CLOCK_LEFT 2
-#define CLOCK_CENTER max_col/2
-#define CLOCK_RIGHT max_col-10
 
 #define REFRESH_MAIN_MENU                                     \
     populate_main_menu();                                     \
@@ -56,7 +53,6 @@ void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *
 /* GLOBAL VARIABLES */
 extern WINDOW *cur_win;
 extern WINDOW *main_win;
-extern WINDOW *clock_win;
 extern Tag displayed_tag;
 extern int d_tag_n_number;
 extern char *d_tag_name;
@@ -64,10 +60,6 @@ extern struct d_list *d_tag_notes;
 
 extern struct d_list *panel_list;
 extern int MAIN_WIN_COLORS;
-extern int clock_win_w;
-extern int clock_win_h;
-extern int clock_pos_y;
-extern int clock_pos_x;
 extern int main_win_h;
 extern int main_win_w;
 extern int side_win_h;

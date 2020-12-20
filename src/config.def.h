@@ -9,6 +9,7 @@
 #define DEFAULT_TAG "general"
 #define NOTES_FILE_NAME ".anotes"
 #define MAX_NOTES_PER_PANEL 5
+#define COMPLETE_MARK 'C'
 
 enum COLORS {
 	sel_bg = COLOR_BLACK,

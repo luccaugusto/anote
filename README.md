@@ -45,6 +45,5 @@ The idea of this program however is to keep things simple, it just takes notes, 
 
 ### CLI
 + Scroll only if there are more notes that are not displayed
-+ Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about).
 + Key to expand selected tag if not all its notes are displayed.
 + Possibility to swap main window with side window and show tags panels side by side on the big window

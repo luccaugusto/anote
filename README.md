@@ -44,12 +44,9 @@ The idea of this program however is to keep things simple, it just takes notes, 
 + save the date a note was added and increase its priority automattically as time passes.
 
 ### CLI
-+ Improve line break on long notes (do note break on middle of word).
 + Scroll only if there are more notes that are not displayed
-+ Different modes to show displayed notes: only text, priority + text, completed + text, priority + completed + text.
 + Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about).
 + Key to expand selected tag if not all its notes are displayed.
-+ tick note as complete.
 + vim bindings.
 + Implement colors: show more prioritary notes in red, mid priority notes in orange, other notes in white.
 + Possibility to swap main window with side window and show tags panels side by side on the big window

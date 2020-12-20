@@ -10,7 +10,8 @@
 
 /* TYPES */
 typedef enum {
-	EFINOOP = 1, /* file could not be opened */
+	EFINOOP = 1, /* file could not be opened    */
+	ENOTENW,     /* some notes were not written */
 } ANOTE_ERROR;
 
 /* GLOBAL VARIABLES */

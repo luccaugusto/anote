@@ -84,26 +84,31 @@ write_notes_to_file(char *mode)
 	struct d_list *i;
 	struct d_list *j;
 	int ch;
+	int total_n_number = 0;
 	int notes_written = 0;
 	char *text;
 	char *swap = NULL;
 
-	/* TODO */
 	/* if on write mode, write to swap file first */
-	if (0 && strcmp(mode, "w") == 0) {
+	if (strcmp(mode, "w") == 0) {
 		swap = malloc(sizeof(char) * (strlen(notes_file_name) + 4));
 		sprintf(swap, "%s.swp", notes_file_name);
-		notes_file = fopen(swap, mode);
+
+		notes_file = fopen(swap, "w+");
+
 	} else {
+
 		notes_file = fopen(notes_file_name, mode);
+
 	}
 
-	RETURN_IF(!notes_file, errno);
+	RETURN_IF(!notes_file, -errno);
 
 	i = global_tag_list;
 	while (i->obj) {
 		t = i->obj;
 		j = tag_get_notes(t);
+		total_n_number += tag_get_n_number(t);
 
 		while (j->obj) {
 
@@ -120,12 +125,19 @@ write_notes_to_file(char *mode)
 		CONTINUE_IF(i, i->next);
 	}
 
-	/* TODO */
+	/* ERROR */
+	if (total_n_number != notes_written) {
+		fprintf(stderr, "Error: some notes could not be written. Swap file: %s\n", swap);
+		exit(-ENOTENW);
+	}
+
 	/* copy contents to real notes file */
-	if (0 && swap) {
+	if (swap) {
 		/* go to beggining of file */
 		fseek(notes_file, 0, SEEK_SET);
-		notes_real_file = fopen(notes_file_name, mode);
+
+		if ((notes_real_file = fopen(notes_file_name, mode)) == NULL)
+			return -errno;
 
 		while ((ch = fgetc(notes_file)) != EOF) {
 			fputc(ch, notes_real_file);
@@ -133,6 +145,7 @@ write_notes_to_file(char *mode)
 
 		fclose(notes_real_file);
 		remove(swap);
+		return notes_written;
 	}
 
 	fclose(notes_file);
@@ -337,7 +350,7 @@ main(int argc, char *argv[])
 		def_tag = (arg_tag_name) ? arg_tag_name : def_tag;
 		start_anote_cli();
 		if(write_notes_to_file("w") < 0){
-			fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror( errno ));
+			fprintf(stderr, "Error opening file at %s: %s\n", notes_file_name, strerror(errno));
 		}
 	}
 

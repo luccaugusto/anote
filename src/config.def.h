@@ -1,15 +1,23 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define DEFAULT_PRIORITY 0
-#define DEFAULT_DISPLAY_MODE NOTE_COMP_PRIO
+/* DEFAULT VALUES */
 #define DEFAULT_WIDTH 80
-#define MAIN_WIN_REL_WIDTH 70
-#define MENU_MARK "->"
+#define DEFAULT_PRIORITY 0
 #define DEFAULT_TAG "general"
-#define NOTES_FILE_NAME ".anotes"
+
+/* CLI PROPORTIONS AND LIMITS */
 #define MAX_NOTES_PER_PANEL 5
-#define COMPLETE_MARK 'C'
+#define MAIN_WIN_REL_WIDTH 70
+
+/* CLI CHARACTERS */
+#define MENU_MARK "->"
+#define COMPLETE_MARK "C"
+#define INCOMPLETE_MARK "-"
+#define DEFAULT_DISPLAY_MODE NOTE_COMP_PRIO
+
+/* NAME OF THE FILE TO SAVE THE NOTES */
+#define NOTES_FILE_NAME ".anotes"
 
 enum COLORS {
 	sel_bg = COLOR_BLACK,

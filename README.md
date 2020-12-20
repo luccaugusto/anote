@@ -47,6 +47,4 @@ The idea of this program however is to keep things simple, it just takes notes, 
 + Scroll only if there are more notes that are not displayed
 + Clock on footer/ Clock mode like nmcnmcppcpcmmcp (whatever, you know what program i'm talking about).
 + Key to expand selected tag if not all its notes are displayed.
-+ vim bindings.
-+ Implement colors: show more prioritary notes in red, mid priority notes in orange, other notes in white.
 + Possibility to swap main window with side window and show tags panels side by side on the big window

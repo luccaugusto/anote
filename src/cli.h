@@ -2,6 +2,9 @@
 #define _CLI_H
 
 #define HEADER_HEIGHT 3
+#define CLOCK_LEFT 2
+#define CLOCK_CENTER max_col/2
+#define CLOCK_RIGHT max_col-10
 
 #define REFRESH_MAIN_MENU                                     \
     populate_main_menu();                                     \
@@ -46,12 +49,14 @@ void start_anote_cli(void);
 void show_win(WINDOW *window, chtype color);
 void load_displayed_tag(char *tag_name);
 void draw_headers(WINDOW *window, int height, int width, char *label, chtype color);
-void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string, chtype color);
+WINDOW *create_new_win(int height, int width, int start_y, int start_x);
 void reload_main_win(void);
+void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string, chtype color);
 
 /* GLOBAL VARIABLES */
 extern WINDOW *cur_win;
 extern WINDOW *main_win;
+extern WINDOW *clock_win;
 extern Tag displayed_tag;
 extern int d_tag_n_number;
 extern char *d_tag_name;
@@ -59,6 +64,10 @@ extern struct d_list *d_tag_notes;
 
 extern struct d_list *panel_list;
 extern int MAIN_WIN_COLORS;
+extern int clock_win_w;
+extern int clock_win_h;
+extern int clock_pos_y;
+extern int clock_pos_x;
 extern int main_win_h;
 extern int main_win_w;
 extern int side_win_h;

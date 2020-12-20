@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "anote.h"
 #include "config.h"
@@ -18,7 +19,6 @@
 #include "cli.h"
 
 /* FUNCTION PROTOTYPES */
-WINDOW *create_new_win(int height, int width, int start_y, int start_x);
 void init_cli(void);
 void organize_window_space(void);
 void housekeeping(void);
@@ -30,6 +30,7 @@ void populate_main_menu(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
 void show_cmd(WINDOW *window);
 char *build_note_display_text(Note n);
+void update_watch(void);
 
 void main_win_actions(int c);
 void side_win_actions(int c);
@@ -45,6 +46,7 @@ int main_items_size;
 char *d_tag_name;
 char **display_text_list;
 
+WINDOW *clock_win;
 WINDOW *main_win;
 WINDOW *cur_win;
 WINDOW *footer;
@@ -52,6 +54,10 @@ MENU *main_menu;
 ITEM **main_items;
 
 int MAIN_WIN_COLORS;
+int clock_win_w;
+int clock_win_h;
+int clock_pos_y;
+int clock_pos_x;
 int main_win_h;
 int main_win_w;
 int side_win_h;
@@ -98,6 +104,11 @@ organize_window_space(void)
 	main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
 	side_win_w = max_col - main_win_w;
 	prompt_win_w = max_col/2;
+
+	clock_pos_y = main_win_h - 2;
+	clock_pos_x = CLOCK_POS;
+	clock_win_w = 9; /* |[xx:xx]| */
+	clock_win_h = 3; /* borders + content */
 }
 
 void
@@ -121,6 +132,7 @@ start_anote_cli(void)
 	/* show informed tag notes on main window as default */
 	load_displayed_tag(def_tag);
 
+	clock_win = create_new_win(clock_win_h, clock_win_w, clock_pos_y, clock_pos_x);
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
@@ -453,6 +465,24 @@ build_note_display_text(Note n)
 	return str;
 }
 
+void
+update_watch(void)
+{
+	int hour;
+	int minute;
+	time_t now;
+	struct tm *local;
+
+	time(&now);
+	local = localtime(&now);
+
+    hour = local->tm_hour;
+    minute = local->tm_min;
+
+	mvwprintw(clock_win, 1, 2, "%02d:%02d", hour, minute);
+	wrefresh(clock_win);
+}
+
 void /* notes manipulation */
 main_win_actions(int c)
 {
@@ -521,6 +551,7 @@ void
 execution_loop(void)
 {
 	int c = -1;
+	c = halfdelay(100);
 	do {
 		switch (c) {
 			case 'a': /* QUICK ADD, default priority */
@@ -552,15 +583,21 @@ execution_loop(void)
 				if (c == 'Z') goto quit_anote;
 				if (c == 'Q') goto quit_anote;
 				break;
+			case ERR:
+				update_watch();
+				show_win(clock_win, COLOR_PAIR(HIGHLIGHT_COLORS));
+				break;
 			default:
 				if (cur_win == main_win) main_win_actions(c);
 				else                     side_win_actions(c);
 				break;
 		}
+		update_watch();
 		show_win(main_win, COLOR_PAIR(MAIN_WIN_COLORS));
 		show_win(side_win, COLOR_PAIR(SIDE_WIN_COLORS));
 		show_win(footer, COLOR_PAIR(UNSELECTED_COLORS));
-	} while ((c = wgetch(cur_win)) != 'q');
+		show_win(clock_win, COLOR_PAIR(HIGHLIGHT_COLORS));
+	} while ((c = halfdelay(255)) != 'q');
 quit_anote:
 	return;
 }

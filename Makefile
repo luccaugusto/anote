@@ -10,36 +10,39 @@ OBJ=${subst .c,.o,${subst src,build,${C_SRC}}}
 all: options BD_DIR config ${PROJ_NAME}
 
 options:
-	@ echo ${PROJ_NAME} build options:
-	@ echo "CFLAGS = ${CFLAGS}"
-	@ echo
+	@echo ${PROJ_NAME} build options:
+	@echo "CFLAGS = ${CFLAGS}"
+	@echo
 
 ${PROJ_NAME}: ${OBJ}
-	@ echo "building binary using ${CC} linker: $@"
-	${CC} $^ -o $@ ${LIBS} ${DEBUG}
-	@ echo '------------------------'
-	@ echo 'finished building binary'
-	@ echo
+	@echo "building $@ binary using ${CC} linker"
+	@echo "Objects: $^"
+	@echo "Libs: ${LIBS}"
+	@${CC} $^ -o $@ ${LIBS}
+	@echo
+	@echo '------------------------'
+	@echo 'finished building binary'
 
 config:
+	@echo "config"
 	if [ -f ./src/$@.h ]; then rm -f ./src/$@.h; fi
 	cp ./src/config.def.h ./src/$@.h
 	chmod -w ./src/$@.h
+	@echo
 
 ./build/%.o: ./src/%.c ./src/%.h
-	@ echo "[${CC}] $<"
-	${CC} $< -c ${CFLAGS} -o $@
-	@ echo ' '
+	@echo "[${CC}] $<"
+	@ ${CC} $< -c ${CFLAGS} -o $@
 
 ./build/main.o: ./src/main.c ${H_SRC}
-	@ echo "[${CC}] $<"
-	${CC} $< -c ${CFLAGS} -o $@
-	@ echo ' '
+	@echo "[${CC}] $<"
+	@ ${CC} $< -c ${CFLAGS} -o $@
 
 BD_DIR:
 	mkdir -p build
 
 install: ${PROJ_NAME}
+	@echo "install"
 	mkdir -p ${DESTDIR}${PREFIX}/bin
 	cp -f ${PROJ_NAME} ${DESTDIR}${PREFIX}/bin
 	chmod 755 ${DESTDIR}${PREFIX}/bin/${PROJ_NAME}
@@ -47,10 +50,11 @@ install: ${PROJ_NAME}
 	sed "s/VERSION/${VERSION}/g" < ${PROJ_NAME}.1 > ${DESTDIR}${MANPREFIX}/man1/${PROJ_NAME}.1
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/${PROJ_NAME}.1
 	tic -sx ${PROJ_NAME}.info
+	@echo
 
 uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
-		${DESTDIR}${MANPREFIX}/man1/dwm.1
+	rm -f ${DESTDIR}${PREFIX}/bin/${PROJ_NAME}\
+		${DESTDIR}${MANPREFIX}/man1/${PROJ_NAME}.1
 
 clean:
 	${RM} ${PROJ_NAME} ./build ./src/config.h

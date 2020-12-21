@@ -13,9 +13,10 @@ MANPREFIX = ${PREFIX}/share/man
 LIBS=-lpanel -lncurses -lmenu
 
 #flags
-CFLAGS= -c -w -Wall
-CFLAGS   = -g -std=c99 -pedantic -Wall -O0
-#CFLAGS   = -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
+#no debug:
+CFLAGS= -g -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
+#debug:
+#CFLAGS= -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
 
 #compiler and linker
 CC=gcc

@@ -3,17 +3,43 @@
 anote \- take notes or (anote suas coisas)
 .SH SYNOPSIS
 .B anote
-.RB [ \-a [ \-t ] [ \-p ] ]
+.RB [ \-a
+.IR note
+.IR [ \-t ]
+.IR [ \-p ] ]
 .RB [ \-d ]
-.RB [ \-i FILE ]
+.RB [ \-i
+.IR file ]
 .RB [ \-h ]
-.RB [ \-l [ TAG ] ]
+.RB [ \-l
+.IR [ tag ] ]
 .RB [ \-r ]
 .SH DESCRIPTION
+.PP
+anote is a simple ncurses based note taking application. All notes have a tag. Notes that do not have a specified tag fall in the general tag. Notes are written to $NOTES_PATH/.anotes file or $XDG_CONFIG_HOME/anote/.anotes if $NOTES_PATH is not defined. The colors, notes file name, and other settings can be changed in the config.def.h file. For these changes to take place, config.def.h must be copied to config.h and the program recompiled.
 .SH OPTIONS
 .TP
-.B \-a NOTE
-add a note noninteractively.
-.B \-l [ \-t TAG] [ \-d ]
-list all notes
+.B \-a note
+Add a note noninteractively.
+.TP
+.BI \-l
+List notes to stdout noninteractively. This option lists all notes or notes in the specified if -t option is informed.
+.TP
+.BI \-d
+Same as -t DEFAULT_TAG.
+.TP
+.BI -h
+Show help noninteractively.
+.TP
+.BI -i " filename"
+Import filename notes file and opens the CLI.
+.TP
+.BI -t " tag"
+Specify a tag. If -t is the only command, anote will show the specified tag in the main window.
+.TP
+.BI -p " number"
+Specify a priority. Only used with -a option.
+.TP
 .SH USAGE
+.PP
+Simply run anote for the CLI program. Running anote with some flags cause it to not go to interactive mode.

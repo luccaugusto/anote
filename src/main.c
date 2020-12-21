@@ -255,8 +255,8 @@ main(int argc, char *argv[])
 {
 	Note n;
 	char c;
-	char command;
-	char *note;
+	char command = ' ';
+	char *note = "";
 	int interactive = 1;
 	int priority = 0; /* default priority */
 	Tag default_tag;
@@ -340,6 +340,8 @@ main(int argc, char *argv[])
 			build_file_name();
 			load_notes_from_file(notes_file_name);
 			list_notes(arg_tag_name);
+			break;
+		default:
 			break;
 	}
 

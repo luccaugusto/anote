@@ -69,12 +69,16 @@ prompt_add_note(short tag, short priority)
 		label3 = "Adding note, priority and [tag]";
 	} else if (tag) {
 		label = "Adding [note] and tag";
+		label2 = "";
 		label3 = "Adding note and [tag]";
 	} else if (priority) {
 		label = "Adding [note] and priority";
 		label2 = "Adding note and [priority]";
+		label3 = "";
 	} else {
 		label = "Adding note";
+		label2 = "";
+		label3 = "";
 	}
 
 	input = prompt_user("Note text [blank to cancel]: ", label, ALIGN_LEFT);

@@ -440,10 +440,6 @@ build_note_display_text(Note n)
 	char *str;
 
 	switch (note_dismode) {
-		case NOTE_ONLY:
-			str = malloc(strlen(note_get_text(n)));
-			sprintf(str, "%s", note_get_text(n));
-			break;
 		case NOTE_COMP:
 			str = malloc(strlen(note_get_text(n)) + 3 + strlen(COMPLETE_MARK));
 			sprintf(str, "%s [%s]", note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
@@ -455,6 +451,11 @@ build_note_display_text(Note n)
 		case NOTE_COMP_PRIO:
 			str = malloc(strlen(note_get_text(n)) + 10 + strlen(COMPLETE_MARK));
 			sprintf(str, "%d. %s [%s]", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
+			break;
+		case NOTE_ONLY: /* FALLTHROUGH */
+		default:
+			str = malloc(strlen(note_get_text(n)));
+			sprintf(str, "%s", note_get_text(n));
 			break;
 	}
 

@@ -111,7 +111,7 @@ Note
 tag_search_note(const char *needle_text, struct tag *haystack)
 {
 	struct d_list *i;
-	Note needle;
+	Note needle = NULL;
 
 	i = tag_get_notes(haystack);
 	while (i->obj) {
@@ -136,6 +136,7 @@ tag_del(struct tag *t, struct d_list **list)
 	struct d_list *aux;
 
 	i = *list;
+	aux = NULL;
 
 	/* has to move the head */
 	if (i->obj == t) {

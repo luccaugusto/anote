@@ -14,9 +14,9 @@ LIBS=-lpanel -lncurses -lmenu
 
 #flags
 #no debug:
-CFLAGS= -g -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
+CFLAGS= -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
 #debug:
-#CFLAGS= -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
+#CFLAGS= -g -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
 
 #compiler and linker
 CC=gcc

@@ -15,11 +15,11 @@ options:
 	@echo
 
 ${PROJ_NAME}: ${OBJ}
+	@echo
 	@echo "building $@ binary using ${CC} linker"
 	@echo "Objects: $^"
 	@echo "Libs: ${LIBS}"
 	@${CC} $^ -o $@ ${LIBS}
-	@echo
 	@echo '------------------------'
 	@echo 'finished building binary'
 

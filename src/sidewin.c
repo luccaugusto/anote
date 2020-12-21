@@ -14,6 +14,7 @@
 #include "sidewin.h"
 
 /* GLOBAL VARIABLES */
+int expanded = 0;
 int SIDE_WIN_COLORS;
 int side_x_offset = 1;
 int side_y_offset = HEADER_HEIGHT;
@@ -22,7 +23,6 @@ struct d_list *sel_tag_index;
 struct d_list *circ_tag_list;
 struct d_list *panel_list;
 WINDOW *side_win;
-PANEL *expanded_p;
 
 /* FUNCTION DEFINITIONS */
 
@@ -55,6 +55,7 @@ anote_show_panel(PANEL *p)
 	struct d_list *j;
 	WINDOW *p_window;
 	int k;
+	int limit;
 	int p_height;
 	int y_offset = HEADER_HEIGHT;
 	int x_offset = 1;
@@ -70,18 +71,24 @@ anote_show_panel(PANEL *p)
 	p_window = panel_window(p);
 	name = tag_get_name((Tag) panel_userptr(p));
 
+	/* limit of MAX_NOTES_PER_PANEL unless expanded */
+	limit = MAX_NOTES_PER_PANEL;
 	color = COLOR_PAIR(UNSELECTED_COLORS);
-	if (strcmp(tag_get_name(sel_tag_index->obj), name) == 0)
+
+	if (SELECTED_TAG(name)) {
 		color = COLOR_PAIR(SELECTED_COLORS);
+		if (expanded)
+			limit = tag_get_n_number(tag_get(name));
+	}
 
 	wattrset(p_window, color);
 	box(p_window, 0, 0);
 	draw_headers(p_window, p_height, side_win_w - 2, name, color);
 
-	j = tag_get_notes(tag_get(name));
 	k = 0;
-	/* limit of MAX_NOTES_PER_PANEL */
-	while (j->obj && k < MAX_NOTES_PER_PANEL) {
+	j = tag_get_notes(tag_get(name));
+	while (j->obj && k < limit) {
+
 		text = note_get_text(j->obj);
 
 		/* truncate the string if its longer than side_win_w-borders characters */
@@ -141,9 +148,9 @@ anote_new_panel(Tag t)
 	WINDOW *p_window;
 	int p_height;
 
-	/* load expanded tag with full height */
-	if (strcmp(tag_get_name((Tag) panel_userptr(expanded_p)), tag_get_name(t)) == 0)
-		p_height = anote_panel_height(t, 0);
+	/* if expanded load tag with full height */
+	if (t == sel_tag_index->obj && expanded)
+		p_height = anote_panel_height(t, 1);
 	else
 		p_height = anote_panel_height(t, 0);
 
@@ -202,7 +209,7 @@ scroll_panels(void)
 		if (p) {
 			move_panel(p, side_y_offset, side_x_offset);
 
-			side_y_offset += (p == expanded_p) ?
+			side_y_offset += (i == sel_tag_index && expanded) ?
 				anote_panel_height(tag, 1) : anote_panel_height(tag, 0);
 
 		} else {
@@ -299,10 +306,7 @@ side_win_actions(int c)
 
 		case 'e': /* TODO: use tag instead of panel as reference to expanded */
 			/* toogles expanded */
-			if (expanded_p)
-				expanded_p = NULL;
-			else
-				expanded_p = anote_search_panel(sel_tag_index->obj);
+			expanded = !expanded;
 
 			CLEAR_WINDOW(side_win);
 			delete_panels();

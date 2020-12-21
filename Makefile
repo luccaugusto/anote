@@ -49,7 +49,6 @@ install: ${PROJ_NAME}
 	mkdir -p ${DESTDIR}${MANPREFIX}/man1
 	sed "s/VERSION/${VERSION}/g" < ${PROJ_NAME}.1 > ${DESTDIR}${MANPREFIX}/man1/${PROJ_NAME}.1
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/${PROJ_NAME}.1
-	tic -sx ${PROJ_NAME}.info
 	@echo
 
 uninstall:

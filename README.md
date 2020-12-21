@@ -43,6 +43,7 @@ The idea of this program however is to keep things simple, it just takes notes, 
 + save the date a note was added and increase its priority automattically as time passes.
 
 ### CLI
++ scroll commands on footer if they dont fit
 + Possibility to swap main window with side window and show tags panels side by side on the big window
 + noninteractive remove function
 + add function without the -a flag

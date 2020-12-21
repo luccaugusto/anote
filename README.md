@@ -44,6 +44,5 @@ The idea of this program however is to keep things simple, it just takes notes, 
 + save the date a note was added and increase its priority automattically as time passes.
 
 ### CLI
-+ Scroll only if there are more notes that are not displayed
-+ Key to expand selected tag if not all its notes are displayed.
++ Scroll only if there are more notes that are not displayed (maybe, i kinda like the way it is, selected tag always on top)
 + Possibility to swap main window with side window and show tags panels side by side on the big window

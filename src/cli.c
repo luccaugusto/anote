@@ -401,16 +401,16 @@ show_cmd(WINDOW *window)
 	char *commands[] = {
 		"q: save & quit",
 		"t: toogle show mode",
+		"e: expand selected tag",
+		"c: mark complete",
 		"a: quick add nt",
 		"A: add nt to tag",
 		"i: add nt set priority",
 		"I: add nt set pri and tag",
 		"d: del selected note",
 		"D: del selected tag",
-		"c: mark complete",
 		"Enter: Sel tag to main window",
 		"Tab: Change window",
-		"",
 		NULL,
 	};
 

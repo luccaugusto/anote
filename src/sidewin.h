@@ -8,6 +8,7 @@ extern WINDOW *side_win;
 extern struct d_list *top_tag_index;
 extern struct d_list *circ_tag_list;
 extern int SIDE_WIN_COLORS;
+extern int expanded;
 
 /* FUNCTION PROTOTYPES */
 int anote_panel_height(Tag t, int full);

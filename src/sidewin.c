@@ -304,16 +304,6 @@ side_win_actions(int c)
 			reload_side_win();
 			break;
 
-		case 'e': /* TODO: use tag instead of panel as reference to expanded */
-			/* toogles expanded */
-			expanded = !expanded;
-
-			CLEAR_WINDOW(side_win);
-			delete_panels();
-			scroll_panels();
-			reload_side_win();
-			break;
-
 		case A_TAB:
 			cur_win = main_win;
 			MAIN_WIN_COLORS = SELECTED_COLORS;

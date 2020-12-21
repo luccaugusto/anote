@@ -551,6 +551,16 @@ execution_loop(void)
 					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);
 				}
 				break;
+			case 'e':
+				/* toogles expanded */
+				expanded = !expanded;
+
+				CLEAR_WINDOW(side_win);
+				delete_panels();
+				scroll_panels();
+				reload_side_win();
+				break;
+
 			case 't': /* Toggle display mode */
 				note_dismode = (note_dismode + 1) % (NOTE_COMP_PRIO + 1);
 				reload_main_win();

@@ -32,7 +32,6 @@ The idea of this program however is to keep things simple, it just takes notes, 
 
 ## TODO
 + Improve readme
-+ Make install
 + Make man page
 
 ### Shell
@@ -44,5 +43,6 @@ The idea of this program however is to keep things simple, it just takes notes, 
 + save the date a note was added and increase its priority automattically as time passes.
 
 ### CLI
-+ Scroll only if there are more notes that are not displayed (maybe, i kinda like the way it is, selected tag always on top)
 + Possibility to swap main window with side window and show tags panels side by side on the big window
++ noninteractive remove function
++ add function without the -a flag

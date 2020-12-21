@@ -14,7 +14,7 @@
 #include "sidewin.h"
 
 /* GLOBAL VARIABLES */
-int expanded = 0;
+int expanded = DEFAULT_EXPANDED;
 int SIDE_WIN_COLORS;
 int side_x_offset = 1;
 int side_y_offset = HEADER_HEIGHT;
@@ -149,7 +149,7 @@ anote_new_panel(Tag t)
 	int p_height;
 
 	/* if expanded load tag with full height */
-	if (t == sel_tag_index->obj && expanded)
+	if (SELECTED_TAG(tag_get_name(t)) && expanded)
 		p_height = anote_panel_height(t, 1);
 	else
 		p_height = anote_panel_height(t, 0);

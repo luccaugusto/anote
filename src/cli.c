@@ -416,8 +416,15 @@ show_cmd(WINDOW *window)
 
 	int i = 0;
 	while (commands[i]) {
+		/* highlight the command */
+		wattrset(footer, COLOR_PAIR(HIGHLIGHT_COLORS));
 		mvwprintw(window, 1, col_offset, commands[i]);
 		mvwprintw(window, 2, col_offset, commands[i+1]);
+		wattroff(footer, COLOR_PAIR(HIGHLIGHT_COLORS));
+
+		/* description in normal color */
+		mvwprintw(window, 1, col_offset+1, (commands[i])+1);
+		mvwprintw(window, 2, col_offset+1, (commands[i+1])+1);
 
 		col_offset += MAX(strlen(commands[i]), strlen(commands[i+1])) + 1;
 

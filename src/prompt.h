@@ -10,6 +10,8 @@ int prompt_delete_tag(void);
 extern WINDOW *prompt_win;
 extern PANEL *prompt_panel;
 
+extern char *buffer;
+
 extern int prompt_win_h;
 extern int prompt_win_w;
 

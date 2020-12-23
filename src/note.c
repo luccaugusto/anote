@@ -15,7 +15,7 @@ struct note {
 Note
 new_note(char *text)
 {
-	Note n_note = malloc(sizeof(Note));
+	Note n_note = malloc(sizeof(struct note));
 	n_note->text = text;
 	n_note->priority = 0;
 	n_note->completed = 0;

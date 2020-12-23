@@ -7,6 +7,7 @@
 #define CONTINUE_IF(x,y) if (y) x = y; else break;
 
 #define MAX(x,y) (x > y ? x : y)
+#define BUFFER_SIZE 1024
 
 /* TYPES */
 typedef enum {

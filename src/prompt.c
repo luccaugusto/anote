@@ -18,13 +18,15 @@
 WINDOW *prompt_win;
 PANEL *prompt_panel;
 
+char *buffer;
+
 int prompt_win_h;
 int prompt_win_w;
 
 char *
 prompt_user(char *question, char *label,int align_center)
 {
-	char *answer = malloc(sizeof(char));
+	char *answer;
 	WINDOW *p_win = panel_window(prompt_panel);;
 
 	wattrset(p_win, COLOR_PAIR(HIGHLIGHT_COLORS));
@@ -39,11 +41,14 @@ prompt_user(char *question, char *label,int align_center)
 	show_panel(prompt_panel);
 
 	echo();
-	wgetstr(p_win, answer);
+	wgetstr(p_win, buffer);
 	noecho();
 
 	werase(p_win);
 	hide_panel(prompt_panel);
+
+	answer = malloc(sizeof(char) * strlen(buffer));
+	strcpy(answer, buffer);
 
 	return answer;
 }

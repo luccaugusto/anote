@@ -119,6 +119,9 @@ start_anote_cli(void)
 	init_cli();
 	organize_window_space();
 
+	/* initialize input buffer */
+	buffer = calloc(BUFFER_SIZE, sizeof(char) * BUFFER_SIZE);
+
 	/* show informed tag notes on main window as default */
 	load_displayed_tag(def_tag);
 
@@ -318,7 +321,7 @@ populate_main_menu(void)
 
 			text = note_get_text(i->obj);
 
-			/* note too wider than main_window - borders and MENU_MARK
+			/* note wider than main_window - borders and MENU_MARK
 			 * split text in more items.
 			 * keep description as full text as it is used
 			 * to delete items */
@@ -396,7 +399,8 @@ void
 show_cmd(WINDOW *window)
 {
 	/* commands array should always have a pair number
-	 * of commands, insert a empty string if one is missing */
+	 * of commands + a NULL termination,
+	 * insert a empty string if one is missing */
 	int col_offset = 1;
 	char *commands[] = {
 		"q: save & quit",

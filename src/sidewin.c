@@ -279,9 +279,11 @@ side_win_actions(int c)
 			delete_panels();
 			delete_list_circ(&circ_tag_list);
 			build_tag_panels();
-			reload_side_win();
-			reload_main_win();
 			cur_win = main_win;
+			MAIN_WIN_COLORS = SELECTED_COLORS;
+			SIDE_WIN_COLORS = UNSELECTED_COLORS;
+			reload_main_win();
+			reload_side_win();
 			break;
 
 		case 'j':      /* FALLTHROUGH */

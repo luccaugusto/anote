@@ -181,6 +181,9 @@ housekeeping(void)
 		}
 		free(main_items);
 	}
+
+	/* free input buffer */
+	free(buffer);
 }
 
 WINDOW *
@@ -286,19 +289,17 @@ populate_main_menu(void)
 	char *remainder;    /* item split remainder          */
 	int split_pos;      /* item split position           */
 	int j = 0;
-	int n = 0;          /* note and item count           */
 	int offset = 0;     /* long note split offset        */
 	int mw_content_w;   /* main_win usable portion width */
 
 	mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
-	/* free the old items */
-	if (display_text_list) {
-		while (display_text_list[j] != NULL)
-			free(display_text_list[j++]);
+	/* free old menu */
+	if (main_menu) {
+		free_menu(main_menu);
+		unpost_menu(main_menu);
 	}
 
-	j = 0;
 	/* free the old items */
 	if (main_items) {
 		while (main_items[j] != NULL)
@@ -306,18 +307,16 @@ populate_main_menu(void)
 		free(main_items);
 	}
 
-	n = d_tag_n_number;
-
 	/* Create items */
-	if (n > 0) {
+	if (d_tag_n_number > 0) {
 
 		j = 0;
-		main_items = (ITEM **) calloc(n + 1, sizeof(ITEM *));
-		main_items_size = n + 1;
-		display_text_list = (char **) calloc(n + 1, sizeof(char *));
+		main_items_size = d_tag_n_number + 1;
+		main_items = (ITEM **) calloc((d_tag_n_number + 1), sizeof(ITEM *));
+		display_text_list = (char **) realloc(display_text_list, sizeof(char *) * (d_tag_n_number + 1));
 
 		i = d_tag_notes;
-		while (i->obj) {
+		while (i->obj && j < d_tag_n_number) {
 
 			text = note_get_text(i->obj);
 
@@ -332,7 +331,8 @@ populate_main_menu(void)
 				remainder = substr(full_text, split_pos, strlen(full_text));
 				remainder = concatenate("    ", remainder); /* indent text */
 
-				main_items[j++] = new_item(substr(full_text, 0, split_pos), text);
+				main_items[j] = new_item(substr(full_text, 0, split_pos), text);
+				++j;
 				do {
 					offset += mw_content_w;
 
@@ -341,11 +341,12 @@ populate_main_menu(void)
 							++main_items_size * sizeof (ITEM *));
 
 					/* adds the part of the note to the items */
-					main_items[j++] = new_item(remainder, text);
+					main_items[j] = new_item(remainder, text);
 
 					remainder = substr(full_text, offset, offset + mw_content_w);
 					remainder = concatenate("\t", remainder); /* indent text */
 
+					++j;
 				} while (strlen(remainder) > mw_content_w);
 
 			} else {
@@ -358,8 +359,8 @@ populate_main_menu(void)
 			CONTINUE_IF(i, i->next);
 		}
 
-		display_text_list[n] = (char *) NULL;
-		main_items[n] = (ITEM *) NULL;
+		display_text_list[d_tag_n_number] = (char *) NULL;
+		main_items[d_tag_n_number] = (ITEM *) NULL;
 		main_menu = new_menu((ITEM **) main_items);
 
 		if (!main_menu)
@@ -380,13 +381,11 @@ void
 bind_menu(WINDOW *window, MENU *menu, int height, int width)
 {
 	keypad(window, TRUE);
-	unpost_menu(menu);
 
 	/* Set main window and sub window */
 	set_menu_win(menu, window);
 	set_menu_sub(menu, derwin(window, height-HEADER_HEIGHT, width-2, HEADER_HEIGHT, 1));
 
-	/* * to mark */
 	set_menu_mark(menu, MENU_MARK);
 
 	menu_opts_off(menu,O_NONCYCLIC);
@@ -442,26 +441,27 @@ char *
 build_note_display_text(Note n)
 {
 	char *str;
+	char *bd_buffer = malloc(sizeof(char) * BUFFER_SIZE);
 
 	switch (note_dismode) {
 		case NOTE_COMP:
-			str = malloc(strlen(note_get_text(n)) + 3 + strlen(COMPLETE_MARK));
-			sprintf(str, "%s [%s]", note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
+			sprintf(bd_buffer, "%s [%s]", note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
 			break;
 		case NOTE_PRIO:
-			str = malloc(strlen(note_get_text(n)) + 7);
-			sprintf(str, "%d. %s", note_get_priority(n), note_get_text(n));
+			sprintf(bd_buffer, "%d. %s", note_get_priority(n), note_get_text(n));
 			break;
 		case NOTE_COMP_PRIO:
-			str = malloc(strlen(note_get_text(n)) + 10 + strlen(COMPLETE_MARK));
-			sprintf(str, "%d. %s [%s]", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
+			sprintf(bd_buffer, "%d. %s [%s]", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
 			break;
 		case NOTE_ONLY: /* FALLTHROUGH */
 		default:
-			str = malloc(strlen(note_get_text(n)));
-			sprintf(str, "%s", note_get_text(n));
+			sprintf(bd_buffer, "%s", note_get_text(n));
 			break;
 	}
+
+	str = malloc(sizeof(char) * strlen(bd_buffer));
+	strcpy(str, bd_buffer);
+	free(bd_buffer);
 
 	return str;
 }

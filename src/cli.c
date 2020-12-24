@@ -120,10 +120,13 @@ start_anote_cli(void)
 	organize_window_space();
 
 	/* initialize input buffer */
-	buffer = calloc(BUFFER_SIZE, sizeof(char) * BUFFER_SIZE);
+	buffer = calloc(BUFFER_SIZE, sizeof(char));
 
 	/* show informed tag notes on main window as default */
 	load_displayed_tag(def_tag);
+
+	main_items = (ITEM **) calloc((d_tag_n_number + 1), sizeof(ITEM *));
+	display_text_list = (char **) calloc((d_tag_n_number + 1), sizeof(char *));
 
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
@@ -175,10 +178,9 @@ housekeeping(void)
 
 	/* free the menu items */
 	if (main_items != NULL) {
-		for (int j=0; j < d_tag_n_number; ++j) {
-			if (main_items[j] != NULL)
-				free(main_items[j]);
-		}
+		int j = 0;
+		while(main_items[j])
+			free(main_items[j++]);
 		free(main_items);
 	}
 
@@ -226,15 +228,10 @@ hide_win(WINDOW *window)
 void
 reload_main_win(void)
 {
-	char *label;
-
 	werase(main_win);
+	color_main_win();
+
 	load_displayed_tag(d_tag_name);
-
-	label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
-	sprintf(label, "%s Notes", d_tag_name);
-	draw_headers(main_win, main_win_h, main_win_w, label, COLOR_PAIR(MAIN_WIN_COLORS));
-
 	werase(menu_sub(main_menu));
 	REFRESH_MAIN_MENU;
 }
@@ -242,12 +239,12 @@ reload_main_win(void)
 void
 color_main_win(void)
 {
-	char *label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
+	char *label;
+
+	label = malloc(sizeof(char) * (7 + strlen(d_tag_name)));
 	sprintf(label, "%s Notes", d_tag_name);
 	draw_headers(main_win, main_win_h, main_win_w, label, COLOR_PAIR(MAIN_WIN_COLORS));
-	show_win(main_win, COLOR_PAIR(MAIN_WIN_COLORS));
 }
-
 void
 draw_headers(WINDOW *window, int height, int width, char *label, chtype color)
 {
@@ -300,20 +297,20 @@ populate_main_menu(void)
 		unpost_menu(main_menu);
 	}
 
-	/* free the old items */
-	if (main_items) {
-		while (main_items[j] != NULL)
-			free(main_items[j++]);
-		free(main_items);
-	}
+	/* free old texts and items
+	for (j=0; j < main_items_size; ++j) {
+		free(display_text_list[j]);
+		free(main_items[j]);
+	} */
+
 
 	/* Create items */
 	if (d_tag_n_number > 0) {
 
 		j = 0;
 		main_items_size = d_tag_n_number + 1;
-		main_items = (ITEM **) calloc((d_tag_n_number + 1), sizeof(ITEM *));
-		display_text_list = (char **) realloc(display_text_list, sizeof(char *) * (d_tag_n_number + 1));
+		main_items = (ITEM **) realloc(main_items, sizeof(ITEM *) * (main_items_size));
+		display_text_list = (char **) realloc(display_text_list, sizeof(char *) * (main_items_size));
 
 		i = d_tag_notes;
 		while (i->obj && j < d_tag_n_number) {

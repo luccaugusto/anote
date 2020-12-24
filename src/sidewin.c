@@ -14,9 +14,9 @@
 #include "sidewin.h"
 
 /* GLOBAL VARIABLES */
-int expanded = DEFAULT_EXPANDED;
 int SIDE_WIN_COLORS;
 int side_x_offset = 1;
+int expanded = DEFAULT_EXPANDED;
 int side_y_offset = HEADER_HEIGHT;
 struct d_list *top_tag_index;
 struct d_list *sel_tag_index;
@@ -59,13 +59,12 @@ anote_show_panel(PANEL *p)
 	int p_height;
 	int y_offset = HEADER_HEIGHT;
 	int x_offset = 1;
-	char *text;
 	char *name;
+	char *text;
 	chtype color;
 
 	if (!p)
 		return;
-
 
 	p_height = anote_panel_height((Tag) panel_userptr(p), 0);
 	p_window = panel_window(p);
@@ -92,7 +91,7 @@ anote_show_panel(PANEL *p)
 		text = note_get_text(j->obj);
 
 		/* truncate the string if its longer than side_win_w-borders characters */
-		if (strlen(text) > side_win_w - 2) {
+		if (strlen(text) >= side_win_w - 2) {
 			/* -5 = 2 borders and ... */
 			text = substr(text, 0, side_win_w - 7);
 			text = concatenate(text, "...");
@@ -198,23 +197,11 @@ scroll_panels(void)
 {
 	side_y_offset = HEADER_HEIGHT;
 	struct d_list *i;
-	PANEL *p;
-	Tag tag;
 
 	i = top_tag_index;
 	do {
 
-		tag = i->obj;
-		p = anote_search_panel(tag);
-		if (p) {
-			move_panel(p, side_y_offset, side_x_offset);
-
-			side_y_offset += (i == sel_tag_index && expanded) ?
-				anote_panel_height(tag, 1) : anote_panel_height(tag, 0);
-
-		} else {
-			anote_new_panel(tag);
-		}
+		anote_new_panel(i->obj);
 
 		i = i->next;
 	} while (side_y_offset < side_win_h && i != top_tag_index);
@@ -310,8 +297,8 @@ side_win_actions(int c)
 			cur_win = main_win;
 			MAIN_WIN_COLORS = SELECTED_COLORS;
 			SIDE_WIN_COLORS = UNSELECTED_COLORS;
-			reload_main_win();
-			reload_side_win();
+			color_main_win();
+			color_side_win();
 			break;
 
 		default:

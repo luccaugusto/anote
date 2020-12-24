@@ -48,6 +48,7 @@ void load_displayed_tag(char *tag_name);
 void draw_headers(WINDOW *window, int height, int width, char *label, chtype color);
 WINDOW *create_new_win(int height, int width, int start_y, int start_x);
 void reload_main_win(void);
+void color_main_win(void);
 void print_align_center(WINDOW *win, int start_y, int start_x, int width, char *string, chtype color);
 
 /* GLOBAL VARIABLES */

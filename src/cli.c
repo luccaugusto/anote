@@ -295,22 +295,24 @@ populate_main_menu(void)
 
 	/* free old menu
 	 * free old texts and items */
+	unpost_menu(main_menu);
+	free_menu(main_menu);
+
 	if (main_items) {
-		while (main_items[j])
+		while (main_items[j] != NULL) {
 			free_item(main_items[j++]);
+		}
+		free(main_items);
 	}
 
 	if (display_text_list) {
 		k = display_text_list;
-		while (k) {
+		while (*k != NULL) {
 			free(*k);
 			k++;
 		}
 		free(display_text_list);
 	}
-
-	unpost_menu(main_menu);
-	free_menu(main_menu);
 
 	/* Create items */
 	if (d_tag_n_number > 0) {

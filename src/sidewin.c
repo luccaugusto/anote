@@ -88,13 +88,13 @@ anote_show_panel(PANEL *p)
 	j = tag_get_notes(tag_get(name));
 	while (j->obj && k < limit) {
 
-		text = note_get_text(j->obj);
-
 		/* truncate the string if its longer than side_win_w-borders characters */
-		if (strlen(text) >= side_win_w - 2) {
+		if (strlen(note_get_text(j->obj)) >= side_win_w - 2) {
 			/* -5 = 2 borders and ... */
-			text = substr(text, 0, side_win_w - 7);
+			text = substr(note_get_text(j->obj), 0, side_win_w - 7);
 			text = concatenate(text, "...");
+		} else {
+			text = note_get_text(j->obj);
 		}
 
 		mvwprintw(p_window, y_offset, x_offset, text);

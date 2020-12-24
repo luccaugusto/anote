@@ -281,12 +281,13 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 void
 populate_main_menu(void)
 {
-	struct d_list *i;
+	struct d_list *i;   /* indexes */
+	int j = 0;
+	char **k;
 	char *text;         /* note text                     */
 	char *full_text;    /* full_text for item split      */
 	char *remainder;    /* item split remainder          */
 	int split_pos;      /* item split position           */
-	int j = 0;
 	int offset = 0;     /* long note split offset        */
 	int mw_content_w;   /* main_win usable portion width */
 
@@ -295,14 +296,16 @@ populate_main_menu(void)
 	/* free old menu
 	 * free old texts and items */
 	if (main_items) {
-		for (j=0; j < main_items_size; ++j) {
-			free_item(main_items[j]);
-		}
+		while (main_items[j])
+			free_item(main_items[j++]);
 	}
 
 	if (display_text_list) {
-		for (j=0; j < main_items_size; ++j)
-			free(display_text_list[j]);
+		k = display_text_list;
+		while (k) {
+			free(*k);
+			k++;
+		}
 		free(display_text_list);
 	}
 

@@ -25,8 +25,8 @@ void housekeeping(void);
 
 void delete_win(WINDOW *local_win);
 void hide_win(WINDOW *window);
-void reload_main_win(void);
 void populate_main_menu(void);
+void reload_main_win(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
 void show_cmd(WINDOW *window);
 char *build_note_display_text(Note n);
@@ -122,11 +122,12 @@ start_anote_cli(void)
 	/* initialize input buffer */
 	buffer = calloc(BUFFER_SIZE, sizeof(char));
 
+	display_text_list = NULL;
+	main_items = NULL;
+	main_items_size = 0;
+
 	/* show informed tag notes on main window as default */
 	load_displayed_tag(def_tag);
-
-	main_items = (ITEM **) calloc((d_tag_n_number + 1), sizeof(ITEM *));
-	display_text_list = (char **) calloc((d_tag_n_number + 1), sizeof(char *));
 
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
@@ -291,26 +292,31 @@ populate_main_menu(void)
 
 	mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
-	/* free old menu */
-	if (main_menu) {
-		free_menu(main_menu);
-		unpost_menu(main_menu);
+	/* free old menu
+	 * free old texts and items */
+	if (main_items) {
+		for (j=0; j < main_items_size; ++j) {
+			free_item(main_items[j]);
+		}
 	}
 
-	/* free old texts and items
-	for (j=0; j < main_items_size; ++j) {
-		free(display_text_list[j]);
-		free(main_items[j]);
-	} */
+	if (display_text_list) {
+		for (j=0; j < main_items_size; ++j)
+			free(display_text_list[j]);
+		free(display_text_list);
+	}
 
+	unpost_menu(main_menu);
+	free_menu(main_menu);
 
 	/* Create items */
 	if (d_tag_n_number > 0) {
 
 		j = 0;
 		main_items_size = d_tag_n_number + 1;
-		main_items = (ITEM **) realloc(main_items, sizeof(ITEM *) * (main_items_size));
-		display_text_list = (char **) realloc(display_text_list, sizeof(char *) * (main_items_size));
+
+		main_items = (ITEM **) calloc(main_items_size, sizeof(ITEM *));
+		display_text_list = (char **) calloc(main_items_size, sizeof(char *));
 
 		i = d_tag_notes;
 		while (i->obj && j < d_tag_n_number) {
@@ -369,9 +375,6 @@ populate_main_menu(void)
 		main_menu = new_menu((ITEM **) main_items);
 		mvwprintw(main_win, HEADER_HEIGHT, 1, "No notes in this tag");
 	}
-
-	set_menu_fore(main_menu, COLOR_PAIR(MENU_COLORS_FG));
-	set_menu_back(main_menu, COLOR_PAIR(MENU_COLORS_BG));
 }
 
 void
@@ -382,6 +385,9 @@ bind_menu(WINDOW *window, MENU *menu, int height, int width)
 	/* Set main window and sub window */
 	set_menu_win(menu, window);
 	set_menu_sub(menu, derwin(window, height-HEADER_HEIGHT, width-2, HEADER_HEIGHT, 1));
+
+	set_menu_fore(menu, COLOR_PAIR(MENU_COLORS_FG));
+	set_menu_back(menu, COLOR_PAIR(MENU_COLORS_BG));
 
 	set_menu_mark(menu, MENU_MARK);
 

@@ -165,7 +165,7 @@ housekeeping(void)
 	struct d_list *i;
 	char **k;
 	int j;
-	free(prompt_panel);
+	del_panel(prompt_panel);
 
 	unpost_menu(main_menu);
 	free_menu(main_menu);
@@ -173,9 +173,8 @@ housekeeping(void)
 	i = panel_list;
 	do {
 
-		delwin(panel_window(i->obj));
 		del_panel(i->obj);
-		d_list_del_obj(i->obj, &panel_list);
+		delwin(panel_window(i->obj));
 
 		i = i->next;
 	} while (i != panel_list);

@@ -130,10 +130,7 @@ build_tag_panels(void)
 		if (tag_get_name(i->obj) != d_tag_name) {
 			d_list_add_circ(i->obj, &circ_tag_list, tag_get_size());
 			p = anote_new_panel(i->obj);
-			if (p) {
-				d_list_add_circ(p, &panel_list, sizeof(*p));
-				anote_show_panel(p);
-			}
+			anote_show_panel(p);
 		}
 
 		CONTINUE_IF(i, i->next);
@@ -227,7 +224,7 @@ delete_panels(void)
 		i = i->next;
 	} while (i != panel_list);
 
-	delete_list(&panel_list);
+	delete_list_circ(&panel_list);
 
 	panel_list = new_list_node_circ();
 }

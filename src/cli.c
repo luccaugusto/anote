@@ -114,7 +114,6 @@ void
 start_anote_cli(void)
 {
 	char *label = "Notes";
-	panel_list = new_list_node_circ();
 
 	init_cli();
 	organize_window_space();
@@ -163,30 +162,42 @@ start_anote_cli(void)
 void
 housekeeping(void)
 {
-	//struct d_list *i;
+	struct d_list *i;
+	char **k;
+	int j;
 	free(prompt_panel);
 
 	unpost_menu(main_menu);
 	free_menu(main_menu);
 
-	/*
 	i = panel_list;
-	while (i->obj) {
+	do {
+
+		delwin(panel_window(i->obj));
 		del_panel(i->obj);
 		d_list_del_obj(i->obj, &panel_list);
 
-		CONTINUE_IF(i, i->next);
-	}
-	*/
+		i = i->next;
+	} while (i != panel_list);
 
-	free(panel_list);
+	delete_list_circ(&panel_list);
 
 	/* free the menu items */
-	if (main_items != NULL) {
-		int j = 0;
-		while(main_items[j])
-			free(main_items[j++]);
+	j = 0;
+	if (main_items) {
+		while (main_items[j] != NULL) {
+			free_item(main_items[j++]);
+		}
 		free(main_items);
+	}
+
+	if (display_text_list) {
+		k = display_text_list;
+		while (*k != NULL) {
+			free(*k);
+			k++;
+		}
+		free(display_text_list);
 	}
 
 	/* free input buffer */

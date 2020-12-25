@@ -14,6 +14,7 @@
 #include "sidewin.h"
 
 /* GLOBAL VARIABLES */
+char *side_w_header;
 int SIDE_WIN_COLORS;
 int side_x_offset = 1;
 int expanded = DEFAULT_EXPANDED;
@@ -234,7 +235,7 @@ reload_side_win(void)
 	PANEL *p;
 
 	werase(side_win);
-	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", COLOR_PAIR(SIDE_WIN_COLORS));
+	draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
 
 	i = top_tag_index;
 	do {
@@ -250,7 +251,7 @@ reload_side_win(void)
 void
 color_side_win(void)
 {
-	draw_headers(side_win, side_win_h, side_win_w, "Other Notes", COLOR_PAIR(SIDE_WIN_COLORS));
+	draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
 	show_win(side_win, COLOR_PAIR(SIDE_WIN_COLORS));
 }
 

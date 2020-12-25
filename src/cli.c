@@ -143,8 +143,8 @@ start_anote_cli(void)
 
 	/* number of tags on header */
 	side_w_header = malloc(sizeof(char) * 26); /* "Other Notes [xxx]" */
-	sprintf(label, "Other Notes [%d]", d_list_length(&global_tag_list) - 1);
-	draw_headers(side_win, side_win_h, side_win_w, label, COLOR_PAIR(SIDE_WIN_COLORS));
+	sprintf(side_w_header, "Other Notes [%d]", d_list_length(&global_tag_list) - 1);
+	draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
 
 	populate_main_menu();
 	bind_menu(main_win, main_menu, main_win_h, main_win_w);

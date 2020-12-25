@@ -113,13 +113,13 @@ anote_show_panel(PANEL *p)
 void
 build_tag_panels(void)
 {
-	Tag t;
 	PANEL *p;
 	struct d_list *i;
 
 	side_y_offset = HEADER_HEIGHT;
 
 	circ_tag_list = new_list_node_circ();
+	panel_list = new_list_node_circ();
 
 	/* first tag is the first of the circular list */
 	top_tag_index = circ_tag_list;
@@ -127,11 +127,13 @@ build_tag_panels(void)
 
 	i = global_tag_list;
 	while (i->obj) {
-		t = i->obj;
-		if (tag_get_name(t) != d_tag_name) {
-			d_list_add_circ(t, &circ_tag_list, tag_get_size());
-			p = anote_new_panel(t);
-			anote_show_panel(p);
+		if (tag_get_name(i->obj) != d_tag_name) {
+			d_list_add_circ(i->obj, &circ_tag_list, tag_get_size());
+			p = anote_new_panel(i->obj);
+			if (p) {
+				d_list_add_circ(p, &panel_list, sizeof(*p));
+				anote_show_panel(p);
+			}
 		}
 
 		CONTINUE_IF(i, i->next);
@@ -219,8 +221,10 @@ delete_panels(void)
 	i = panel_list;
 	do {
 
+		delwin(panel_window(i->obj));
 		del_panel(i->obj);
 
+		i = i->next;
 	} while (i != panel_list);
 
 	delete_list(&panel_list);

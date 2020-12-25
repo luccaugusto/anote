@@ -136,6 +136,18 @@ find_split_spot(char *str, int max_length)
 	return max_length;
 }
 
+int
+in_str(char needle, char *haystack)
+{
+	int i = 0;
+	int len = strlen(haystack);
+	while (i < len) {
+		if (haystack[i++] == needle)
+			return 1;
+	}
+	return 0;
+}
+
 char *
 read_until_separator(char sep, FILE *file)
 {

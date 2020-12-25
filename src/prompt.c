@@ -91,6 +91,9 @@ prompt_add_note(short tag, short priority)
 	if (is_blank(input))
 		return;
 
+	while (in_str('|', input))
+		input = prompt_user("No pipes ('|') allowed, try again: ", label, ALIGN_LEFT);
+
 	n_aux = new_note(input);
 
 	if (priority) {

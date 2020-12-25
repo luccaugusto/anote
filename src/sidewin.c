@@ -218,8 +218,8 @@ delete_panels(void)
 	i = panel_list;
 	do {
 
-		delwin(panel_window(i->obj));
-		del_panel(i->obj);
+		del_panel((PANEL *) i->obj);
+		delwin(panel_window((PANEL *) i->obj));
 
 		i = i->next;
 	} while (i != panel_list);

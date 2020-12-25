@@ -148,6 +148,7 @@ d_list_del_obj_circ(void *obj, struct d_list **list)
 	struct d_list *aux;
 
 	i=*list;
+	/* reposition the head */
 	if (i->obj == obj) {
 
 		aux = *list;

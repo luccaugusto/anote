@@ -24,6 +24,12 @@ typedef enum {
 	ALIGN_CENTER,
 } AlignModes;
 
+typedef enum {
+	SW_LEFT,
+	SW_RIGHT,
+	BIG_SW,
+} AnoteLayout;
+
 /* COLOR PAIRS */
 typedef enum {
 	SELECTED_COLORS = 1,

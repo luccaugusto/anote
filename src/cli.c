@@ -28,7 +28,7 @@ void hide_win(WINDOW *window);
 void populate_main_menu(void);
 void reload_main_win(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
-void show_cmd(WINDOW *window);
+void show_cmd(WINDOW *window, char *comm[]);
 void update_watch(void);
 
 void main_win_actions(int c);
@@ -46,8 +46,9 @@ char *d_tag_name;
 WINDOW *main_win;
 WINDOW *cur_win;
 WINDOW *footer;
-MENU *main_menu;
+PANEL *layouts_panel;
 ITEM **main_items;
+MENU *main_menu;
 
 int MAIN_WIN_COLORS;
 int main_win_h;
@@ -58,6 +59,32 @@ int footer_h;
 int footer_w;
 int max_row;
 int max_col;
+
+/* should have an even number of strings + a NULL temrination */
+char *commands[] = {
+	"q: save & quit",
+	"e: expand selected tag",
+	"c: mark complete",
+	"a: quick add nt",
+	"A: add nt to tag",
+	"i: add nt set priority",
+	"I: add nt set pri and tag",
+	"d: del selected note",
+	"D: del selected tag",
+	"Enter: Sel tag to main window",
+	"Enter: show note details",
+	"Tab: Change window",
+	NULL,
+};
+
+/* should have an even number of strings + a NULL temrination */
+char *layout_commands[] = {
+	"l: Put side window to the left",
+	"r: Put side window to the right",
+	"b: Make side window big",
+	"d: restore side window default size",
+	NULL,
+};
 
 /* FUNCTION DEFINITIONS */
 void
@@ -125,9 +152,26 @@ start_anote_cli(void)
 	/* show informed tag notes on main window as default */
 	load_displayed_tag(def_tag);
 
-	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
-	side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
+	switch (DEFAULT_LAYOUT) {
+		case SW_RIGHT:
+			main_win = create_new_win(main_win_h, main_win_w, 0, 0);
+			side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
+			break;
+		case BIG_SW:   /* FALLTHROUGH */
+			side_win_w = main_win_w;
+			main_win_w = max_col - side_win_w;
+			wresize(side_win, side_win_h, side_win_w);
+			wresize(main_win, main_win_h, main_win_w);
+		default:       /* FALLTHROUGH */
+		case SW_LEFT:
+			side_win = create_new_win(side_win_h, side_win_w, 0, 0);
+			main_win = create_new_win(main_win_h, main_win_w, 0, side_win_w);
+			break;
+	}
+
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
+
+	layouts_panel = new_panel(create_new_win(footer_h, footer_w, main_win_h, 0));
 	prompt_win = create_new_win(prompt_win_h, prompt_win_w, max_row/4, max_col/4);
 	prompt_panel = new_panel(prompt_win);
 
@@ -146,8 +190,10 @@ start_anote_cli(void)
 	bind_menu(main_win, main_menu, main_win_h, main_win_w);
 
 	build_tag_panels();
-	show_cmd(footer);
+	show_cmd(footer, commands);
+	show_cmd(panel_window(layouts_panel), layout_commands);
 
+	update_panels();
 	doupdate();
 
 	execution_loop();
@@ -202,6 +248,31 @@ create_new_win(int height, int width, int start_y, int start_x)
 	wrefresh(local_win);
 
 	return local_win;
+}
+
+void
+change_layout(AnoteLayout l)
+{
+	switch (l) {
+		case SW_RIGHT:
+			mvwin(main_win, 0, 0);
+			mvwin(side_win, 0, main_win_w);
+			break;
+		case SW_LEFT:
+			mvwin(side_win, 0, 0);
+			mvwin(main_win, 0, side_win_w);
+			break;
+		case BIG_SW:
+			/* ENOTSUP */
+			return;
+			side_win_w = main_win_w;
+			main_win_w = max_col - side_win_w;
+			wresize(side_win, side_win_h, side_win_w);
+			wresize(main_win, main_win_h, main_win_w);
+			break;
+		default:
+			break;
+	}
 }
 
 void
@@ -396,41 +467,26 @@ bind_menu(WINDOW *window, MENU *menu, int height, int width)
 }
 
 void
-show_cmd(WINDOW *window)
+show_cmd(WINDOW *window, char *comm[])
 {
 	/* commands array should always have a pair number
 	 * of commands + a NULL termination,
 	 * insert a empty string if one is missing */
 	int col_offset = 1;
-	char *commands[] = {
-		"q: save & quit",
-		"e: expand selected tag",
-		"c: mark complete",
-		"a: quick add nt",
-		"A: add nt to tag",
-		"i: add nt set priority",
-		"I: add nt set pri and tag",
-		"d: del selected note",
-		"D: del selected tag",
-		"Enter: Sel tag to main window",
-		"Enter: show note details",
-		"Tab: Change window",
-		NULL,
-	};
 
 	int i = 0;
-	while (commands[i]) {
+	while (comm[i]) {
 		/* highlight the command */
 		wattrset(footer, COLOR_PAIR(HIGHLIGHT_COLORS));
-		mvwprintw(window, 1, col_offset, commands[i]);
-		mvwprintw(window, 2, col_offset, commands[i+1]);
+		mvwprintw(window, 1, col_offset, comm[i]);
+		mvwprintw(window, 2, col_offset, comm[i+1]);
 		wattroff(footer, COLOR_PAIR(HIGHLIGHT_COLORS));
 
 		/* description in normal color */
-		mvwprintw(window, 1, col_offset+1, (commands[i])+1);
-		mvwprintw(window, 2, col_offset+1, (commands[i+1])+1);
+		mvwprintw(window, 1, col_offset+1, (comm[i])+1);
+		mvwprintw(window, 2, col_offset+1, (comm[i+1])+1);
 
-		col_offset += MAX(strlen(commands[i]), strlen(commands[i+1])) + 1;
+		col_offset += MAX(strlen(comm[i]), strlen(comm[i+1])) + 1;
 
 		i+=2;
 	}
@@ -543,6 +599,30 @@ execution_loop(void)
 				scroll_panels();
 				reload_side_win();
 				break;
+			case 't': /* TOOGLE LAYOUTS */
+				show_panel(layouts_panel);
+				update_panels();
+				doupdate();
+
+				switch (wgetch(cur_win)) {
+					case 'l':
+						change_layout(SW_LEFT);
+						break;
+					case 'r':
+						change_layout(SW_RIGHT);
+						break;
+					case 'b':
+						change_layout(BIG_SW);
+						break;
+					default:
+						break;
+				}
+
+				hide_panel(layouts_panel);
+				update_panels();
+				doupdate();
+				break;
+
 			case 'Z': /* QUIT PROGRAM */
 				c = wgetch(cur_win);
 				if (c == 'Z') goto quit_anote;

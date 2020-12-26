@@ -20,13 +20,6 @@ typedef enum {
 } A_Keys;
 
 typedef enum {
-	NOTE_ONLY,
-	NOTE_COMP,
-	NOTE_PRIO,
-	NOTE_COMP_PRIO,
-} DisplayModes;
-
-typedef enum {
 	ALIGN_LEFT = 0,
 	ALIGN_CENTER,
 } AlignModes;

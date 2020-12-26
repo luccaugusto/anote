@@ -86,6 +86,9 @@ prompt_add_note(short tag, short priority)
 		label3 = "";
 	}
 
+	/* show cursor */
+	curs_set(1);
+
 	input = prompt_user("Note text [blank to cancel]: ", label, ALIGN_LEFT);
 
 	if (is_blank(input))
@@ -125,11 +128,24 @@ prompt_add_note(short tag, short priority)
 		d_list_add_circ(t_aux, &circ_tag_list, tag_get_size());
 	}
 
+	/* hide cursor again */
+	curs_set(0);
+
 	/* reload main window or side window */
 	if (strcmp(n_tag, d_tag_name) == 0)
 		reload_main_win();
 	else
 		reload_side_win();
+}
+
+void
+prompt_show_details(Note n)
+{
+	char *label;
+	label = calloc(41, sizeof(char));
+
+	sprintf(label, "Completed: %c    |    Priority: %d", (char)(note_get_completed(n) ? 'Y' : 'N'), note_get_priority(n));
+	prompt_user(label, "Selected Note Details", ALIGN_CENTER);
 }
 
 int

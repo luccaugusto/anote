@@ -111,6 +111,31 @@ concatenate(char *str, const char *suffix)
 	return str;
 }
 
+char *
+prepend(const char *prefix, char *str)
+{
+	int l_str = strlen(str);
+	int l_prefix = strlen(prefix);
+	char *aux;
+
+	aux = calloc(strlen(str), sizeof(char));
+	strcpy(aux, str);
+
+	str = realloc(str, sizeof(char) * (l_str + l_prefix + 1));
+
+	strcpy(str, prefix);
+
+	/* copy aux after prefix */
+	strcpy(&str[l_prefix], aux);
+
+	/* finish string */
+	str[l_str + l_prefix] = '\0';
+
+	free(aux);
+
+	return str;
+}
+
 /* finds a position to split the string
  * that won't split a word in half
  * and will be the closest to max_length

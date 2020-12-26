@@ -29,7 +29,6 @@ void populate_main_menu(void);
 void reload_main_win(void);
 void bind_menu(WINDOW *window, MENU *menu, int height, int width);
 void show_cmd(WINDOW *window);
-char *build_note_display_text(Note n);
 void update_watch(void);
 
 void main_win_actions(int c);
@@ -40,11 +39,9 @@ void execution_loop(void);
 Tag displayed_tag;
 Note n_aux;
 struct d_list *d_tag_notes;
-DisplayModes note_dismode = DEFAULT_DISPLAY_MODE;
 int d_tag_n_number;
 int main_items_size;
 char *d_tag_name;
-char **display_text_list;
 
 WINDOW *main_win;
 WINDOW *cur_win;
@@ -71,6 +68,7 @@ init_cli(void)
 	raw();                /* Line buffering disabled	     */
 	keypad(stdscr, TRUE); /* Enables function and arrow keys */
 	noecho();             /* Don't echo() while we do getch  */
+	curs_set(0);          /* hide cursor                     */
 
 	/* setup color pairs */
 	init_pair(SELECTED_COLORS, sel_fg, sel_bg);
@@ -121,7 +119,6 @@ start_anote_cli(void)
 	/* initialize input buffer */
 	buffer = calloc(BUFFER_SIZE, sizeof(char));
 
-	display_text_list = NULL;
 	main_items = NULL;
 	main_items_size = 0;
 
@@ -163,7 +160,6 @@ void
 housekeeping(void)
 {
 	struct d_list *i;
-	char **k;
 	int j;
 	del_panel(prompt_panel);
 
@@ -188,15 +184,6 @@ housekeeping(void)
 			free_item(main_items[j++]);
 		}
 		free(main_items);
-	}
-
-	if (display_text_list) {
-		k = display_text_list;
-		while (*k != NULL) {
-			free(*k);
-			k++;
-		}
-		free(display_text_list);
 	}
 
 	/* free input buffer */
@@ -297,7 +284,6 @@ populate_main_menu(void)
 {
 	struct d_list *i;   /* indexes */
 	int j = 0;
-	char **k;
 	char *text;         /* note text                     */
 	char *full_text;    /* full_text for item split      */
 	char *remainder;    /* item split remainder          */
@@ -314,86 +300,79 @@ populate_main_menu(void)
 
 	if (main_items) {
 		while (main_items[j] != NULL) {
-			free_item(main_items[j++]);
+			if (free_item(main_items[j++]) < 0)
+				return;
 		}
 		free(main_items);
 	}
 
-	if (display_text_list) {
-		k = display_text_list;
-		while (*k != NULL) {
-			free(*k);
-			k++;
-		}
-		free(display_text_list);
-	}
-
 	/* Create items */
-	if (d_tag_n_number > 0) {
 
-		j = 0;
-		main_items_size = d_tag_n_number + 1;
+	/* no notes */
+	if (d_tag_n_number == 0) {
 
-		main_items = (ITEM **) calloc(main_items_size, sizeof(ITEM *));
-		display_text_list = (char **) calloc(main_items_size, sizeof(char *));
-
-		i = d_tag_notes;
-		while (i->obj && j < d_tag_n_number) {
-
-			text = note_get_text(i->obj);
-
-			/* note wider than main_window - borders and MENU_MARK
-			 * split text in more items.
-			 * keep description as full text as it is used
-			 * to delete items */
-			if (strlen(text) > mw_content_w) {
-				full_text = build_note_display_text(i->obj);
-
-				split_pos = find_split_spot(full_text, mw_content_w);
-				remainder = substr(full_text, split_pos, strlen(full_text));
-				remainder = concatenate("    ", remainder); /* indent text */
-
-				main_items[j] = new_item(substr(full_text, 0, split_pos), text);
-				++j;
-				do {
-					offset += mw_content_w;
-
-					/* adds a new position to the main items array */
-					main_items = realloc(main_items,
-							++main_items_size * sizeof (ITEM *));
-
-					/* adds the part of the note to the items */
-					main_items[j] = new_item(remainder, text);
-
-					remainder = substr(full_text, offset, offset + mw_content_w);
-					remainder = concatenate("\t", remainder); /* indent text */
-
-					++j;
-				} while (strlen(remainder) > mw_content_w);
-
-			} else {
-
-				display_text_list[j] = build_note_display_text(i->obj);
-				main_items[j] = new_item(display_text_list[j], text);
-				++j;
-			}
-
-			CONTINUE_IF(i, i->next);
-		}
-
-		display_text_list[d_tag_n_number] = (char *) NULL;
-		main_items[d_tag_n_number] = (ITEM *) NULL;
-		main_menu = new_menu((ITEM **) main_items);
-
-		if (!main_menu)
-			exit(errno);
-
-	} else {
 		main_items = calloc(1, sizeof(ITEM *));
 		main_items[0] = (ITEM *) NULL;
 		main_menu = new_menu((ITEM **) main_items);
 		mvwprintw(main_win, HEADER_HEIGHT, 1, "No notes in this tag");
+
+		return;
+
 	}
+
+	/* else has notes */
+	j = 0;
+	main_items_size = d_tag_n_number + 1;
+	main_items = (ITEM **) calloc(main_items_size, sizeof(ITEM *));
+
+	i = d_tag_notes;
+	while (i->obj) {
+
+		text = note_get_text(i->obj);
+
+		/* note wider than main_window_w - borders - MENU_MARK
+		 * split text in more items.
+		 * keep description as full text as it is used
+		 * to delete items */
+		if (strlen(text) > mw_content_w) {
+			full_text = text;
+
+			split_pos = find_split_spot(full_text, mw_content_w);
+			remainder = substr(full_text, split_pos, strlen(full_text));
+			remainder = prepend("    ", remainder); /* indent text */
+
+			main_items[j] = new_item(substr(full_text, 0, split_pos), text);
+			++j;
+			do {
+				offset += mw_content_w;
+
+				/* adds a new position to the main items array */
+				main_items = realloc(main_items,
+						++main_items_size * sizeof (ITEM *));
+
+				/* adds the part of the note to the items */
+				main_items[j] = new_item(remainder, text);
+
+				remainder = substr(full_text, offset, offset + mw_content_w);
+				remainder = prepend("    ", remainder); /* indent text */
+
+				++j;
+			} while (strlen(remainder) > mw_content_w);
+
+		} else {
+
+			main_items[j] = new_item(text, text);
+			++j;
+		}
+
+		CONTINUE_IF(i, i->next);
+	}
+
+	main_items[d_tag_n_number] = (ITEM *) NULL;
+	main_menu = new_menu(main_items);
+
+	if (!main_menu)
+		exit(errno);
 }
 
 void
@@ -425,7 +404,6 @@ show_cmd(WINDOW *window)
 	int col_offset = 1;
 	char *commands[] = {
 		"q: save & quit",
-		"t: toogle show mode",
 		"e: expand selected tag",
 		"c: mark complete",
 		"a: quick add nt",
@@ -435,6 +413,7 @@ show_cmd(WINDOW *window)
 		"d: del selected note",
 		"D: del selected tag",
 		"Enter: Sel tag to main window",
+		"Enter: show note details",
 		"Tab: Change window",
 		NULL,
 	};
@@ -455,37 +434,6 @@ show_cmd(WINDOW *window)
 
 		i+=2;
 	}
-}
-
- /* builds the string to be displayed according
-  * with the active display mode */
-char *
-build_note_display_text(Note n)
-{
-	char *str;
-	char *bd_buffer = malloc(sizeof(char) * BUFFER_SIZE);
-
-	switch (note_dismode) {
-		case NOTE_COMP:
-			sprintf(bd_buffer, "%s [%s]", note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
-			break;
-		case NOTE_PRIO:
-			sprintf(bd_buffer, "%d. %s", note_get_priority(n), note_get_text(n));
-			break;
-		case NOTE_COMP_PRIO:
-			sprintf(bd_buffer, "%d. %s [%s]", note_get_priority(n), note_get_text(n), (note_get_completed(n)) ? COMPLETE_MARK : INCOMPLETE_MARK);
-			break;
-		case NOTE_ONLY: /* FALLTHROUGH */
-		default:
-			sprintf(bd_buffer, "%s", note_get_text(n));
-			break;
-	}
-
-	str = malloc(sizeof(char) * strlen(bd_buffer));
-	strcpy(str, bd_buffer);
-	free(bd_buffer);
-
-	return str;
 }
 
 void /* notes manipulation */
@@ -540,6 +488,7 @@ main_win_actions(int c)
 				prompt_user("Nothing to delete here", "Deleting Note", ALIGN_CENTER);
 			}
 			break;
+
 		case A_TAB:
 			cur_win = side_win;
 			MAIN_WIN_COLORS = UNSELECTED_COLORS;
@@ -547,6 +496,13 @@ main_win_actions(int c)
 			color_main_win();
 			color_side_win();
 			break;
+
+		case A_CR: /* FALLTHROUGH */
+		case A_NEWLINE:
+			n_aux = tag_search_note(item_description(current_item(main_menu)), displayed_tag);
+			prompt_show_details(n_aux);
+			break;
+
 		default:
 			break;
 	}
@@ -586,11 +542,6 @@ execution_loop(void)
 				delete_panels();
 				scroll_panels();
 				reload_side_win();
-				break;
-
-			case 't': /* Toggle display mode */
-				note_dismode = (note_dismode + 1) % (NOTE_COMP_PRIO + 1);
-				reload_main_win();
 				break;
 			case 'Z': /* QUIT PROGRAM */
 				c = wgetch(cur_win);

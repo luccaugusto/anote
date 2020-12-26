@@ -4,6 +4,7 @@
 /* FUNCTION PROTOTYPES */
 char *prompt_user(char *question, char *label, int align_center);
 void prompt_add_note(short tag, short priority);
+void prompt_show_details(Note n);
 int prompt_delete_tag(void);
 
 /* GLOBAL VARIABLES */

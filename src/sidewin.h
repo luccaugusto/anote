@@ -6,6 +6,7 @@
 /* GLOBAL VARIABLES */
 extern WINDOW *side_win;
 extern struct d_list *top_tag_index;
+extern struct d_list *sel_tag_index;
 extern struct d_list *circ_tag_list;
 extern char *side_w_header;
 extern int SIDE_WIN_COLORS;

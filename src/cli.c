@@ -234,6 +234,9 @@ housekeeping(void)
 
 	/* free input buffer */
 	free(buffer);
+
+	/* put cursor back on screen */
+	curs_set(1);
 }
 
 WINDOW *
@@ -578,13 +581,18 @@ execution_loop(void)
 				break;
 			case 'A': /* ADD A NOTE set tag */
 				prompt_add_note(1, 0);
+				sprintf(side_w_header, "Other Tags [%d]", d_list_length(&global_tag_list) -1);
+				draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
 				break;
 			case 'I': /* ADD A NOTE set priority and tag */
 				prompt_add_note(1, 1);
+				sprintf(side_w_header, "Other Tags [%d]", d_list_length(&global_tag_list) -1);
+				draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
 				break;
 			case 'D': /* Delete a tag */
 				if (prompt_delete_tag()) {
 					prompt_user("Tag Deleted", "Deleting Tag", ALIGN_CENTER);
+					sprintf(side_w_header, "Other Tags [%d]", d_list_length(&global_tag_list) -1);
 					reload_side_win();
 				} else {
 					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);

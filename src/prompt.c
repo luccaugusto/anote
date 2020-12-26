@@ -156,6 +156,7 @@ prompt_delete_tag(void)
 	int r = 0;
 	char *answer = malloc(sizeof(char));
 
+	curs_set(1);
 	answer = prompt_user("Delete which tag? [blank to cancel] ", "Deleting tag", ALIGN_LEFT);
 	if (!is_blank(answer)) {
 
@@ -164,13 +165,19 @@ prompt_delete_tag(void)
 			prompt_user("Tag does not exist", "Deleting tag", ALIGN_CENTER);
 		} else {
 
-			/* deletes the panel containing the tag */
-			p = anote_search_panel(t);
-			if (p == NULL)
-				return 0;
+			if (SELECTED_TAG(answer)) {
+				top_tag_index = top_tag_index->next;
+				sel_tag_index = top_tag_index;
+			}
 
-			d_list_del_obj(p, &panel_list);
-			del_panel(p);
+			/* deletes the panel containing the tag
+			 * if no panel is found, tag is not displayed */
+			p = anote_search_panel(t);
+			if (p) {
+				d_list_del_obj(p, &panel_list);
+				del_panel(p);
+			}
+
 			tag_del(t, &global_tag_list);
 			tag_del_circ(t, &circ_tag_list);
 			r = 1;
@@ -178,5 +185,6 @@ prompt_delete_tag(void)
 			update_panels();
 		}
 	}
+	curs_set(0);
 	return r;
 }

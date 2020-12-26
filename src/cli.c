@@ -266,12 +266,15 @@ change_layout(AnoteLayout l)
 			mvwin(main_win, 0, side_win_w);
 			break;
 		case BIG_SW:
-			/* ENOTSUP */
-			return;
 			side_win_w = main_win_w;
 			main_win_w = max_col - side_win_w;
 			wresize(side_win, side_win_h, side_win_w);
 			wresize(main_win, main_win_h, main_win_w);
+			if (getbegx(main_win) == 0) {
+				mvwin(side_win, 0, main_win_w);
+			} else {
+				mvwin(main_win, 0, side_win_w);
+			}
 			break;
 		default:
 			break;

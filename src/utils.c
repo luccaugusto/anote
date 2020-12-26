@@ -98,25 +98,17 @@ remove_quotes(char *str)
 }
 
 char *
-concatenate(char *beginning, char *ending)
+concatenate(char *str, const char *suffix)
 {
-	char *ret;
-	int beg_size = strlen(beginning);
-	int end_size = strlen(ending);
+	int l_str = strlen(str);
+	int l_suffix = strlen(suffix);
 
-	/* adds \0 position */
-	ret = (char *) malloc(sizeof(char) * (beg_size + end_size + 1));
+	str = realloc(str, sizeof(char) * (l_str + l_suffix + 1));
 
-	for (int i=0; i < beg_size; ++i)
-		ret[i] = beginning[i];
+	memcpy(&str[l_str], suffix, l_suffix);
+	str[l_str + l_suffix] = '\0';
 
-	for (int i=0; i < end_size; ++i) {
-		ret[beg_size+i] = ending[i];
-	}
-
-	ret[beg_size + end_size] = '\0';
-
-	return ret;
+	return str;
 }
 
 /* finds a position to split the string
@@ -151,7 +143,7 @@ in_str(char needle, char *haystack)
 char *
 read_until_separator(char sep, FILE *file)
 {
-	char *ret = "";
+	char *ret = calloc(1, sizeof(char));
 	int c;
 	while ((c = fgetc(file)) != EOF && c != sep) {
 		ret = concatenate(ret, (char *) &c);
@@ -159,3 +151,4 @@ read_until_separator(char sep, FILE *file)
 
 	return ret;
 }
+

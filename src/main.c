@@ -155,11 +155,17 @@ write_notes_to_file(char *mode)
 void
 build_file_name(void)
 {
-	notes_path = getenv("NOTES_PATH");
+	char *aux = getenv("NOTES_PATH");
 
 	/* defaults to XDG_CONFIG_HOME/anote */
-	if (!notes_path) {
-		notes_path = concatenate(getenv("XDG_CONFIG_HOME"), "/.anote");
+	if (!aux) {
+		aux = getenv("XDG_CONFIG_HOME");
+		notes_path = calloc(strlen(aux), sizeof(char));
+		strcpy(notes_path, aux);
+		notes_path = concatenate(notes_path, "/.anote");
+	} else {
+		notes_path = calloc(strlen(aux), sizeof(char));
+		strcpy(notes_path, aux);
 	}
 
 	notes_file_name = concatenate(notes_path, "/"NOTES_FILE_NAME);

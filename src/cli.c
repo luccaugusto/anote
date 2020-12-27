@@ -270,11 +270,13 @@ change_layout(AnoteLayout l)
 			main_win_w = max_col - side_win_w;
 			wresize(side_win, side_win_h, side_win_w);
 			wresize(main_win, main_win_h, main_win_w);
-			if (getbegx(main_win) == 0) {
+			if (getbegx(main_win) == 0)
 				mvwin(side_win, 0, main_win_w);
-			} else {
+			else
 				mvwin(main_win, 0, side_win_w);
-			}
+
+			reload_main_win();
+			reload_side_win();
 			break;
 		default:
 			break;
@@ -431,7 +433,8 @@ populate_main_menu(void)
 				main_items[j] = new_item(remainder, text);
 
 				remainder = substr(full_text, offset, offset + mw_content_w);
-				remainder = prepend("    ", remainder); /* indent text */
+				if (strlen(remainder) > 0)
+					remainder = prepend("    ", remainder); /* indent text */
 
 				++j;
 			} while (strlen(remainder) > mw_content_w);

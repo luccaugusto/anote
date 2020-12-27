@@ -367,7 +367,6 @@ populate_main_menu(void)
 	char *full_text;    /* full_text for item split      */
 	char *remainder;    /* item split remainder          */
 	int split_pos;      /* item split position           */
-	int offset = 0;     /* long note split offset        */
 	int mw_content_w;   /* main_win usable portion width */
 
 	mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
@@ -413,28 +412,33 @@ populate_main_menu(void)
 		 * split text in more items.
 		 * keep description as full text as it is used
 		 * to delete items */
-		if (strlen(text) > mw_content_w) {
+		/* TODO: ADD SUPPORT TO LONG NOTES */
+		if (0 && strlen(text) > mw_content_w) {
 			full_text = text;
 
 			split_pos = find_split_spot(full_text, mw_content_w);
 			remainder = substr(full_text, split_pos, strlen(full_text));
-			remainder = prepend("    ", remainder); /* indent text */
 
-			main_items[j] = new_item(substr(full_text, 0, split_pos), text);
+			main_items[j] = new_item(substr(full_text, 0, split_pos), full_text);
 			++j;
+
 			do {
-				offset += mw_content_w;
+
+ 				/* indent text */
+				if (strlen(remainder) > 0)
+					remainder = prepend("    ", remainder);
+
+				split_pos = find_split_spot(remainder, mw_content_w);
+				text = substr(remainder, 0, split_pos);
 
 				/* adds a new position to the main items array */
 				main_items = realloc(main_items,
 						++main_items_size * sizeof (ITEM *));
 
 				/* adds the part of the note to the items */
-				main_items[j] = new_item(remainder, text);
+				main_items[j] = new_item(text, full_text);
 
-				remainder = substr(full_text, offset, offset + mw_content_w);
-				if (strlen(remainder) > 0)
-					remainder = prepend("    ", remainder); /* indent text */
+				remainder = substr(remainder, split_pos, strlen(remainder));
 
 				++j;
 			} while (strlen(remainder) > mw_content_w);

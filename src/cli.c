@@ -90,7 +90,9 @@ char *layout_commands[] = {
 void
 init_cli(void)
 {
-	initscr();            /* start ncurses                   */
+	if (initscr() == NULL)/* start ncurses                   */
+		exit(errno);
+
 	start_color();        /* start colors support            */
 	raw();                /* Line buffering disabled	     */
 	keypad(stdscr, TRUE); /* Enables function and arrow keys */

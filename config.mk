@@ -3,7 +3,7 @@ SHELL = /bin/sh
 
 # anote version
 VERSION = 1.0
-PROJ_NAME = anote
+PROJ_NAME = anote-cli
 
 #paths
 PREFIX = /usr/local

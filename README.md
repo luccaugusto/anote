@@ -12,7 +12,7 @@ To change a configuration you must first change it on src/config.def.h and run `
 This program is licensed under the GNU GPL3 License.
 
 # Instalation
-run ```sudo make install```
+run ```make && sudo make install```
 
 ## Script
 The script has 4 functions:
@@ -26,13 +26,10 @@ Please note that editing a note is not supported on the script version.
 Run 'anote.sh -h' for further help.
 
 ## Curses application
-The curses application is pretty simple, it just shows the notes you have and allow you to manipulate it.
-Please note it is still in development, so a few more functionalities are to come (see the TODO list below).
-The idea of this program however is to keep things simple, it just takes notes, and takes them well.
+The curses application is pretty simple, it just shows the notes you have and allow you to manipulate them.
+The idea of this program however is to keep things simple, it just takes notes.
 
 ## TODO
-+ Improve readme
-+ Make man page
 
 ### Shell
 + implement remove function alternative without dmenu.

@@ -1,8 +1,6 @@
 #ifndef _SIDEWIN_H
 #define _SIDEWIN_H
 
-#define SELECTED_TAG(x) (strcmp(tag_get_name(sel_tag_index->obj), x) == 0)
-
 /* GLOBAL VARIABLES */
 extern WINDOW *side_win;
 extern struct d_list *top_tag_index;

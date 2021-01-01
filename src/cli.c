@@ -43,6 +43,8 @@ int d_tag_n_number;
 int main_items_size;
 char *d_tag_name;
 
+AnoteLayout curr_layout = DEFAULT_LAYOUT;
+
 WINDOW *main_win;
 WINDOW *cur_win;
 WINDOW *footer;
@@ -126,6 +128,8 @@ organize_window_space(void)
 	main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
 	side_win_w = max_col - main_win_w;
 	prompt_win_w = max_col/2;
+
+	p_width = (curr_layout == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
 }
 
 void
@@ -154,7 +158,7 @@ start_anote_cli(void)
 	/* show informed tag notes on main window as default */
 	load_displayed_tag(def_tag);
 
-	switch (DEFAULT_LAYOUT) {
+	switch (curr_layout) {
 		case SW_RIGHT:
 			main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 			side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
@@ -268,17 +272,37 @@ change_layout(AnoteLayout l)
 			mvwin(main_win, 0, side_win_w);
 			break;
 		case BIG_SW:
-			side_win_w = main_win_w;
-			main_win_w = max_col - side_win_w;
+			side_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
+			main_win_w = max_col - main_win_w;
 			wresize(side_win, side_win_h, side_win_w);
 			wresize(main_win, main_win_h, main_win_w);
+
 			if (getbegx(main_win) == 0)
 				mvwin(side_win, 0, main_win_w);
 			else
 				mvwin(main_win, 0, side_win_w);
 
+			p_width = (curr_layout == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
+
 			reload_main_win();
 			reload_side_win();
+			break;
+		case NORM_SW:
+			main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
+			side_win_w = max_col - main_win_w;
+			wresize(side_win, side_win_h, side_win_w);
+			wresize(main_win, main_win_h, main_win_w);
+
+			if (getbegx(main_win) == 0)
+				mvwin(side_win, 0, main_win_w);
+			else
+				mvwin(main_win, 0, side_win_w);
+
+			p_width = (curr_layout == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
+
+			reload_main_win();
+			reload_side_win();
+
 			break;
 		default:
 			break;
@@ -634,7 +658,8 @@ execution_loop(void)
 					case 'b':
 						change_layout(BIG_SW);
 						break;
-					default:
+					case 'd':
+						change_layout(NORM_SW);
 						break;
 				}
 

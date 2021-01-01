@@ -25,9 +25,10 @@ typedef enum {
 } AlignModes;
 
 typedef enum {
-	SW_LEFT,
-	SW_RIGHT,
-	BIG_SW,
+	SW_LEFT = 0x0001,
+	SW_RIGHT = 0x0002,
+	BIG_SW = 0x0004,
+	NORM_SW = 0x0008,
 } AnoteLayout;
 
 /* COLOR PAIRS */
@@ -56,6 +57,7 @@ extern WINDOW *main_win;
 extern Tag displayed_tag;
 extern int d_tag_n_number;
 extern char *d_tag_name;
+extern AnoteLayout curr_layout;
 extern struct d_list *d_tag_notes;
 
 extern struct d_list *panel_list;

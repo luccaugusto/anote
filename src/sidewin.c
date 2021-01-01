@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <panel.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "anote.h"
 #include "config.h"
@@ -15,6 +16,7 @@
 
 /* GLOBAL VARIABLES */
 char *side_w_header;
+int p_width;
 int SIDE_WIN_COLORS;
 int side_x_offset = 1;
 int expanded = DEFAULT_EXPANDED;
@@ -58,8 +60,8 @@ anote_show_panel(PANEL *p)
 	int k;
 	int limit;
 	int p_height;
-	int y_offset = HEADER_HEIGHT;
 	int x_offset = 1;
+	int y_offset = HEADER_HEIGHT;
 	char *name;
 	char *text;
 	chtype color;
@@ -83,22 +85,23 @@ anote_show_panel(PANEL *p)
 
 	wattrset(p_window, color);
 	box(p_window, 0, 0);
-	draw_headers(p_window, p_height, side_win_w - 2, name, color);
+	draw_headers(p_window, p_height, p_width, name, color);
 
 	k = 0;
 	j = tag_get_notes(tag_get(name));
 	while (j->obj && k < limit) {
 
 		/* truncate the string if its longer than side_win_w-borders characters */
-		if (strlen(note_get_text(j->obj)) >= side_win_w - 2) {
+		if (strlen(note_get_text(j->obj)) >= p_width) {
 			/* -5 = 2 borders and ... */
-			text = substr(note_get_text(j->obj), 0, side_win_w - 7);
-			text = concatenate(text, "...");
+			text = substr(note_get_text(j->obj), 0, p_width - 5);
+			mvwprintw(p_window, y_offset, x_offset, text);
+			mvwprintw(p_window, y_offset, x_offset+strlen(text), "...");
+			free(text);
 		} else {
-			text = note_get_text(j->obj);
+			mvwprintw(p_window, y_offset, x_offset, note_get_text(j->obj));
 		}
 
-		mvwprintw(p_window, y_offset, x_offset, text);
 
 		++y_offset;
 		++k;
@@ -153,7 +156,7 @@ anote_new_panel(Tag t)
 	else
 		p_height = anote_panel_height(t, 0);
 
-	p_window = derwin(side_win, p_height, side_win_w - 2, side_y_offset, side_x_offset);
+	p_window = derwin(side_win, p_height, p_width, side_y_offset, side_x_offset);
 	if (p_window) {
 		p = new_panel(p_window);
 		set_panel_userptr(p, t); /* panel_userptr point to its tag */

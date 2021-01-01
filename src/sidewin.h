@@ -11,6 +11,7 @@ extern struct d_list *circ_tag_list;
 extern char *side_w_header;
 extern int SIDE_WIN_COLORS;
 extern int expanded;
+extern int p_width;
 
 /* FUNCTION PROTOTYPES */
 int anote_panel_height(Tag t, int full);

@@ -105,7 +105,7 @@ concatenate(char *str, const char *suffix)
 
 	str = realloc(str, sizeof(char) * (l_str + l_suffix + 1));
 
-	memcpy(&str[l_str], suffix, l_suffix);
+	strncpy(&str[l_str], suffix, l_suffix);
 	str[l_str + l_suffix] = '\0';
 
 	return str;

@@ -3,11 +3,6 @@
 
 #define HEADER_HEIGHT 3
 
-#define REFRESH_MAIN_MENU                                    \
-   populate_main_menu();                                     \
-   bind_menu(main_win, main_menu, main_win_h, main_win_w);   \
-   wrefresh(menu_win(main_menu));                            \
-
 #define CLEAR_WINDOW(x)                                      \
 	wmove(x, HEADER_HEIGHT, 1);                              \
 	wclrtobot(x);

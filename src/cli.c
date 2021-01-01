@@ -35,21 +35,21 @@ void side_win_actions(int c);
 void execution_loop(void);
 
 /* GLOBAL VARIABLES */
-Tag displayed_tag;
-Note n_aux;
-Note sel_note;
-struct d_list *d_tag_notes;
-int d_tag_n_number;
-char *d_tag_name;
+Tag displayed_tag;             /* displayed tag             */
+Note n_aux;                    /* note buffer object        */
+struct d_list *sel_note_i;     /* selected note index       */
+struct d_list *d_tag_notes;    /* displayed tag notes       */
+int d_tag_n_number;            /* number of displayed notes */
+char *d_tag_name;              /* displayed tag name        */
 
-AnoteLayout curr_layout = DEFAULT_LAYOUT;
+AnoteLayout curr_layout = DEFAULT_LAYOUT; /* current layout */
 
-WINDOW *main_win;
-WINDOW *cur_win;
-WINDOW *footer;
-PANEL *layouts_panel;
+WINDOW *main_win;              /* main window               */
+WINDOW *cur_win;               /* currently selected window */
+WINDOW *footer;                /* footer window             */
+PANEL *layouts_panel;          /* layout change commands    */
 
-int MAIN_WIN_COLORS;
+int MAIN_WIN_COLORS;           /* dimensions and color      */
 int main_win_h;
 int main_win_w;
 int side_win_h;
@@ -388,7 +388,7 @@ populate_main_win(void)
 
 	/* else has notes */
 	i = d_tag_notes;
-	sel_note = i->obj;
+	sel_note_i = i;
 	while (i->obj) {
 
 		if (SELECTED_NOTE(i->obj)) {
@@ -467,16 +467,15 @@ main_win_actions(int c)
 		/* MOVE KEYS */
 		case 'j':      /* FALLTHROUGH */
 		case KEY_DOWN:
+			if (sel_note_i->next)
+				sel_note_i = sel_note_i->next;
+			populate_main_win();
 			break;
 
 		case 'k':      /* FALLTHROUGH */
 		case KEY_UP:
-			break;
-
-		case KEY_NPAGE:
-			break;
-
-		case KEY_PPAGE:
+			sel_note_i = d_list_prev(sel_note_i, &d_tag_notes);
+			populate_main_win();
 			break;
 
 		case 'c': /* MARK COMPLETE */

@@ -8,7 +8,7 @@
 #define MAX(x,y) (x > y ? x : y)
 
 #define SELECTED_TAG(x) (strcmp(tag_get_name(sel_tag_index->obj), x) == 0)
-#define SELECTED_NOTE(x) (strcmp(note_get_text(sel_note), note_get_text(x)) == 0)
+#define SELECTED_NOTE(x) (strcmp(note_get_text(sel_note_i->obj), note_get_text(x)) == 0)
 
 #define BUFFER_SIZE 1024
 

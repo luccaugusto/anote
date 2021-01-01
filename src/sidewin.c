@@ -95,8 +95,7 @@ anote_show_panel(PANEL *p)
 		if (strlen(note_get_text(j->obj)) >= p_width) {
 			/* -5 = 2 borders and ... */
 			text = substr(note_get_text(j->obj), 0, p_width - 5);
-			mvwprintw(p_window, y_offset, x_offset, text);
-			mvwprintw(p_window, y_offset, x_offset+strlen(text), "...");
+			mvwprintw(p_window, y_offset, x_offset, "%s...", text);
 			free(text);
 		} else {
 			mvwprintw(p_window, y_offset, x_offset, note_get_text(j->obj));

@@ -37,6 +37,7 @@ void execution_loop(void);
 /* GLOBAL VARIABLES */
 Tag displayed_tag;
 Note n_aux;
+Note sel_note;
 struct d_list *d_tag_notes;
 int d_tag_n_number;
 char *d_tag_name;
@@ -366,12 +367,17 @@ print_align_center(WINDOW *win, int start_y, int start_x, int width, char *strin
 void
 populate_main_win(void)
 {
-	struct d_list *i;   /* indexes */
-	//int mw_content_w;   /* main_win usable portion width */
+	struct d_list *i;   /* indexes                       */
+	char *text;         /* note text                     */
+	char *remainder;    /* text split remainder          */
+	char *substring;    /* split substring               */
+	int mw_content_w;   /* main_win usable portion width */
+	int split_pos;
+	int beg_pos;
 	int y_offset = HEADER_HEIGHT;
 	int x_offset = 1;
 
-	//mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
+	mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
 	/* no notes */
 	if (d_tag_n_number == 0) {
@@ -381,9 +387,31 @@ populate_main_win(void)
 
 	/* else has notes */
 	i = d_tag_notes;
+	sel_note = i->obj;
 	while (i->obj) {
 
-		mvwprintw(main_win, y_offset++, x_offset, note_get_text(i->obj));
+		text = note_get_text(i->obj);
+		/* note too long, break it */
+		if (strlen(text) > mw_content_w) {
+
+			beg_pos = 0;
+			while (beg_pos < strlen(text)) {
+				remainder = substr(text, beg_pos, strlen(text));
+
+				split_pos = find_split_spot(remainder, mw_content_w);
+
+				substring = substr(text, beg_pos, beg_pos + split_pos);
+				mvwprintw(main_win, y_offset++, x_offset, substring);
+
+				free(substring);
+				free(remainder);
+
+				beg_pos += split_pos;
+			}
+
+		} else {
+			mvwprintw(main_win, y_offset++, x_offset, text);
+		}
 
 		CONTINUE_IF(i, i->next);
 	}

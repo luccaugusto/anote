@@ -143,8 +143,10 @@ prepend(const char *prefix, char *str)
 int
 find_split_spot(char *str, int max_length)
 {
-	max_length = (max_length > strlen(str)) ?
-		strlen(str) : max_length;
+	/* no need to split */
+	if (max_length >= strlen(str))
+		return (strlen(str) - 1);
+
 
 	/* finds the space immediatelly before max_length */
 	while (str[max_length] != ' ')

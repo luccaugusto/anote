@@ -145,7 +145,7 @@ find_split_spot(char *str, int max_length)
 {
 	/* no need to split */
 	if (max_length >= strlen(str))
-		return (strlen(str) - 1);
+		return strlen(str);
 
 
 	/* finds the space immediatelly before max_length */

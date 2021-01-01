@@ -243,6 +243,7 @@ create_new_win(int height, int width, int start_y, int start_x)
 void
 change_layout(AnoteLayout l)
 {
+	curr_layout = l;
 	switch (l) {
 		case SW_RIGHT:
 			mvwin(main_win, 0, 0);
@@ -375,7 +376,7 @@ populate_main_win(void)
 	int split_pos;
 	int beg_pos;
 	int y_offset = HEADER_HEIGHT;
-	int x_offset = 1;
+	int x_offset = strlen(MENU_MARK) + 1;
 
 	mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
@@ -390,6 +391,14 @@ populate_main_win(void)
 	sel_note = i->obj;
 	while (i->obj) {
 
+		if (SELECTED_NOTE(i->obj)) {
+			wattrset(main_win, COLOR_PAIR(SELECTED_COLORS));
+			mvwprintw(main_win, y_offset, 1, MENU_MARK);
+		} else {
+			wattrset(main_win, COLOR_PAIR(UNSELECTED_COLORS));
+			mvwprintw(main_win, y_offset, 1, "  ");
+		}
+
 		text = note_get_text(i->obj);
 		/* note too long, break it */
 		if (strlen(text) > mw_content_w) {
@@ -398,10 +407,15 @@ populate_main_win(void)
 			while (beg_pos < strlen(text)) {
 				remainder = substr(text, beg_pos, strlen(text));
 
-				split_pos = find_split_spot(remainder, mw_content_w);
+				/* indented note */
+				split_pos = find_split_spot(remainder, mw_content_w - strlen(MENU_MARK) - 2);
 
 				substring = substr(text, beg_pos, beg_pos + split_pos);
-				mvwprintw(main_win, y_offset++, x_offset, substring);
+				/* indent only after line break */
+				if (beg_pos == 0)
+					mvwprintw(main_win, y_offset++, x_offset, substring);
+				else
+					mvwprintw(main_win, y_offset++, x_offset, "  %s", substring);
 
 				free(substring);
 				free(remainder);
@@ -554,9 +568,9 @@ execution_loop(void)
 
 				switch (wgetch(cur_win)) {
 					case 'l':
-						change_layout(SW_LEFT);
+						change_layout(SW_RIGHT);
 						break;
-					case 'r':
+					case 'h':
 						change_layout(SW_RIGHT);
 						break;
 					case 'b':

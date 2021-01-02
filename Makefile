@@ -7,7 +7,7 @@ C_SRC=${wildcard ./src/*.c}
 H_SRC=${wildcard ./src/*.h}
 OBJ=${subst .c,.o,${subst src,build,${C_SRC}}}
 
-all: options BD_DIR config ${PROJ_NAME}
+all: options BD_DIR ${PROJ_NAME}
 
 options:
 	@echo ${PROJ_NAME} build options:
@@ -25,9 +25,7 @@ ${PROJ_NAME}: ${OBJ}
 
 config:
 	@echo "config"
-	if [ -f ./src/$@.h ]; then rm -f ./src/$@.h; fi
 	cp ./src/config.def.h ./src/$@.h
-	chmod -w ./src/$@.h
 	@echo
 
 ./build/%.o: ./src/%.c ./src/%.h

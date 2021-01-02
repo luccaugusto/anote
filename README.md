@@ -28,8 +28,7 @@ Run 'anote.sh -h' for further help.
 ## Curses application
 The curses application is pretty simple, it just shows the notes you have and allow you to manipulate them.
 The idea of this program however is to keep things simple, it just takes notes.
-There might be some bugs on some specific cases, i decided to move on to another project instead of hunting them down,
-feel free to fix them or implement some of the TODO items.
+Feel free to fix them or implement some of the TODO items.
 
 ## TODO
 
@@ -42,8 +41,6 @@ feel free to fix them or implement some of the TODO items.
 + save the date a note was added and increase its priority automattically as time passes.
 
 ### CLI
-+ Do not use a menu for listing notes on the main window (it's going to fix many bugs related to long notes).
 + scroll commands on footer if they dont fit
-+ Possibility to swap main window with side window and show tags panels side by side on the big window
 + noninteractive remove function
 + add function without the -a flag

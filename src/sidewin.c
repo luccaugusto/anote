@@ -17,6 +17,7 @@
 /* GLOBAL VARIABLES */
 char *side_w_header;
 int p_width;
+int y_offset_sum;
 int SIDE_WIN_COLORS;
 int side_x_offset = 1;
 int expanded = DEFAULT_EXPANDED;
@@ -160,8 +161,23 @@ anote_new_panel(Tag t)
 		p = new_panel(p_window);
 		set_panel_userptr(p, t); /* panel_userptr point to its tag */
 		d_list_add_circ(p, &panel_list, sizeof(*p));
-		side_y_offset+=p_height;
+
+		/* on big side window mode, list tags side by side */
+		if (curr_layout == BIG_SW) {
+			if (side_x_offset == 1) {
+				side_x_offset = side_win_w/2;
+				y_offset_sum = p_height;
+			} else {
+				side_x_offset = 1;
+				y_offset_sum = (p_height > y_offset_sum) ? p_height : y_offset_sum;
+				side_y_offset+=y_offset_sum;
+			}
+
+		} else {
+			side_y_offset+=p_height;
+		}
 	}
+
 
 	return p;
 }
@@ -249,6 +265,7 @@ reload_side_win(void)
 
 		i = i->next;
 	} while (i != top_tag_index);
+	scroll_panels();
 }
 
 void

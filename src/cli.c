@@ -79,7 +79,7 @@ char *commands[] = {
 /* should have an even number of strings + a NULL temrination */
 char *layout_commands[] = {
 	"l: Put side window to the left",
-	"r: Put side window to the right",
+	"h: Put side window to the right",
 	"b: Make side window big",
 	"d: restore side window default size",
 	NULL,
@@ -257,8 +257,8 @@ change_layout(AnoteLayout l)
 		case BIG_SW:
 			side_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
 			main_win_w = max_col - main_win_w;
-			wresize(side_win, side_win_h, side_win_w);
 			wresize(main_win, main_win_h, main_win_w);
+			wresize(side_win, side_win_h, side_win_w);
 
 			if (getbegx(main_win) == 0)
 				mvwin(side_win, 0, main_win_w);
@@ -568,6 +568,7 @@ execution_loop(void)
 				break;
 			case 't': /* TOOGLE LAYOUTS */
 				show_panel(layouts_panel);
+				top_panel(layouts_panel);
 				update_panels();
 				doupdate();
 
@@ -576,16 +577,23 @@ execution_loop(void)
 						change_layout(SW_RIGHT);
 						break;
 					case 'h':
-						change_layout(SW_RIGHT);
+						change_layout(SW_LEFT);
 						break;
 					case 'b':
+						delete_panels();
 						change_layout(BIG_SW);
+						scroll_panels();
+						reload_side_win();
 						break;
 					case 'd':
+						delete_panels();
 						change_layout(NORM_SW);
+						scroll_panels();
+						reload_side_win();
 						break;
 				}
 
+				bottom_panel(layouts_panel);
 				hide_panel(layouts_panel);
 				update_panels();
 				doupdate();

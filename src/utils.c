@@ -145,16 +145,24 @@ prepend(const char *prefix, char *str)
 int
 find_split_spot(char *str, int max_length)
 {
+	int pos;
+
 	/* no need to split */
 	if (max_length >= strlen(str))
 		return strlen(str);
 
+	pos = max_length;
 
 	/* finds the space immediatelly before max_length */
-	while (str[max_length] != ' ')
-		max_length--;
+	while (str[pos] != ' ')
+		pos--;
 
-	return max_length;
+	/* very small string,
+	 * better split word in half */
+	if (pos < 2)
+		pos = max_length;
+
+	return pos;
 }
 
 int

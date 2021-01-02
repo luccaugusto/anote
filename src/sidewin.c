@@ -163,7 +163,7 @@ anote_new_panel(Tag t)
 		d_list_add_circ(p, &panel_list, sizeof(*p));
 
 		/* on big side window mode, list tags side by side */
-		if (curr_layout == BIG_SW) {
+		if (curr_lay_size == BIG_SW) {
 			if (side_x_offset == 1) {
 				side_x_offset = side_win_w/2;
 				y_offset_sum = p_height;

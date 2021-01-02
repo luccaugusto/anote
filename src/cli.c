@@ -42,7 +42,8 @@ struct d_list *d_tag_notes;    /* displayed tag notes       */
 int d_tag_n_number;            /* number of displayed notes */
 char *d_tag_name;              /* displayed tag name        */
 
-AnoteLayout curr_layout = DEFAULT_LAYOUT; /* current layout */
+AnoteLayout curr_layout = DEFAULT_LAYOUT;     /* current layout        */
+AnoteLayout curr_lay_size = DEFAULT_LAY_SIZE; /* Big or normal sidewin */
 
 WINDOW *main_win;              /* main window               */
 WINDOW *cur_win;               /* currently selected window */
@@ -126,7 +127,7 @@ organize_window_space(void)
 	side_win_w = max_col - main_win_w;
 	prompt_win_w = max_col/2;
 
-	p_width = (curr_layout == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
+	p_width = (curr_lay_size == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
 }
 
 void
@@ -153,18 +154,21 @@ start_anote_cli(void)
 	load_displayed_tag(def_tag);
 	sel_note_i = d_tag_notes;
 
+	if (curr_lay_size == BIG_SW) {
+		side_win_w = main_win_w;
+		main_win_w = max_col - side_win_w;
+		wresize(side_win, side_win_h, side_win_w);
+		wresize(main_win, main_win_h, main_win_w);
+		p_width = (side_win_w - 2 ) / 2;
+	}
+
 	switch (curr_layout) {
 		case SW_RIGHT:
 			main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 			side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
 			break;
-		case BIG_SW:   /* FALLTHROUGH */
-			side_win_w = main_win_w;
-			main_win_w = max_col - side_win_w;
-			wresize(side_win, side_win_h, side_win_w);
-			wresize(main_win, main_win_h, main_win_w);
-		default:       /* FALLTHROUGH */
-		case SW_LEFT:
+		case SW_LEFT:       /* FALLTHROUGH */
+		default:
 			side_win = create_new_win(side_win_h, side_win_w, 0, 0);
 			main_win = create_new_win(main_win_h, main_win_w, 0, side_win_w);
 			break;
@@ -244,7 +248,6 @@ create_new_win(int height, int width, int start_y, int start_x)
 void
 change_layout(AnoteLayout l)
 {
-	curr_layout = l;
 	switch (l) {
 		case SW_RIGHT:
 			mvwin(main_win, 0, 0);
@@ -255,8 +258,8 @@ change_layout(AnoteLayout l)
 			mvwin(main_win, 0, side_win_w);
 			break;
 		case BIG_SW:
-			side_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
-			main_win_w = max_col - main_win_w;
+			side_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH;
+			main_win_w = max_col - side_win_w;
 			wresize(main_win, main_win_h, main_win_w);
 			wresize(side_win, side_win_h, side_win_w);
 
@@ -265,13 +268,13 @@ change_layout(AnoteLayout l)
 			else
 				mvwin(main_win, 0, side_win_w);
 
-			p_width = (curr_layout == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
+			p_width = (side_win_w - 2) / 2;
 
 			reload_main_win();
 			reload_side_win();
 			break;
 		case NORM_SW:
-			main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
+			main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH;
 			side_win_w = max_col - main_win_w;
 			wresize(side_win, side_win_h, side_win_w);
 			wresize(main_win, main_win_h, main_win_w);
@@ -281,7 +284,7 @@ change_layout(AnoteLayout l)
 			else
 				mvwin(main_win, 0, side_win_w);
 
-			p_width = (curr_layout == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
+			p_width = side_win_w - 2;
 
 			reload_main_win();
 			reload_side_win();
@@ -574,18 +577,22 @@ execution_loop(void)
 
 				switch (wgetch(cur_win)) {
 					case 'l':
+						curr_layout = SW_RIGHT;
 						change_layout(SW_RIGHT);
 						break;
 					case 'h':
+						curr_layout = SW_LEFT;
 						change_layout(SW_LEFT);
 						break;
 					case 'b':
+						curr_lay_size = BIG_SW;
 						delete_panels();
 						change_layout(BIG_SW);
 						scroll_panels();
 						reload_side_win();
 						break;
 					case 'd':
+						curr_lay_size = NORM_SW;
 						delete_panels();
 						change_layout(NORM_SW);
 						scroll_panels();

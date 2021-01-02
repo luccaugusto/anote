@@ -142,9 +142,12 @@ void
 prompt_show_details(Note n)
 {
 	char *label;
-	label = calloc(41, sizeof(char));
+	char *mark;
 
-	sprintf(label, "Completed: %c    |    Priority: %d", (char)(note_get_completed(n) ? 'Y' : 'N'), note_get_priority(n));
+	mark = (note_get_completed(n) ? COMPLETE_MARK : INCOMPLETE_MARK);
+	label = calloc(40 + strlen(mark), sizeof(char));
+
+	sprintf(label, "Completed: %s    |    Priority: %d", mark, note_get_priority(n));
 	prompt_user(label, "Selected Note Details", ALIGN_CENTER);
 }
 

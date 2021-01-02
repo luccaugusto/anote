@@ -267,6 +267,7 @@ side_win_actions(int c)
 		case A_NEWLINE:
 			CLEAR_WINDOW(side_win);
 			load_displayed_tag(tag_get_name(sel_tag_index->obj));
+			sel_note_i = d_tag_notes;
 			delete_panels();
 			delete_list_circ(&circ_tag_list);
 			build_tag_panels();

@@ -151,6 +151,7 @@ start_anote_cli(void)
 
 	/* show informed tag notes on main window as default */
 	load_displayed_tag(def_tag);
+	sel_note_i = d_tag_notes;
 
 	switch (curr_layout) {
 		case SW_RIGHT:
@@ -380,6 +381,8 @@ populate_main_win(void)
 
 	mw_content_w = (main_win_w - 2 - strlen(MENU_MARK));
 
+	CLEAR_WINDOW(main_win);
+
 	/* no notes */
 	if (d_tag_n_number == 0) {
 		mvwprintw(main_win, HEADER_HEIGHT, 1, "No notes in this tag");
@@ -388,7 +391,6 @@ populate_main_win(void)
 
 	/* else has notes */
 	i = d_tag_notes;
-	sel_note_i = i;
 	while (i->obj) {
 
 		if (SELECTED_NOTE(i->obj)) {
@@ -474,7 +476,7 @@ main_win_actions(int c)
 
 		case 'k':      /* FALLTHROUGH */
 		case KEY_UP:
-			sel_note_i = d_list_prev(sel_note_i, &d_tag_notes);
+			sel_note_i = d_list_prev(sel_note_i->obj, &d_tag_notes);
 			populate_main_win();
 			break;
 
@@ -485,9 +487,12 @@ main_win_actions(int c)
 
 		/* MANIPULATION KEYS */
 		case 'd': /* delete */
-			if (0) {
+			if (sel_note_i != NULL) {
 				answer = prompt_user("Delete selected note? [y/N]: ", "Deleting Note", ALIGN_LEFT);
 				if (answer[0] == 'y' || answer[0] == 'Y') {
+
+					n_aux = sel_note_i->obj;
+					sel_note_i = d_list_prev(sel_note_i->obj, &d_tag_notes);
 
 					tag_del_note(n_aux, d_tag_name);
 					note_del(n_aux);
@@ -512,6 +517,7 @@ main_win_actions(int c)
 
 		case A_CR: /* FALLTHROUGH */
 		case A_NEWLINE:
+			n_aux = sel_note_i->obj;
 			prompt_show_details(n_aux);
 			break;
 

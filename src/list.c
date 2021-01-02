@@ -213,6 +213,9 @@ d_list_prev(void *obj, struct d_list **list)
 	struct d_list *i;
 
 	i = *list;
+	if (i->obj == obj)
+		return i;
+
 	for (; i->next && i->next->obj != obj; i = i->next);
 
 	if (i->next->obj != obj)

@@ -53,6 +53,7 @@ extern Tag displayed_tag;
 extern int d_tag_n_number;
 extern char *d_tag_name;
 extern AnoteLayout curr_layout;
+extern struct d_list *sel_note_i;
 extern struct d_list *d_tag_notes;
 
 extern struct d_list *panel_list;

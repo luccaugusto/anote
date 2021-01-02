@@ -54,9 +54,11 @@ substr(char *str, int begin, int end)
 	if (begin >= end)
 		return "\0";
 
-	ret = malloc(sizeof(char) * (end-begin));
+	ret = malloc(sizeof(char) * (end-begin+1));
 
-	memcpy(ret, &str[begin], (end-begin));
+	strncpy(ret, &str[begin], (end-begin));
+
+	ret[end-begin] = '\0';
 
 	return ret;
 }

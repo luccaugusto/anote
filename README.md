@@ -1,5 +1,7 @@
 # anote
 
+WARNING: i developed this on a not so good time of my life so my head was totally in the wrong place and attempts to fix bugs only created more bugs, so, use at your own risk. I might fix it sometime later though.
+
 Anote is a very simple program for taking notes. This repository provides two implementations, the first one is
 a POSIX shell script for taking notes and viewing them in the terminal.
 The second implementation is a more robust, ncurses based CLI application, still in development.

@@ -161,13 +161,20 @@ remove_note()
 	fi
 }
 
+edit_notes()
+{
+	"$EDITOR" "$NOTES_PATH.notes$TAG"
+}
 
-while getopts ":ds:hlrct:" opt; do
+
+while getopts ":des:hlrct:" opt; do
 	#parse arguments before calling any function
 	case $opt in
 		c) CALCURSE=true
 			;;
 		d) TAG='general'
+			;;
+		e) OPERATION='e'
 			;;
 		s) OPERATION='s'
 			PATTERN="$OPTARG"
@@ -199,6 +206,8 @@ then
 		'a') add_note $NOTE $TAG
 			;;
 		'l') list_notes
+			;;
+		'e') edit_notes
 			;;
 		's') search_notes
 			;;

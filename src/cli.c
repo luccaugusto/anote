@@ -55,7 +55,6 @@ int max_col;
 /* should have an even number of strings + a NULL temrination */
 char *commands[] = {
 	"q: save & quit",
-	"e: expand selected tag",
 	"c: mark complete",
 	"a: quick add nt",
 	"A: add nt to tag",
@@ -63,9 +62,8 @@ char *commands[] = {
 	"I: add nt set pri and tag",
 	"d: del selected note",
 	"D: del selected tag",
-	"Enter: Sel tag to main window",
 	"Enter: show note details",
-	"Tab: Change window",
+	"Tab: Change note",
 	NULL,
 };
 
@@ -161,7 +159,6 @@ housekeeping(void)
 {
 	struct d_list *i;
 	del_panel(prompt_panel);
-
 
 	i = panel_list;
 	do {
@@ -411,7 +408,7 @@ main_win_actions(int c)
 			break;
 
 		case A_TAB:
-			/* TODOchange displayed tag */
+			/* TODO change displayed tag */
 			break;
 
 		case A_CR: /* FALLTHROUGH */

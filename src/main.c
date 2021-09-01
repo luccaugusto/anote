@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "main.h"
 #include "anote.h"
 #include "config.h"
 #include "list.h"
@@ -30,6 +31,10 @@ void help(void);
 
 /* GLOBAL VARIABLES */
 struct d_list *global_tag_list;
+struct d_list *top_tag_index;
+struct d_list *sel_tag_index;
+struct d_list *circ_tag_list;
+struct d_list *panel_list;
 char *errmsg;
 FILE *notes_file;
 char *notes_path;
@@ -44,6 +49,7 @@ load_notes_from_file(char *n_file)
 {
 	char *cur_tag = "";
 	char *cur_note;
+	char *aux;
 	int cur_pri;
 	int cur_complete;
 	Note n;
@@ -56,10 +62,13 @@ load_notes_from_file(char *n_file)
 		 * tag priority note_text \n */
 
 		while (!feof(notes_file)) {
-			cur_tag = read_until_separator('|', notes_file);
-			cur_pri = str2int(read_until_separator('|', notes_file));
-			cur_complete = str2int(read_until_separator('|', notes_file));
-			cur_note = read_until_separator('\n', notes_file);
+			read_until_separator('|', cur_tag, notes_file);
+			cur_pri = str2int(aux);
+
+			read_until_separator('|', aux, notes_file);
+			cur_complete = str2int(aux);
+
+			read_until_separator('\n', cur_note, notes_file);
 
 			/* if read something */
 			if (!is_blank(cur_tag) && !is_blank(cur_note)) {
@@ -243,7 +252,7 @@ list_notes(char *tag)
 void
 help(void)
 {
-	/* TODO: write the full help thingy */
+	/* TO DO: write the full help thingy */
 	printf("anote [-t] [-c] [SOME TAG] [SOME NOTE]: Adds a note to a specific Tag. If no tag is informed adds to general notes\n");
 	printf("       -c: adds note to calcurse todo list\n");
 	printf("       -l [SOME TAG]:Prompts with a dmenu to select notes file to list notes from\n");

@@ -4,12 +4,12 @@
 /* FUNCTION PROTOTYPES */
 int str2int(char *srt);
 int is_blank(char *str);
-char *substr(char *str, int begin, int end);
-char *remove_quotes(char *str);
+void substr(char *str, char *substr, int begin, int end);
+void remove_quotes(char *str, char *clearstr);
 char *concatenate(char *str, const char *suffix);
 char *prepend(const char *prefix, char *str);
 int find_split_spot(char *str, int max_length);
 int in_str(char needle, char *haystack);
-char *read_until_separator(char sep, FILE *file);
+void read_until_separator(char sep, char *buffer, FILE *file);
 
 #endif

@@ -14,7 +14,6 @@
 #include "note.h"
 #include "prompt.h"
 #include "tag.h"
-#include "sidewin.h"
 #include "utils.h"
 #include "cli.h"
 
@@ -31,7 +30,6 @@ void show_cmd(WINDOW *window, char *comm[]);
 void update_watch(void);
 
 void main_win_actions(int c);
-void side_win_actions(int c);
 void execution_loop(void);
 
 /* GLOBAL VARIABLES */
@@ -42,19 +40,13 @@ struct d_list *d_tag_notes;    /* displayed tag notes       */
 int d_tag_n_number;            /* number of displayed notes */
 char *d_tag_name;              /* displayed tag name        */
 
-AnoteLayout curr_layout = DEFAULT_LAYOUT;     /* current layout        */
-AnoteLayout curr_lay_size = DEFAULT_LAY_SIZE; /* Big or normal sidewin */
-
 WINDOW *main_win;              /* main window               */
 WINDOW *cur_win;               /* currently selected window */
 WINDOW *footer;                /* footer window             */
-PANEL *layouts_panel;          /* layout change commands    */
 
 int MAIN_WIN_COLORS;           /* dimensions and color      */
 int main_win_h;
 int main_win_w;
-int side_win_h;
-int side_win_w;
 int footer_h;
 int footer_w;
 int max_row;
@@ -74,15 +66,6 @@ char *commands[] = {
 	"Enter: Sel tag to main window",
 	"Enter: show note details",
 	"Tab: Change window",
-	NULL,
-};
-
-/* should have an even number of strings + a NULL temrination */
-char *layout_commands[] = {
-	"l: Put side window to the left",
-	"h: Put side window to the right",
-	"b: Make side window big",
-	"d: restore side window default size",
 	NULL,
 };
 
@@ -106,10 +89,9 @@ init_cli(void)
 	init_pair(MENU_COLORS_FG, menu_fg_sel, menu_bg_sel);
 	init_pair(MENU_COLORS_BG, menu_fg_usl, menu_bg_usl);
 	MAIN_WIN_COLORS = SELECTED_COLORS;
-	SIDE_WIN_COLORS = UNSELECTED_COLORS;
 }
 
-/* creates main, side and footer windows
+/* creates main and footer windows
  * and calculate their sizes
  */
 void
@@ -119,15 +101,11 @@ organize_window_space(void)
 
 	footer_h = HEADER_HEIGHT + 1;
 	main_win_h = max_row - footer_h;
-	side_win_h = max_row - footer_h;
 	prompt_win_h = HEADER_HEIGHT + HEADER_HEIGHT;
 
 	footer_w = max_col;
-	main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH; /* 70% for main */
-	side_win_w = max_col - main_win_w;
+	main_win_w = max_col;
 	prompt_win_w = max_col/2;
-
-	p_width = (curr_lay_size == BIG_SW) ? (side_win_w - 2) / 2 : side_win_w - 2;
 }
 
 void
@@ -154,48 +132,19 @@ start_anote_cli(void)
 	load_displayed_tag(def_tag);
 	sel_note_i = d_tag_notes;
 
-	if (curr_lay_size == BIG_SW) {
-		side_win_w = main_win_w;
-		main_win_w = max_col - side_win_w;
-		wresize(side_win, side_win_h, side_win_w);
-		wresize(main_win, main_win_h, main_win_w);
-		p_width = (side_win_w - 2 ) / 2;
-	}
-
-	switch (curr_layout) {
-		case SW_RIGHT:
-			main_win = create_new_win(main_win_h, main_win_w, 0, 0);
-			side_win = create_new_win(side_win_h, side_win_w, 0, main_win_w);
-			break;
-		case SW_LEFT:       /* FALLTHROUGH */
-		default:
-			side_win = create_new_win(side_win_h, side_win_w, 0, 0);
-			main_win = create_new_win(main_win_h, main_win_w, 0, side_win_w);
-			break;
-	}
-
+	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
 
-	layouts_panel = new_panel(create_new_win(footer_h, footer_w, main_win_h, 0));
 	prompt_win = create_new_win(prompt_win_h, prompt_win_w, max_row/4, max_col/4);
 	prompt_panel = new_panel(prompt_win);
-
-	cur_win = main_win;
 
 	label = malloc(sizeof(char) * (strlen(label) + strlen(def_tag)));
 	sprintf(label, "%s Notes", def_tag);
 	draw_headers(main_win, main_win_h, main_win_w, label, COLOR_PAIR(MAIN_WIN_COLORS));
 
-	/* number of tags on header */
-	side_w_header = malloc(sizeof(char) * 26); /* "Other Tags [xxx]" */
-	sprintf(side_w_header, "Other Tags [%d]", d_list_length(&global_tag_list) - 1);
-	draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
-
 	populate_main_win();
 
-	build_tag_panels();
 	show_cmd(footer, commands);
-	show_cmd(panel_window(layouts_panel), layout_commands);
 
 	update_panels();
 	doupdate();
@@ -243,56 +192,6 @@ create_new_win(int height, int width, int start_y, int start_x)
 	wrefresh(local_win);
 
 	return local_win;
-}
-
-void
-change_layout(AnoteLayout l)
-{
-	switch (l) {
-		case SW_RIGHT:
-			mvwin(main_win, 0, 0);
-			mvwin(side_win, 0, main_win_w);
-			break;
-		case SW_LEFT:
-			mvwin(side_win, 0, 0);
-			mvwin(main_win, 0, side_win_w);
-			break;
-		case BIG_SW:
-			side_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH;
-			main_win_w = max_col - side_win_w;
-			wresize(main_win, main_win_h, main_win_w);
-			wresize(side_win, side_win_h, side_win_w);
-
-			if (getbegx(main_win) == 0)
-				mvwin(side_win, 0, main_win_w);
-			else
-				mvwin(main_win, 0, side_win_w);
-
-			p_width = (side_win_w - 2) / 2;
-
-			reload_main_win();
-			reload_side_win();
-			break;
-		case NORM_SW:
-			main_win_w = max_col/100.0 * MAIN_WIN_REL_WIDTH;
-			side_win_w = max_col - main_win_w;
-			wresize(side_win, side_win_h, side_win_w);
-			wresize(main_win, main_win_h, main_win_w);
-
-			if (getbegx(main_win) == 0)
-				mvwin(side_win, 0, main_win_w);
-			else
-				mvwin(main_win, 0, side_win_w);
-
-			p_width = side_win_w - 2;
-
-			reload_main_win();
-			reload_side_win();
-
-			break;
-		default:
-			break;
-	}
 }
 
 void
@@ -410,12 +309,12 @@ populate_main_win(void)
 
 			beg_pos = 0;
 			while (beg_pos < strlen(text)) {
-				remainder = substr(text, beg_pos, strlen(text));
+				substr(text, remainder, beg_pos, strlen(text));
 
 				/* indented note */
 				split_pos = find_split_spot(remainder, mw_content_w - strlen(MENU_MARK) - 2);
 
-				substring = substr(text, beg_pos, beg_pos + split_pos);
+				substr(text, substring, beg_pos, beg_pos + split_pos);
 				/* indent only after line break */
 				if (beg_pos == 0)
 					mvwprintw(main_win, y_offset++, x_offset, substring);
@@ -511,11 +410,7 @@ main_win_actions(int c)
 			break;
 
 		case A_TAB:
-			cur_win = side_win;
-			MAIN_WIN_COLORS = UNSELECTED_COLORS;
-			SIDE_WIN_COLORS = SELECTED_COLORS;
-			color_main_win();
-			color_side_win();
+			/* TODOchange displayed tag */
 			break;
 
 		case A_CR: /* FALLTHROUGH */
@@ -543,83 +438,30 @@ execution_loop(void)
 				break;
 			case 'A': /* ADD A NOTE set tag */
 				prompt_add_note(1, 0);
-				sprintf(side_w_header, "Other Tags [%d]", d_list_length(&global_tag_list) -1);
-				draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
 				break;
 			case 'I': /* ADD A NOTE set priority and tag */
 				prompt_add_note(1, 1);
-				sprintf(side_w_header, "Other Tags [%d]", d_list_length(&global_tag_list) -1);
-				draw_headers(side_win, side_win_h, side_win_w, side_w_header, COLOR_PAIR(SIDE_WIN_COLORS));
 				break;
 			case 'D': /* Delete a tag */
 				if (prompt_delete_tag()) {
 					prompt_user("Tag Deleted", "Deleting Tag", ALIGN_CENTER);
-					sprintf(side_w_header, "Other Tags [%d]", d_list_length(&global_tag_list) -1);
-					reload_side_win();
 				} else {
 					prompt_user("Tag was not deleted", "Deleting Tag", ALIGN_CENTER);
 				}
 				break;
-			case 'e':
-				/* toogles expanded */
-				expanded = !expanded;
-
-				CLEAR_WINDOW(side_win);
-				delete_panels();
-				scroll_panels();
-				reload_side_win();
-				break;
-			case 't': /* TOOGLE LAYOUTS */
-				show_panel(layouts_panel);
-				top_panel(layouts_panel);
-				update_panels();
-				doupdate();
-
-				switch (wgetch(cur_win)) {
-					case 'l':
-						curr_layout = SW_RIGHT;
-						change_layout(SW_RIGHT);
-						break;
-					case 'h':
-						curr_layout = SW_LEFT;
-						change_layout(SW_LEFT);
-						break;
-					case 'b':
-						curr_lay_size = BIG_SW;
-						delete_panels();
-						change_layout(BIG_SW);
-						scroll_panels();
-						reload_side_win();
-						break;
-					case 'd':
-						curr_lay_size = NORM_SW;
-						delete_panels();
-						change_layout(NORM_SW);
-						scroll_panels();
-						reload_side_win();
-						break;
-				}
-
-				bottom_panel(layouts_panel);
-				hide_panel(layouts_panel);
-				update_panels();
-				doupdate();
-				break;
-
 			case 'Z': /* QUIT PROGRAM */
 				c = wgetch(cur_win);
-				if (c == 'Z') goto quit_anote;
-				if (c == 'Q') goto quit_anote;
+				if (c == 'Z' || c == 'Q')
+					goto quit_anote;
 				break;
 			default:
-				if (cur_win == main_win) main_win_actions(c);
-				else                     side_win_actions(c);
+				main_win_actions(c);
 				break;
 		}
 		show_win(main_win, COLOR_PAIR(MAIN_WIN_COLORS));
-		show_win(side_win, COLOR_PAIR(SIDE_WIN_COLORS));
 		show_win(footer, COLOR_PAIR(UNSELECTED_COLORS));
 	} while ((c = wgetch(cur_win)) != 'q');
+
 quit_anote:
 	return;
 }

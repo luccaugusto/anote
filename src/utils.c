@@ -42,37 +42,33 @@ is_blank(char *str)
 	return blank;
 }
 
-char *
-substr(char *str, int begin, int end)
+/* extract a substring from string and stores it in ret */
+void
+substr(char *str, char *substr, int begin, int end)
 {
-	char *ret;
-
 	if (end > strlen(str))
 		end = strlen(str);
 
 	/* empty string*/
 	if (begin >= end)
-		return "\0";
+		substr = "\0";
 
-	ret = malloc(sizeof(char) * (end-begin+1));
+	substr = malloc(sizeof(char) * (end-begin+1));
 
-	strncpy(ret, &str[begin], (end-begin));
+	strncpy(substr, &str[begin], (end-begin));
 
-	ret[end-begin] = '\0';
-
-	return ret;
+	substr[end-begin] = '\0';
 }
 
-/* remove quotation marks and spaces outside of them */
-char *
-remove_quotes(char *str)
+/* remove quotation marks and spaces outside of them and store in clearstr*/
+void
+remove_quotes(char *str, char *clearstr)
 {
-	char *ret;
 	int strsize = strlen(str);
 	int inside = 0;
 	int c = 0; /* return counter */
 	int type = '"';
-	ret = (char *) malloc(strsize-2);
+	clearstr = (char *) malloc(strsize-2);
 
 	int i=0;
 	/* finds which quotation mark is used */
@@ -93,10 +89,8 @@ remove_quotes(char *str)
 			continue;
 		}
 		if (inside)
-			ret[c++] = str[i];
+			clearstr[c++] = str[i];
 	}
-
-	return ret;
 }
 
 char *
@@ -177,15 +171,13 @@ in_str(char needle, char *haystack)
 	return 0;
 }
 
-char *
-read_until_separator(char sep, FILE *file)
+void
+read_until_separator(char sep, char *buffer, FILE *file)
 {
-	char *ret = calloc(1, sizeof(char));
+	buffer = calloc(1, sizeof(char));
 	int c;
 	while ((c = fgetc(file)) != EOF && c != sep) {
-		ret = concatenate(ret, (char *) &c);
+		buffer = concatenate(buffer, (char *) &c);
 	}
-
-	return ret;
 }
 

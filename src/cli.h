@@ -52,8 +52,6 @@ extern WINDOW *main_win;
 extern Tag displayed_tag;
 extern int d_tag_n_number;
 extern char *d_tag_name;
-extern AnoteLayout curr_layout;
-extern AnoteLayout curr_lay_size;
 extern struct d_list *sel_note_i;
 extern struct d_list *d_tag_notes;
 
@@ -61,8 +59,6 @@ extern struct d_list *panel_list;
 extern int MAIN_WIN_COLORS;
 extern int main_win_h;
 extern int main_win_w;
-extern int side_win_h;
-extern int side_win_w;
 extern int footer_h;
 extern int footer_w;
 extern int max_row;

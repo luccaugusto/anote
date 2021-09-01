@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "main.h"
 #include "anote.h"
 #include "config.h"
 #include "list.h"
@@ -11,7 +12,6 @@
 #include "tag.h"
 #include "cli.h"
 #include "utils.h"
-#include "sidewin.h"
 #include "prompt.h"
 
 /* GLOBAL VARIABLES */
@@ -57,7 +57,6 @@ void
 prompt_add_note(short tag, short priority)
 {
 	int intput;
-	int create_panel = 0;
 	int n_pri = DEFAULT_PRIORITY;
 	char *input;
 	char *label;
@@ -65,8 +64,6 @@ prompt_add_note(short tag, short priority)
 	char *label3;
 	char *n_tag = DEFAULT_TAG;
 	Note n_aux;
-	Tag t_aux;
-	PANEL *p;
 
 	if (tag && priority) {
 		label = "Adding [note], priority and tag";
@@ -112,30 +109,16 @@ prompt_add_note(short tag, short priority)
 		input = prompt_user("On which tag? [blank for default]: ", label3, ALIGN_LEFT);
 		if (!is_blank(input)) {
 			n_tag = input;
-			if (tag_get(n_tag) == NULL)
-				create_panel = 1;
 		}
 	}
 
 	note_set_priority(n_pri, n_aux);
 	tag_add_note(n_aux, n_tag);
 
-	if (create_panel) {
-		t_aux = tag_get(n_tag);
-		p = anote_new_panel(t_aux);
-		if (p)
-			d_list_add_circ(p, &panel_list, sizeof(*p));
-		d_list_add_circ(t_aux, &circ_tag_list, tag_get_size());
-	}
-
 	/* hide cursor again */
 	curs_set(0);
 
-	/* reload main window or side window */
-	if (strcmp(n_tag, d_tag_name) == 0)
-		reload_main_win();
-	else
-		reload_side_win();
+	reload_main_win();
 }
 
 void
@@ -155,7 +138,6 @@ int
 prompt_delete_tag(void)
 {
 	Tag t;
-	PANEL *p;
 	int r = 0;
 	char *answer = malloc(sizeof(char));
 
@@ -171,14 +153,6 @@ prompt_delete_tag(void)
 			if (SELECTED_TAG(answer)) {
 				top_tag_index = top_tag_index->next;
 				sel_tag_index = top_tag_index;
-			}
-
-			/* deletes the panel containing the tag
-			 * if no panel is found, tag is not displayed */
-			p = anote_search_panel(t);
-			if (p) {
-				d_list_del_obj(p, &panel_list);
-				del_panel(p);
 			}
 
 			tag_del(t, &global_tag_list);

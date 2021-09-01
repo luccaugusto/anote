@@ -134,6 +134,7 @@ start_anote_cli(void)
 
 	main_win = create_new_win(main_win_h, main_win_w, 0, 0);
 	footer = create_new_win(footer_h, footer_w, main_win_h, 0);
+	cur_win = main_win;
 
 	prompt_win = create_new_win(prompt_win_h, prompt_win_w, max_row/4, max_col/4);
 	prompt_panel = new_panel(prompt_win);

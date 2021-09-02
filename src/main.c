@@ -169,8 +169,8 @@ build_file_name(void)
 	if (!aux) {
 		aux = getenv("XDG_CONFIG_HOME");
 		notes_path = calloc(strlen(aux), sizeof(char));
-		strcpy(notes_path, aux);
-		notes_path = concatenate(notes_path, "/.anote");
+		strncpy(notes_path, aux, strlen(aux));
+		notes_path = concatenate(notes_path, "/anote");
 	} else {
 		notes_path = calloc(strlen(aux), sizeof(char));
 		strcpy(notes_path, aux);

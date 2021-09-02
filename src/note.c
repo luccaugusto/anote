@@ -8,15 +8,18 @@
 struct note {
 	int priority; /* 0:max priority */
 	int completed;
-	char *text;
+	char text[MAX_NOTE_LENGTH];
 };
 
 /* FUNCTION DEFINITIONS */
 Note
 new_note(char *text)
 {
+	if (strlen(text) > MAX_NOTE_LENGTH)
+		return NULL;
+
 	Note n_note = malloc(sizeof(struct note));
-	n_note->text = text;
+	strncpy(n_note->text, text, strlen(text));
 	n_note->priority = 0;
 	n_note->completed = 0;
 
@@ -26,7 +29,6 @@ new_note(char *text)
 void
 note_del(Note n)
 {
-	free(n->text);
 	free(n);
 }
 
@@ -43,18 +45,21 @@ note_set_completed(int c, Note n)
 }
 
 void
-note_set_text(char *n_text, Note n)
+note_set_text(char *text, Note n)
 {
-	n->text = realloc(n->text, sizeof(n_text));
-	strcpy(n->text, n_text);
+	if (strlen(text) > MAX_NOTE_LENGTH)
+		return;
+
+	strncpy(n->text, text, strlen(text));
 }
 
 char *
 note_get_text(Note n)
 {
-	char *r = "";
+	char *r = malloc(sizeof(char) * MAX_NOTE_LENGTH);
 	if (n && n->text)
-		r = n->text;
+		strncpy(r, n->text, strlen(n->text));
+
 	return r;
 }
 

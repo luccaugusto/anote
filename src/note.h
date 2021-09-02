@@ -1,6 +1,8 @@
 #ifndef _NOTE_H
 #define _NOTE_H
 
+#define MAX_NOTE_LENGTH 256
+
 /* TYPES */
 typedef struct note *Note;
 

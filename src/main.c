@@ -34,7 +34,6 @@ struct d_list *global_tag_list;
 struct d_list *top_tag_index;
 struct d_list *sel_tag_index;
 struct d_list *circ_tag_list;
-struct d_list *panel_list;
 char *errmsg;
 FILE *notes_file;
 char *notes_path;

@@ -55,7 +55,6 @@ extern char *d_tag_name;
 extern struct d_list *sel_note_i;
 extern struct d_list *d_tag_notes;
 
-extern struct d_list *panel_list;
 extern int MAIN_WIN_COLORS;
 extern int main_win_h;
 extern int main_win_w;

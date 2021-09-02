@@ -157,19 +157,7 @@ start_anote_cli(void)
 void
 housekeeping(void)
 {
-	struct d_list *i;
 	del_panel(prompt_panel);
-
-	i = panel_list;
-	do {
-
-		del_panel(i->obj);
-		delwin(panel_window(i->obj));
-
-		i = i->next;
-	} while (i != panel_list);
-
-	delete_list_circ(&panel_list);
 
 	/* free input buffer */
 	free(buffer);

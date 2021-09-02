@@ -63,7 +63,7 @@ char *commands[] = {
 	"d: del selected note",
 	"D: del selected tag",
 	"Enter: show note details",
-	"Tab: Change note",
+	"Tab: Jump to tag to the right",
 	NULL,
 };
 
@@ -174,7 +174,7 @@ create_new_win(int height, int width, int start_y, int start_x)
 	local_win = newwin(height, width, start_y, start_x);
 
 	/* use default caracters for borders */
-	box(local_win, 0 , 0);
+	//box(local_win, 0 , 0);
 	wrefresh(local_win);
 
 	return local_win;
@@ -191,7 +191,7 @@ void
 show_win(WINDOW *window, chtype color)
 {
 	wattrset(window, color);
-	box(window, 0, 0);
+	//box(window, 0, 0);
 	wrefresh(window);
 }
 

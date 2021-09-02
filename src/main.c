@@ -48,39 +48,44 @@ load_notes_from_file(char *n_file)
 {
 	char *cur_tag = "";
 	char *cur_note;
-	char *aux;
+	char *buffer = malloc(sizeof(char) * 1024);
 	int cur_pri;
 	int cur_complete;
 	Note n;
 
 	notes_file = fopen(n_file, "r");
 
-	/* reads file and creates notes */
-	if (notes_file) {
-		/* each line of the file is of the format
-		 * tag priority note_text \n */
+	if (! notes_file)
+		return;
 
-		while (!feof(notes_file)) {
-			read_until_separator('|', cur_tag, notes_file);
-			cur_pri = str2int(aux);
+	/* each line of the file is of the format
+	 * tag|priority|note_text\n */
+	while (!feof(notes_file)) {
+		read_until_separator('|', buffer, notes_file);
+		cur_tag = malloc(sizeof(char) * strlen(buffer));
+		strncpy(cur_tag, buffer, strlen(buffer));
+		buffer[0] = '\0';
 
-			read_until_separator('|', aux, notes_file);
-			cur_complete = str2int(aux);
+		read_until_separator('|', buffer, notes_file);
+		cur_pri = str2int(buffer);
+		buffer[0] = '\0';
 
-			read_until_separator('\n', cur_note, notes_file);
+		read_until_separator('\n', buffer, notes_file);
+		cur_note = malloc(sizeof(char) * strlen(buffer));
+		strncpy(cur_note, buffer, strlen(buffer));
+		buffer[0] = '\0';
 
-			/* if read something */
-			if (!is_blank(cur_tag) && !is_blank(cur_note)) {
-				n = new_note(cur_note);
-				note_set_priority(cur_pri, n);
-				note_set_completed(cur_complete, n);
-				tag_add_note(n, cur_tag);
-			}
+		/* if read something */
+		if (!is_blank(cur_tag) && !is_blank(cur_note)) {
+			n = new_note(cur_note);
+			note_set_priority(cur_pri, n);
+			note_set_completed(cur_complete, n);
+			tag_add_note(n, cur_tag);
 		}
-
-		fclose(notes_file);
 	}
 
+	free(buffer);
+	fclose(notes_file);
 }
 
 int

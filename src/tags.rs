@@ -1,4 +1,4 @@
-use crate::Notes::Note;
+use crate::notes::Note;
 
 #[derive(Debug)]
 pub struct Tag {
@@ -9,16 +9,16 @@ pub struct Tag {
 
 impl Tag {
 
-    pub fn get_name(&self) -> String {
-        self.name
+    pub fn get_name(&self) -> &String {
+        &self.name
     }
 
-    pub fn get_id(&self) -> u16 {
-        self.id
+    pub fn get_id(&self) -> &u16 {
+        &self.id
     }
 
-    pub fn get_note_list(&self) -> Vec<Note> {
-        self.note_list
+    pub fn get_note_list(&self) -> &Vec<Note> {
+        &self.note_list
     }
 
     pub fn add_note(&mut self, note: Note) {
@@ -32,11 +32,12 @@ impl Tag {
     pub fn del_note(&mut self, note_id: u16) {
         //TODO
         //self.note_list.remove(self.note_list.iter().position(|x| x.get_id() == note_id));
+        let a = note_id;
     }
 }
 
 fn next_id() -> u16 {
-    //TODO
+    //last_id++
     1
 }
 

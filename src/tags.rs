@@ -30,9 +30,17 @@ impl Tag {
     }
 
     pub fn del_note(&mut self, note_id: u16) {
-        //TODO
-        //self.note_list.remove(self.note_list.iter().position(|x| x.get_id() == note_id));
-        let a = note_id;
+        if let Some(pos) = self.note_list.iter().position(|x| *x.get_id() == note_id) {
+            self.note_list.remove(pos);
+        }
+    }
+
+    pub fn new(name: String) -> Tag {
+        Tag {
+            id: next_id(),
+            name,
+            note_list: Vec::new(),
+        }
     }
 }
 
@@ -41,10 +49,3 @@ fn next_id() -> u16 {
     1
 }
 
-pub fn build_tag(name: String) -> Tag {
-    Tag {
-        id: next_id(),
-        name,
-        note_list: Vec::new(),
-    }
-}

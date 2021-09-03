@@ -26,17 +26,17 @@ impl Note {
     pub fn set_priority(&mut self, priority: u8) {
         self.priority = priority;
     }
+
+    pub fn new(text: String, priority: u8) -> Note {
+        Note {
+            id: next_id(),
+            text,
+            priority,
+        }
+    }
 }
 
 fn next_id() -> u16 {
     //last_id++
     1
-}
-
-pub fn new(text: String, priority: u8) -> Note {
-    Note {
-        id: next_id(),
-        text,
-        priority,
-    }
 }

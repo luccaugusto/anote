@@ -1,20 +1,19 @@
-use crossterm::{
-    event::{self, Event as CEvent, KeyCode},
-    terminal::{disable_raw_mode, enable_raw_mode},
-};
-use thiserror::Error;
-use tui::{
-    backend::CrosstermBackend,
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans},
-    widgets::{
-        Block, BorderType, Borders, Cell, List, ListItem, ListState, Paragraph, Row, Table, Tabs,
-    },
-    Terminal,
-};
+use std::io;
+use termion::raw::IntoRawMode;
+use tui::Terminal;
+use tui::backend::TermionBackend;
+use tui::widgets::{Widget, Block, Borders};
+use tui::layout::{Layout, Constraint, Direction};
 
-fn main() {
-
-    return;
+pub fn init_cli() -> Result<(), io::Error> {
+    let stdout = io::stdout().into_raw_mode()?;
+    let backend = TermionBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+    terminal.draw(|f| {
+        let size = f.size();
+        let block = Block::default()
+            .title("Block")
+            .borders(Borders::ALL);
+        f.render_widget(block, size);
+    })
 }

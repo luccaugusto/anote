@@ -1,13 +1,16 @@
+use std::{sync::atomic::{AtomicUsize, Ordering}};
+
+
 #[derive(Debug)]
 pub struct Note {
-    id: u16,
+    id: usize,
     text: String,
     priority: u8,
 }
 
 impl Note {
 
-    pub fn get_id(&self) -> &u16 {
+    pub fn get_id(&self) -> &usize {
         &self.id
     }
 
@@ -29,14 +32,11 @@ impl Note {
 
     pub fn new(text: String, priority: u8) -> Note {
         Note {
-            id: next_id(),
+            id: NOTE_COUNTER.fetch_add(1, Ordering::SeqCst),
             text,
             priority,
         }
     }
 }
 
-fn next_id() -> u16 {
-    //last_id++
-    1
-}
+static NOTE_COUNTER: AtomicUsize = AtomicUsize::new(0);

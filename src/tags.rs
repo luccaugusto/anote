@@ -1,8 +1,9 @@
+use std::{sync::atomic::{AtomicUsize, Ordering}};
 use crate::notes::Note;
 
 #[derive(Debug)]
 pub struct Tag {
-    id: u16,
+    id: usize,
     name: String,
     note_list: Vec<Note>,
 }
@@ -13,7 +14,7 @@ impl Tag {
         &self.name
     }
 
-    pub fn get_id(&self) -> &u16 {
+    pub fn get_id(&self) -> &usize {
         &self.id
     }
 
@@ -29,7 +30,7 @@ impl Tag {
         self.name = name;
     }
 
-    pub fn del_note(&mut self, note_id: u16) {
+    pub fn del_note(&mut self, note_id: usize) {
         if let Some(pos) = self.note_list.iter().position(|x| *x.get_id() == note_id) {
             self.note_list.remove(pos);
         }
@@ -37,15 +38,11 @@ impl Tag {
 
     pub fn new(name: String) -> Tag {
         Tag {
-            id: next_id(),
+            id: TAG_COUNTER.fetch_add(1, Ordering::SeqCst),
             name,
             note_list: Vec::new(),
         }
     }
 }
 
-fn next_id() -> u16 {
-    //last_id++
-    1
-}
-
+static TAG_COUNTER: AtomicUsize = AtomicUsize::new(0);

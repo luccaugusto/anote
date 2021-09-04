@@ -1,6 +1,5 @@
 use std::{sync::atomic::{AtomicUsize, Ordering}};
 
-
 #[derive(Debug)]
 pub struct Note {
     id: usize,

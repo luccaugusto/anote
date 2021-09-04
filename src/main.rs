@@ -1,25 +1,61 @@
+use std::env;
+use clap::{Arg, App};
+
 mod notes;
 mod tags;
 mod cli;
+mod constants;
+
+fn build_file_name(tagname: String) -> String {
+    match env::var("NOTES_PATH") {
+        Ok(path) => path + &"/anotes" + &tagname,
+        Err(_e)  => match env::var("XDG_CONFIG_HOME") {
+            Ok(path) => path + &"/anotes" + &tagname,
+            Err(_e)  => "~/.config/anote/anotes".to_owned() + &tagname,
+        }
+    }
+}
+
+fn list_notes_from_tag(tagname: String) {
+    println!("TODO: LIST NOTES FROM TAG");
+}
 
 fn main () {
-    let mut general: tags::Tag = tags::Tag::new(String::from("general"));
-    let note: notes::Note = notes::Note::new(String::from("teste"), 2);
-    let note2: notes::Note = notes::Note::new(String::from("teste2"), 3);
+    let args: Vec<String> = env::args().collect();
+    let mut interactive = true;
 
-    println!("{:?}", general);
-    println!("{:?}", note);
+    let matches = App::new(constants::NAME)
+        .version(constants::VERSION)
+        .author(constants::AUTHOR)
+        .about(constants::ABOUT)
+        .arg(Arg::with_name("tag")
+                 .short("t")
+                 .long("tag")
+                 .takes_value(true)
+                 .help("tag file name"))
+        .arg(Arg::with_name("list")
+                 .short("l")
+                 .long("list")
+                 .takes_value(false)
+                 .help("Show help"))
+        .get_matches();
 
-    general.add_note(note);
-    general.add_note(note2);
+    println!("{:?}", matches);
 
-    let notelist=general.get_note_list();
+    // General tag is default
+    let initial_tag = matches.value_of("tag").unwrap_or(constants::DEFAULT_TAG);
 
-    println!("{:?}", general.get_id());
-    println!("{:?}", general.get_name());
-    println!("{:?}", notelist);
-    println!("{:?}", notelist[0].get_text());
+    match matches.occurrences_of("list") {
+        1 => {
+            interactive = false;
+            list_notes_from_tag(initial_tag.to_string());
+        },
+        _ => (),
+    };
 
-    general.del_note(1);
-    println!("{:?}", general);
+    println!("initial tag: {}", initial_tag);
+
+    if interactive {
+        cli::init_cli();
+    }
 }

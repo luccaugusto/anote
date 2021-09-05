@@ -1,4 +1,3 @@
-use std::env;
 use clap::{Arg, App};
 
 pub mod cli;
@@ -8,7 +7,6 @@ pub mod tags;
 pub mod notes;
 
 fn main () {
-    let args: Vec<String> = env::args().collect();
     let mut interactive = true;
 
     let matches = App::new(constants::NAME)
@@ -39,6 +37,17 @@ fn main () {
     };
 
     if interactive {
+        let mut taglist: Vec<tags::Tag> = Vec::new();
+        match fileio::load_notes_from_file(&mut taglist) {
+            Ok(_o) => (),
+            Err(e) => {
+                println!("Error: notes could not be read {}", e);
+                return;
+            }
+        }
+
+        println!("{:?}", taglist);
+
         cli::init_cli();
     }
 }

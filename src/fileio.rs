@@ -1,9 +1,11 @@
 use std::env;
 use std::fs::File;
+use std::num::ParseIntError;
 use std::io::{BufRead, BufReader};
 
 use crate::constants;
 use crate::tags::Tag;
+use crate::notes::Note;
 
 fn build_file_name() -> String {
     match env::var("NOTES_PATH") {
@@ -17,9 +19,8 @@ fn build_file_name() -> String {
 
 pub fn list_notes_from_tag(tagname: &String) {
     let filename = build_file_name();
-    let mut cur_line: Vec<&str>;
 
-    let mut file = match File::open(&filename) {
+    let file = match File::open(&filename) {
         Err(e) => panic!("couldn't open {}: {}", filename, e),
         Ok(file) => file,
     };
@@ -40,6 +41,45 @@ pub fn list_notes_from_tag(tagname: &String) {
     }
 }
 
-pub fn load_notes_from_file(taglist: &Vec<Tag>,filename: &String) {
-    ()
+pub fn load_notes_from_file(taglist: &mut Vec<Tag>) -> Result<(), ParseIntError> {
+    let filename = build_file_name();
+
+    let file = match File::open(&filename) {
+        Err(e) => panic!("couldn't open {}: {}", filename, e),
+        Ok(file) => file,
+    };
+
+    let reader = BufReader::new(file);
+
+    //File is a csv in format: tag_name,priority,note_text
+    for line in reader.lines() {
+        let cur_line = line.as_ref().unwrap()
+            .split(constants::SEPARATOR)
+            .collect::<Vec<&str>>();
+
+        let tag_name = cur_line[0];
+
+        let priority = match cur_line[1].parse::<u8>() {
+            Ok(number)  => number,
+            Err(e) => return Err(e),
+        };
+
+        let note_text = cur_line[2];
+
+        let note = Note::new(note_text.to_owned(), priority);
+
+        //Tag exists in list
+        if let Some(tag_pos) = taglist.iter().position(|x| *x.get_name() == tag_name) {
+            taglist[tag_pos].add_note(note);
+        }
+
+        //Create new tag and add it to list
+        else {
+            let mut new_tag = Tag::new(tag_name.to_string());
+            new_tag.add_note(note);
+            taglist.push(new_tag);
+        }
+    }
+
+    Ok(())
 }

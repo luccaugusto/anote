@@ -4,16 +4,16 @@ use std::path::Path;
 use std::num::ParseIntError;
 use std::io::{BufRead, BufReader, Error, Write};
 
-use crate::constants;
+use crate::config;
 use crate::tags::Tag;
 use crate::notes::Note;
 
 fn build_file_name() -> String {
     match env::var("NOTES_PATH") {
-        Ok(path) => path + &"/" + constants::FILENAME,
+        Ok(path) => path + &"/" + config::FILENAME,
         Err(_e)  => match env::var("XDG_CONFIG_HOME") {
-            Ok(path) => path + &"/" + constants::FILENAME,
-            Err(_e)  => constants::DEFAULT_PATH.to_owned() + &"/" + constants::FILENAME,
+            Ok(path) => path + &"/" + config::FILENAME,
+            Err(_e)  => config::DEFAULT_PATH.to_owned() + &"/" + config::FILENAME,
         }
     }
 }
@@ -31,7 +31,7 @@ pub fn list_notes_from_tag(tagname: &String) {
 
     for line in reader.lines() {
         let cur_line = line.as_ref().unwrap()
-            .split(constants::SEPARATOR)
+            .split(config::SEPARATOR)
             .collect::<Vec<&str>>();
 
         if cur_line[0].eq(tagname) {
@@ -57,7 +57,7 @@ pub fn load_notes_from_file(taglist: &mut Vec<Tag>) -> Result<(), ParseIntError>
     //File is a csv in format: tag_name,priority,note_text
     for line in reader.lines() {
         let cur_line = line.as_ref().unwrap()
-            .split(constants::SEPARATOR)
+            .split(config::SEPARATOR)
             .collect::<Vec<&str>>();
 
         let tag_name = cur_line[0];

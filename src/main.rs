@@ -2,10 +2,11 @@ use std::io;
 use clap::{Arg, App};
 
 pub mod cli;
-pub mod fileio;
-pub mod constants;
 pub mod tags;
 pub mod notes;
+pub mod fileio;
+pub mod config;
+pub mod constants;
 
 fn main () -> Result<(), io::Error>{
     let mut interactive = true;
@@ -27,7 +28,7 @@ fn main () -> Result<(), io::Error>{
         .get_matches();
 
     // General tag is default
-    let initial_tag = matches.value_of("tag").unwrap_or(constants::DEFAULT_TAG);
+    let initial_tag = matches.value_of("tag").unwrap_or(config::DEFAULT_TAG);
 
     match matches.occurrences_of("list") {
         1 => {
@@ -41,7 +42,7 @@ fn main () -> Result<(), io::Error>{
         let mut taglist: Vec<tags::Tag> = Vec::new();
 
         fileio::load_notes_from_file(&mut taglist).expect("Error: file could not be read");
-        cli::init_anote(&mut taglist, &initial_tag).expect("Error");
+        cli::run_anote(&mut taglist, &initial_tag).expect("Error");
         fileio::write_notes_to_file(&mut taglist).expect("Error: File not written");
     };
 

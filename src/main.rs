@@ -1,3 +1,4 @@
+use std::io;
 use clap::{Arg, App};
 
 pub mod cli;
@@ -6,7 +7,7 @@ pub mod constants;
 pub mod tags;
 pub mod notes;
 
-fn main () {
+fn main () -> Result<(), io::Error>{
     let mut interactive = true;
 
     let matches = App::new(constants::NAME)
@@ -38,16 +39,11 @@ fn main () {
 
     if interactive {
         let mut taglist: Vec<tags::Tag> = Vec::new();
-        match fileio::load_notes_from_file(&mut taglist) {
-            Ok(_o) => (),
-            Err(e) => {
-                println!("Error: notes could not be read {}", e);
-                return;
-            }
-        }
 
-        println!("{:?}", taglist);
+        fileio::load_notes_from_file(&mut taglist).expect("Error: file could not be read");
+        cli::init_anote(&mut taglist, &initial_tag).expect("Error");
+        fileio::write_notes_to_file(&mut taglist).expect("Error: File not written");
+    };
 
-        cli::init_cli();
-    }
+    Ok(())
 }

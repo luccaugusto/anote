@@ -1,7 +1,8 @@
 use std::env;
 use std::fs::File;
+use std::path::Path;
 use std::num::ParseIntError;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Error, Write};
 
 use crate::constants;
 use crate::tags::Tag;
@@ -19,9 +20,10 @@ fn build_file_name() -> String {
 
 pub fn list_notes_from_tag(tagname: &String) {
     let filename = build_file_name();
+    let path = Path::new(&filename);
 
     let file = match File::open(&filename) {
-        Err(e) => panic!("couldn't open {}: {}", filename, e),
+        Err(e) => panic!("couldn't open {}: {}", path.display(), e),
         Ok(file) => file,
     };
 
@@ -43,9 +45,10 @@ pub fn list_notes_from_tag(tagname: &String) {
 
 pub fn load_notes_from_file(taglist: &mut Vec<Tag>) -> Result<(), ParseIntError> {
     let filename = build_file_name();
+    let path = Path::new(&filename);
 
-    let file = match File::open(&filename) {
-        Err(e) => panic!("couldn't open {}: {}", filename, e),
+    let file = match File::open(&path) {
+        Err(e) => panic!("couldn't open {}: {}", path.display(), e),
         Ok(file) => file,
     };
 
@@ -78,6 +81,32 @@ pub fn load_notes_from_file(taglist: &mut Vec<Tag>) -> Result<(), ParseIntError>
             let mut new_tag = Tag::new(tag_name.to_string());
             new_tag.add_note(note);
             taglist.push(new_tag);
+        }
+    }
+
+    Ok(())
+}
+
+pub fn write_notes_to_file(taglist: &mut Vec<Tag>) -> Result<(), Error> {
+
+    let filename = build_file_name();
+    let path = Path::new(&filename);
+
+    let mut file = match File::create(&path) {
+        Err(e) => return Err(e),
+        Ok(file) => file,
+    };
+
+    // writes to notesfile in format
+    // tagname,priority,note text
+    for tag in taglist.iter() {
+        for note in tag.get_note_list() {
+            let note_string = format!("{},{},{}\n",
+                   tag.get_name(),
+                   note.get_priority(),
+                   note.get_text()
+            );
+            file.write_all(note_string.as_bytes()).expect("File not Written");
         }
     }
 

@@ -1,15 +1,15 @@
 use std::io::{self, Write};
 //use termion::raw::IntoRawMode;
 use tui::{
-    //backend::TermionBackend;
-    backend::CrosstermBackend,
-    layout::{Layout, Constraint, Direction},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans},
-    widgets::{
-        Block, BorderType, Borders, List, ListItem, ListState, Paragraph, Row, Table, Tabs, Widget
-    },
-    Terminal,
+	//backend::TermionBackend;
+	backend::CrosstermBackend,
+	layout::{Layout, Constraint, Direction, Margin},
+	style::{Color, Modifier, Style},
+	text::{Span, Spans},
+	widgets::{
+		Block, BorderType, Borders, List, ListItem, ListState, Paragraph, Row, Table, Tabs, Widget
+	},
+	Terminal,
 };
 use crossterm::event::{KeyEvent, KeyModifiers};
 use crossterm::{
@@ -17,8 +17,7 @@ use crossterm::{
 	execute,
 	terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::sync::mpsc::Sender;
-use std::sync::{mpsc};
+use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use std::thread;
 

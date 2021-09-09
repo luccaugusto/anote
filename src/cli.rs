@@ -1,16 +1,22 @@
-use std::io;
-use tui::Terminal;
+use std::io::{self, Write};
 //use termion::raw::IntoRawMode;
-//use tui::backend::TermionBackend;
-use tui::backend::CrosstermBackend;
+use tui::{
+    //backend::TermionBackend;
+    backend::CrosstermBackend,
+    layout::{Layout, Constraint, Direction},
+    style::{Color, Modifier, Style},
+    text::{Span, Spans},
+    widgets::{
+        Block, BorderType, Borders, List, ListItem, ListState, Paragraph, Row, Table, Tabs, Widget
+    },
+    Terminal,
+};
 use crossterm::event::{KeyEvent, KeyModifiers};
 use crossterm::{
 	event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode},
 	execute,
 	terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use tui::widgets::{Widget, Block, Borders};
-use tui::layout::{Layout, Constraint, Direction};
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc};
 use std::time::{Duration, Instant};
@@ -25,7 +31,11 @@ enum Event {
 	Tick,
 }
 
-pub fn run_anote(taglist: &mut Vec<Tag>, initial_tag: &str) -> Result<(), Box<dyn std::error::Error>>  {
+fn display_notes_from_tag(tag: &Tag) { }
+
+fn display_tags_menu(taglist: &Vec<Tag>) { }
+
+pub fn run_anote(taglist: &mut Vec<Tag>, mut active_tag: usize) -> Result<(), Box<dyn std::error::Error>>  {
 
 	//Termion Backend
 	//let stdout = io::stdout().into_raw_mode()?;
@@ -33,11 +43,12 @@ pub fn run_anote(taglist: &mut Vec<Tag>, initial_tag: &str) -> Result<(), Box<dy
 
 	//Crossterm Backend
 	enable_raw_mode()?;
-	let stdout = io::stdout();
-	//execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+	let mut stdout = io::stdout();
+	execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 	let backend = CrosstermBackend::new(stdout);
 
 	let mut terminal = Terminal::new(backend)?;
+
 	terminal.clear()?;
 
 	let (key_tx, rx) = mpsc::channel();
@@ -64,26 +75,40 @@ pub fn run_anote(taglist: &mut Vec<Tag>, initial_tag: &str) -> Result<(), Box<dy
 	});
 
 	loop {
-		terminal.draw(|f| {
-			let chunks = Layout::default()
-				.direction(Direction::Vertical)
-				.margin(1)
-				.constraints(
-					[
-					Constraint::Percentage(config::TABS_SIZE),
-					Constraint::Percentage(config::NOTES_SIZE),
-					].as_ref()
-					)
-				.split(f.size());
-			let block = Block::default()
-				.title(config::TABS_TITLE)
-				.borders(Borders::NONE);
-			f.render_widget(block, chunks[0]);
-			let block = Block::default()
-				.title(initial_tag.to_string())
-				.borders(Borders::TOP);
-			f.render_widget(block, chunks[1]);
-		});
+        terminal.draw(|f| {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .margin(1)
+                .constraints(
+                    [
+                    Constraint::Length(config::TABS_SIZE),
+                    Constraint::Min(config::NOTES_SIZE),
+                    ].as_ref()
+                    )
+                .split(f.size());
+            let block = Block::default()
+                .title(taglist[active_tag].get_name().to_string())
+                .borders(Borders::TOP);
+            f.render_widget(block, chunks[1]);
+            let menu = taglist
+                .iter()
+                .map(|t| {
+                    Spans::from(vec![
+                        Span::styled(
+                            t.get_name(),
+                            Style::default().fg(Color::White)//TODO put color on config
+                        ),
+                    ])
+                })
+            .collect();
+            let tabs = Tabs::new(menu)
+                .select(active_tag.into())
+                .block(Block::default().title(config::TABS_TITLE).borders(Borders::NONE)) //TODO put borders on config
+                .style(Style::default().fg(Color::White)) //TODO put color on config
+                .highlight_style(Style::default().fg(Color::Yellow)) //TODO put color on config
+                .divider(Span::raw("|"));
+            f.render_widget(tabs, chunks[0]);
+        })?;
 
 		match rx.recv()? {
 			Event::Input(input) => match input.code {
@@ -101,12 +126,11 @@ pub fn run_anote(taglist: &mut Vec<Tag>, initial_tag: &str) -> Result<(), Box<dy
 
 	//HOUSEKEEPING
 	disable_raw_mode()?;
-	//execute!(
-	//	terminal.backend_mut(),
-	//	LeaveAlternateScreen,
-	//	DisableMouseCapture
-	//	)?;
-	terminal.clear()?;
+	execute!(
+		terminal.backend_mut(),
+		LeaveAlternateScreen,
+		DisableMouseCapture
+		)?;
 	terminal.show_cursor()?;
 
 	Ok(())

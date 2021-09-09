@@ -100,6 +100,9 @@ pub fn run_anote(taglist: &mut Vec<Tag>, mut active_tag: usize) -> Result<(), Bo
 	//let stdout = io::stdout().into_raw_mode()?;
 	//let backend = TermionBackend::new(stdout);
 
+	let mut note_list_state = ListState::default();
+	note_list_state.select(Some(0));
+
 	//Crossterm Backend
 	enable_raw_mode()?;
 	let mut stdout = io::stdout();
@@ -133,44 +136,41 @@ pub fn run_anote(taglist: &mut Vec<Tag>, mut active_tag: usize) -> Result<(), Bo
 		}
 	});
 
+    let chunks = configure_screen();
+
 	loop {
-        terminal.draw(|f| {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .margin(1)
-                .constraints(
-                    [
-                    Constraint::Length(config::TABS_SIZE),
-                    Constraint::Min(config::NOTES_SIZE),
-                    ].as_ref()
-                    )
-                .split(f.size());
-            let block = Block::default()
-                .title(taglist[active_tag].get_name().to_string())
-                .borders(Borders::TOP);
-            f.render_widget(block, chunks[1]);
-            let menu = taglist
-                .iter()
-                .map(|t| {
-                    Spans::from(vec![
-                        Span::styled(
-                            t.get_name(),
-                            Style::default().fg(Color::White)//TODO put color on config
-                        ),
-                    ])
-                })
-            .collect();
-            let tabs = Tabs::new(menu)
-                .select(active_tag.into())
-                .block(Block::default().title(config::TABS_TITLE).borders(Borders::NONE)) //TODO put borders on config
-                .style(Style::default().fg(Color::White)) //TODO put color on config
-                .highlight_style(Style::default().fg(Color::Yellow)) //TODO put color on config
-                .divider(Span::raw("|"));
-            f.render_widget(tabs, chunks[0]);
-        })?;
+		terminal.draw(|f| {
+            let t_chunks = chunks.split(f.size());
+
+			let notes_list = build_tag_notes_list(&taglist[active_tag]);
+
+            //render widgets
+			f.render_widget(build_tags_menu(&taglist, active_tag), t_chunks[0]);
+			f.render_stateful_widget(notes_list, t_chunks[1], &mut note_list_state);
+		})?;
 
 		match rx.recv()? {
 			Event::Input(input) => match input.code {
+				KeyCode::Char('j') | KeyCode::Down => {
+					if let Some(selected) = note_list_state.selected() {
+                        // as length in a usize we can't subtract below 0 so
+                        // to avoid overflow, always sum by len-1 so it simulates stopping one
+                        // before on the circular list
+                        let length = &taglist[active_tag].get_note_list().len();
+                        let next = (selected + length - 1) % length;
+                        note_list_state.select(Some(next));
+					}
+				}
+				KeyCode::Char('k') | KeyCode::Up => {
+					if let Some(selected) = note_list_state.selected() {
+                        let next = (selected + 1) % &taglist[active_tag].get_note_list().len();
+                        note_list_state.select(Some(next));
+					}
+				}
+				KeyCode::Tab => {
+					active_tag = (active_tag + 1) % taglist.len();
+                    note_list_state.select(Some(0));
+				}
 				KeyCode::Char('q') | KeyCode::Esc => {
 					break;
 				}
@@ -179,7 +179,7 @@ pub fn run_anote(taglist: &mut Vec<Tag>, mut active_tag: usize) -> Result<(), Bo
 				}
 				_ => {}
 			},
-            Event::Tick => {}
+			Event::Tick => {}
 		}
 	}
 

@@ -1,6 +1,9 @@
 # anote
 
+# IMPORTANT:
 WARNING: i developed this on a not so good time of my life so my head was totally in the wrong place and attempts to fix bugs only created more bugs, so, use at your own risk. I might fix it sometime later though.
+
+The shell script works great, i use it on a daily basis. I tried to rewrite the cli app in rust but lost motivation before finishing it, maybe i'll get back to it later.
 
 Anote is a very simple program for taking notes. This repository provides two implementations, the first one is
 a POSIX shell script for taking notes and viewing them in the terminal.

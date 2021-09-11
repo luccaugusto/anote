@@ -21,6 +21,7 @@ use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use std::thread;
 
+use crate::notes::Note;
 use crate::tags::Tag;
 use crate::config;
 
@@ -38,6 +39,7 @@ fn build_tag_notes_list<'a>(tag: &Tag) -> List<'a> {
 		.border_type(BorderType::Rounded); //TODO put border style on config
 
 	let note_list = tag.get_note_list();
+
 	let items: Vec<_> = note_list
 		.iter()
 		.map(|note| {
@@ -94,27 +96,55 @@ fn configure_screen() -> Layout {
         )
 }
 
+fn build_note_details_block(note: &Note) -> (Block, Layout) {
+    let (mut block, mut layout) = build_prompt_block("Note Details");
+    (block, layout)
+}
+
+fn build_prompt_block(title: &str) -> (Block, Layout) {
+    let layout = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(
+            [
+                Constraint::Percentage(50), //TODO put prompt size on config
+            ].as_ref()
+        )
+        .margin(1);//TODO: put margin on config
+
+    let block = Block::default()
+        .title(title.to_owned())
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .style(Style::default().bg(Color::Black));
+
+    (block, layout)
+}
+
 pub fn run_anote(taglist: &mut Vec<Tag>, mut active_tag: usize) -> Result<(), Box<dyn std::error::Error>>  {
 
 	//Termion Backend
 	//let stdout = io::stdout().into_raw_mode()?;
 	//let backend = TermionBackend::new(stdout);
 
-	let mut note_list_state = ListState::default();
-	note_list_state.select(Some(0));
-
 	//Crossterm Backend
 	enable_raw_mode()?;
+
 	let mut stdout = io::stdout();
 	execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 	let backend = CrosstermBackend::new(stdout);
 
 	let mut terminal = Terminal::new(backend)?;
-
-	terminal.clear()?;
+    let chunks = configure_screen();
+    let mut should_prompt = false;
 
 	let (key_tx, rx) = mpsc::channel();
 	let tick_rate = Duration::from_millis(200);
+
+	let mut note_list_state = ListState::default();
+	note_list_state.select(Some(0));
+
+	terminal.clear()?;
+
 	thread::spawn(move || {
 		let mut last_tick = Instant::now();
 		loop {
@@ -136,37 +166,72 @@ pub fn run_anote(taglist: &mut Vec<Tag>, mut active_tag: usize) -> Result<(), Bo
 		}
 	});
 
-    let chunks = configure_screen();
-
 	loop {
-		terminal.draw(|f| {
-            let t_chunks = chunks.split(f.size());
+		terminal.draw(|screen| {
+            let t_chunks = chunks.split(screen.size());
 
 			let notes_list = build_tag_notes_list(&taglist[active_tag]);
 
             //render widgets
-			f.render_widget(build_tags_menu(&taglist, active_tag), t_chunks[0]);
-			f.render_stateful_widget(notes_list, t_chunks[1], &mut note_list_state);
+			screen.render_widget(build_tags_menu(&taglist, active_tag), t_chunks[0]);
+			screen.render_stateful_widget(notes_list, t_chunks[1], &mut note_list_state);
 		})?;
 
 		match rx.recv()? {
 			Event::Input(input) => match input.code {
+                KeyCode::Char('i') => {
+                    let mut input = String::new();
+                    io::stdin().read_line(&mut input)
+                        .expect("Can't read from stdin");
+
+                    taglist[active_tag].add_note(
+                        Note::new(input, 0)
+                        );
+                }
+                KeyCode::Char('d') | KeyCode::Delete => {
+                    if let Some(selected) = note_list_state.selected() {
+                        let note_id = taglist[active_tag].get_note_list()[selected].get_id().to_owned();
+                        taglist[active_tag].del_note(note_id);
+
+                        note_list_state.select(Some(0));
+
+                        //Remove noteless tags
+                        if taglist[active_tag].get_note_list().len() == 0 && taglist.len() > 1 {
+                            taglist.remove(active_tag);
+                            active_tag = 0;
+                        }
+                    }
+                }
 				KeyCode::Char('j') | KeyCode::Down => {
 					if let Some(selected) = note_list_state.selected() {
                         // as length in a usize we can't subtract below 0 so
                         // to avoid overflow, always sum by len-1 so it simulates stopping one
                         // before on the circular list
                         let length = &taglist[active_tag].get_note_list().len();
-                        let next = (selected + length - 1) % length;
-                        note_list_state.select(Some(next));
+                        if *length > 0 {
+                            let next = (selected + length - 1) % length;
+                            note_list_state.select(Some(next));
+                        }
 					}
 				}
 				KeyCode::Char('k') | KeyCode::Up => {
 					if let Some(selected) = note_list_state.selected() {
-                        let next = (selected + 1) % &taglist[active_tag].get_note_list().len();
-                        note_list_state.select(Some(next));
+                        if taglist[active_tag].get_note_list().len() > 0 {
+                            let next = (selected + 1) % &taglist[active_tag].get_note_list().len();
+                            note_list_state.select(Some(next));
+                        }
 					}
 				}
+                KeyCode::Char('l') | KeyCode::Enter => {
+                    //should_prompt = true;
+                    if let Some(selected) = note_list_state.selected() {
+                        terminal.draw(|screen| {
+                            let (block, layout) = build_note_details_block(&taglist[active_tag].get_note_list()[selected]);
+			                screen.render_widget(block, layout.split(screen.size())[0]);
+                            }
+                        )?;
+                    }
+                }
 				KeyCode::Tab => {
 					active_tag = (active_tag + 1) % taglist.len();
                     note_list_state.select(Some(0));

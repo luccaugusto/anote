@@ -44,6 +44,10 @@ fn main () -> Result<(), io::Error>{
 
         fileio::load_notes_from_file(&mut taglist).expect("Error: file could not be read");
 
+        if taglist.len() == 0 {
+            taglist.push(tags::Tag::new(initial_tag_name.to_string()));
+        }
+
         initial_tag_pos = 0;
         if let Some(pos) = taglist.iter().position(|t| t.get_name() == initial_tag_name) {
             initial_tag_pos = pos;

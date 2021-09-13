@@ -1,23 +1,11 @@
 # anote
 
 # IMPORTANT:
-WARNING: i developed this on a not so good time of my life so my head was totally in the wrong place and attempts to fix bugs only created more bugs, so, use at your own risk. I might fix it sometime later though.
-
-The shell script works great, i use it on a daily basis. I tried to rewrite the cli app in rust but lost motivation before finishing it, maybe i'll get back to it later.
-
-Anote is a very simple program for taking notes. This repository provides two implementations, the first one is
-a POSIX shell script for taking notes and viewing them in the terminal.
-The second implementation is a more robust, ncurses based CLI application, still in development.
-Probably the CLI application will engulf the shell script in the future.
+Anote is a very simple program for taking notes.
 Notes are saved in plain text files in $NOTES_PATH directory or $XDG_CONFIG_HOME/anote/.notes if $NOTES_PATH is not set.
 
-This program follows the suckless philosophy, the configuration file is the source code itself.
-To change a configuration you must first change it on src/config.def.h and run ```make config```.
-
-This program is licensed under the GNU GPL3 License.
-
 # Instalation
-run ```make && sudo make install```
+Just put the script somewhere in your PATH.
 
 ## Script
 The script has 4 functions:
@@ -30,22 +18,8 @@ Please note that editing a note is not supported on the script version.
 
 Run 'anote.sh -h' for further help.
 
-## Curses application
-The curses application is pretty simple, it just shows the notes you have and allow you to manipulate them.
-The idea of this program however is to keep things simple, it just takes notes.
-Feel free to fix them or implement some of the TODO items.
-
 ## TODO
 
 ### Shell
 + implement remove function alternative without dmenu.
 + add function to import every todo item from a project.
-
-### Data
-+ Change shell script output format to suit the CLI application as well.
-+ save the date a note was added and increase its priority automattically as time passes.
-
-### CLI
-+ scroll commands on footer if they dont fit
-+ noninteractive remove function
-+ add function without the -a flag

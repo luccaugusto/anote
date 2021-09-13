@@ -1,6 +1,5 @@
 # anote
 
-# IMPORTANT:
 Anote is a very simple program for taking notes.
 Notes are saved in plain text files in $NOTES_PATH directory or $XDG_CONFIG_HOME/anote/.notes if $NOTES_PATH is not set.
 
